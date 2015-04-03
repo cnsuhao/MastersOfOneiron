@@ -404,14 +404,16 @@ void MasterControl::HandleKeyDown(StringHash eventType, VariantMap &eventData)
         else if (key == '8')
             renderer_->SetDynamicInstancing(!renderer_->GetDynamicInstancing());
         //Take screenshot
-        else if (key == '9')
-        {
-            Image screenshot(context_);
-            graphics_->TakeScreenShot(screenshot);
-            //Here we save in the Data folder with date and time appended
-            screenshot.SavePNG(GetSubsystem<FileSystem>()->GetProgramDir() + "Screenshots/Screenshot_" + Time::GetTimeStamp().Replaced(':', '_').Replaced('.', '_').Replaced(' ', '_')+".png");
-        }
-    }*/
+  */else if (key == '9')
+    {
+        Graphics* graphics = GetSubsystem<Graphics>();
+        Image screenshot(context_);
+        graphics->TakeScreenShot(screenshot);
+        //Here we save in the Data folder with date and time appended
+        String fileName = GetSubsystem<FileSystem>()->GetProgramDir() + "Screenshots/Screenshot_" + Time::GetTimeStamp().Replaced(':', '_').Replaced('.', '_').Replaced(' ', '_')+".png";
+        Log::Write(1, fileName);
+        screenshot.SavePNG(fileName);
+    }
 }
 void MasterControl::HandleUpdate(StringHash eventType, VariantMap &eventData)
 {
