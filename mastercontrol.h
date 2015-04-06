@@ -22,19 +22,13 @@
 
 #pragma once
 
-#include "common.h"
 #include <Urho3D/Urho3D.h>
 #include <Urho3D/Engine/Application.h>
-#include <Urho3D/Math/Plane.h>
-#include <Urho3D/Physics/RigidBody.h>
 #include <Urho3D/Graphics/Viewport.h>
 #include <Urho3D/Graphics/Renderer.h>
 #include <Urho3D/UI/UI.h>
-#include <Urho3D/UI/Text.h>
-#include <Urho3D/Audio/Sound.h>
-#include <Urho3D/Audio/SoundSource.h>
 #include <Urho3D/Input/Input.h>
-
+#include <Urho3D/Physics/RigidBody.h>
 
 namespace Urho3D {
 class Drawable;
@@ -47,21 +41,28 @@ using namespace Urho3D;
 
 typedef struct GameWorld
 {
-    Node* cursor_;
+
     struct
     {
         SharedPtr<Node> translationNode_;
         SharedPtr<Node> rotationNode_;
         SharedPtr<Camera> camera_;
-        SharedPtr<Light>  camLight_;
+        SharedPtr<RigidBody> rigidBody_;
         float yaw_ = 0.0f;
         float pitch_ = 0.0f;
+        //float roll_ = 0.0f;
+        float yawDelta_ = 0.0f;
+        float pitchDelta_ = 0.0f;
         SharedPtr<Viewport> viewport_;
         SharedPtr<RenderPath> effectRenderPath;
     } camera;
-
-    /// Scene.
     SharedPtr<Scene> scene_;
+    SharedPtr<Node> backgroundNode_;
+    SharedPtr<Node> mouseHitPlaneNode_;
+    struct {
+        SharedPtr<Node> sceneCursor_;
+        SharedPtr<Cursor> uiCursor_;
+    } cursor;
 } GameWorld;
 
 typedef struct HitInfo
@@ -90,14 +91,14 @@ public:
 
     GameWorld world;
 protected:
-    /*SharedPtr<ResourceCache> cache_;
+    SharedPtr<ResourceCache> cache_;
     SharedPtr<Input> input_;
     SharedPtr<UI> ui_;
     SharedPtr<Graphics> graphics_;
     SharedPtr<Renderer> renderer_;
 
-    XMLFile* defaultStyle_;
-*/
+    SharedPtr<XMLFile> defaultStyle_;
+
 private:
     /// Set custom window title and icon
     void SetWindowTitleAndIcon();
@@ -127,13 +128,10 @@ private:
     void HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData);
 
     /// Create a mushroom object at position.
-    Node* CreateBlock(const Vector3& pos);
-    void UpdateCursor();
+    void CreatePlatform(const Vector3& pos);
+    void UpdateCursor(float timeStep);
     /// Utility function to raycast to the cursor position. Return true if hit.
     bool RayCast(float maxDistance, HitInfo& hitResult);
-
-    ///Imp scene node.
-    SharedPtr<Node> impNode_;
 
     /// Pause flag
     bool paused_;

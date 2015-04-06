@@ -20,49 +20,36 @@
 // THE SOFTWARE.
 //
 
-/*#include <stdio.h>
-
 #include <Urho3D/Urho3D.h>
-
 #include <Urho3D/Engine/Engine.h>
-#include <Urho3D/Engine/Application.h>
-#include <Urho3D/IO/FileSystem.h>
-#include <Urho3D/Graphics/Camera.h>
 #include <Urho3D/Engine/Console.h>
-#include <Urho3D/Core/CoreEvents.h>
-#include <Urho3D/UI/Cursor.h>
-#include <Urho3D/UI/Sprite.h>
-#include <Urho3D/UI/Font.h>
-#include <Urho3D/UI/Text.h>
 #include <Urho3D/Engine/DebugHud.h>
-
-#include <Urho3D/Input/Input.h>
-#include <Urho3D/Input/InputEvents.h>
-
 #include <Urho3D/Graphics/Graphics.h>
-#include <Urho3D/Graphics/AnimatedModel.h>
-#include <Urho3D/Graphics/Light.h>
-#include <Urho3D/Graphics/Material.h>
-#include <Urho3D/Graphics/Model.h>
-#include <Urho3D/Graphics/Octree.h>
-#include <Urho3D/Graphics/Renderer.h>
-#include <Urho3D/Graphics/RenderPath.h>
-#include <Urho3D/Graphics/DebugRenderer.h>
-#include <Urho3D/Graphics/StaticModel.h>
-#include <Urho3D/Graphics/Texture2D.h>
-#include <Urho3D/Graphics/Zone.h>
-#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/UI/Text.h>
+#include <Urho3D/UI/Font.h>
 #include <Urho3D/Scene/Scene.h>
-#include <Urho3D/Scene/SceneEvents.h>
-
-
-#include <Urho3D/Core/Timer.h>
-#include <Urho3D/UI/UI.h>
+#include <Urho3D/Physics/PhysicsWorld.h>
+#include <Urho3D/Physics/CollisionShape.h>
+#include <Urho3D/Graphics/Model.h>
+#include <Urho3D/Graphics/StaticModel.h>
+#include <Urho3D/Graphics/Light.h>
+#include <Urho3D/Graphics/Camera.h>
+#include <Urho3D/Graphics/Material.h>
+#include <Urho3D/Graphics/RenderPath.h>
+#include <Urho3D/IO/FileSystem.h>
+#include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Resource/XMLFile.h>
+#include <Urho3D/Resource/Resource.h>
 
-#include <Urho3D/DebugNew.h>*/
-#include "common.h"
+#include <Urho3D/IO/Log.h>
+#include <Urho3D/Scene/SceneEvents.h>
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Graphics/Octree.h>
+#include <Urho3D/Graphics/OctreeQuery.h>
+
+#include "mastercontrol.h"
 #include "imp.h"
+#include "platform.h"
 
 DEFINE_APPLICATION_MAIN(MasterControl);
 
@@ -86,12 +73,12 @@ void MasterControl::Setup()
 }
 void MasterControl::Start()
 {
-    /*cache_ = GetSubsystem<ResourceCache>();
+    cache_ = GetSubsystem<ResourceCache>();
     input_ = GetSubsystem<Input>();
     graphics_ = GetSubsystem<Graphics>();
     renderer_ = GetSubsystem<Renderer>();
     // Get default style
-    defaultStyle_ = cache_->GetResource<XMLFile>("UI/DefaultStyle.xml");*/
+    defaultStyle_ = cache_->GetResource<XMLFile>("UI/DefaultStyle.xml");
     SetWindowTitleAndIcon();
     //Create console and debug HUD.
     CreateConsoleAndDebugHud();
@@ -111,34 +98,26 @@ void MasterControl::Stop()
 
 void MasterControl::SetWindowTitleAndIcon()
 {
-    //Get default style
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
-    XMLFile* xmlfile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
-
     //Create console
     Console* console = engine_->CreateConsole();
-    console->SetDefaultStyle(xmlfile);
+    console->SetDefaultStyle(defaultStyle_);
     console->GetBackground()->SetOpacity(0.0f);
 
     //Create debug HUD
     DebugHud* debugHud = engine_->CreateDebugHud();
-    debugHud->SetDefaultStyle(xmlfile);
+    debugHud->SetDefaultStyle(defaultStyle_);
 }
 
 void MasterControl::CreateConsoleAndDebugHud()
 {
-    // Get default style
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
-    XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
-
     // Create console
     Console* console = engine_->CreateConsole();
-    console->SetDefaultStyle(xmlFile);
+    console->SetDefaultStyle(defaultStyle_);
     console->GetBackground()->SetOpacity(0.8f);
 
     // Create debug HUD.
     DebugHud* debugHud = engine_->CreateDebugHud();
-    debugHud->SetDefaultStyle(xmlFile);
+    debugHud->SetDefaultStyle(defaultStyle_);
 }
 
 void MasterControl::CreateUI()
@@ -147,15 +126,14 @@ void MasterControl::CreateUI()
     UI* ui = GetSubsystem<UI>();
 
     //Create a Cursor UI element because we want to be able to hide and show it at will. When hidden, the mouse cursor will control the camera, and when visible it will point the raycast target
-    XMLFile* style = cache->GetResource<XMLFile>("UI/Defaultstyle.xml");
-    SharedPtr<Cursor> cursor(new Cursor(context_));
-    cursor->SetVisible(false);
-    //->SetStyleAuto(style);
-    //ui->SetCursor(cursor);
+
+    world.cursor.uiCursor_ = new Cursor(context_);
+    world.cursor.uiCursor_->SetVisible(false);
+    ui->SetCursor(world.cursor.uiCursor_);
 
     //Set starting position of the cursor at the rendering window center
-    Graphics* graphics = GetSubsystem<Graphics>();
-    cursor->SetPosition(graphics->GetWidth()/2, graphics->GetHeight()/2);
+    //Graphics* graphics = GetSubsystem<Graphics>();
+    world.cursor.uiCursor_->SetPosition(graphics_->GetWidth()/2, graphics_->GetHeight()/2);
 
     //Construct new Text object, set string to display and font to use
     Text* instructionText = ui->GetRoot()->CreateChild<Text>();
@@ -171,43 +149,46 @@ void MasterControl::CreateUI()
 
 void MasterControl::CreateScene()
 {
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
-
+//    ResourceCache* cache_ = GetSubsystem<ResourceCache>();
 
     world.scene_ = new Scene(context_);
 
     //Create octree, use default volume (-1000, -1000, -1000) to (1000,1000,1000)
     //Also create a DebugRenderer component so that we can draw debug geometry
     world.scene_->CreateComponent<Octree>();
-    world.scene_->CreateComponent<DebugRenderer>();
+    PhysicsWorld* physicsWorld = world.scene_->CreateComponent<PhysicsWorld>();
+    physicsWorld->SetGravity(Vector3::ZERO);
+    //world.scene_->CreateComponent<DebugRenderer>();
 
-    world.cursor_ = world.scene_->CreateChild("Cursor");
-    world.cursor_->SetScale(Vector3(1.0f,0.1f,1.0f));
-    world.cursor_->SetPosition(Vector3(0.0f,0.0f,0.0f));
-    StaticModel* cursorObject = world.cursor_->CreateComponent<StaticModel>();
-    cursorObject->SetModel(cache->GetResource<Model>("Resources/Models/Cube.mdl"));
-    cursorObject->SetMaterial(cache->GetResource<Material>("Materials/GreenTransparent.xml"));
+    //Create cursor
+    world.cursor.sceneCursor_ = world.scene_->CreateChild("Cursor");
+    world.cursor.sceneCursor_->SetPosition(Vector3(0.0f,0.0f,0.0f));
+    StaticModel* cursorObject = world.cursor.sceneCursor_->CreateComponent<StaticModel>();
+    cursorObject->SetModel(cache_->GetResource<Model>("Resources/Models/Cursor.mdl"));
+    cursorObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/glow.xml"));
+
     //Create scene node & StaticModel component for showing a static plane
-    Node* planeNode = world.scene_->CreateChild("HitPlane");
-    planeNode->SetScale(Vector3(100.0f, 1.0f, 100.0f));
-    StaticModel* planeObject = planeNode->CreateComponent<StaticModel>();
-    planeObject->SetModel(cache->GetResource<Model>("Models/Plane.mdl"));
-    planeObject->SetMaterial(cache->GetResource<Material>("Resources/Materials/invisible.xml"));
+    world.mouseHitPlaneNode_ = world.scene_->CreateChild("HitPlane");
+    world.mouseHitPlaneNode_->SetScale(Vector3(100.0f, 1.0f, 100.0f));
+    StaticModel* planeObject = world.mouseHitPlaneNode_->CreateComponent<StaticModel>();
+    planeObject->SetModel(cache_->GetResource<Model>("Models/Plane.mdl"));
+    planeObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/invisible.xml"));
 
-    Node* backgroundNode = world.scene_->CreateChild("Plane");
-    backgroundNode->SetScale(Vector3(200.0f, 1.0f, 200.0f));
-    backgroundNode->SetPosition(0.0f, -50.0f, 0.0f);
-    StaticModel* backgroundObject = backgroundNode->CreateComponent<StaticModel>();
-    backgroundObject->SetModel(cache->GetResource<Model>("Models/Plane.mdl"));
-    backgroundObject->SetMaterial(cache->GetResource<Material>("Resources/Materials/dreamsky.xml"));
+    //Create background
+    world.backgroundNode_ = world.scene_->CreateChild("BackPlane");
+    world.backgroundNode_->SetScale(Vector3(200.0f, 1.0f, 200.0f));
+    world.backgroundNode_->SetPosition(0.0f, -50.0f, 0.0f);
+    StaticModel* backgroundObject = world.backgroundNode_->CreateComponent<StaticModel>();
+    backgroundObject->SetModel(cache_->GetResource<Model>("Models/Plane.mdl"));
+    backgroundObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/dreamsky.xml"));
     //Create a Zone component for ambient lighting & fog control
     /*Node* zoneNode = world.scene_->CreateChild("Zone");
     Zone* zone = zoneNode->CreateComponent<Zone>();
-    zone->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
+    zone->SetBoundingBox(BoundingBox(Vector3(-1000.0f, -10.0f, -1000.0f),Vector3(1000.0f, 20.0f, 1000.0f)));
     zone->SetAmbientColor(Color(0.15f, 0.15f, 0.15f));
     zone->SetFogColor(Color(0.2f, 0.1f, 0.3f));
-    zone->SetFogStart(1.0f);
-    zone->SetFogEnd(500.0f);*/
+    zone->SetFogStart(100.0f);
+    zone->SetFogEnd(110.0f);*/
 
     //Create a directional light to the world. Enable cascaded shadows on it
     Node* lightNode = world.scene_->CreateChild("DirectionalLight");
@@ -223,9 +204,9 @@ void MasterControl::CreateScene()
     light->SetShadowCascade(CascadeParameters(10.0f, 50.0f, 200.0f, 0.0f, 0.8f));
 
     //Create some mushrooms
-    const unsigned NUM_BLOCKS = 100;
+    const unsigned NUM_BLOCKS = 1;
     for (unsigned i = 0; i < NUM_BLOCKS ; ++i)
-        CreateBlock(Vector3(Random(90.0f) - 45.0f, 0.0f, Random(90.0f) - 45.0f));
+        CreatePlatform(Vector3(Random(22.0f) - 11.0f, 0.0f, Random(22.0f) - 11.0f));
 
     //Create randomly sized boxes. If boxes are big enough make them occluders
     /*const unsigned NUM_BOXES = 20;
@@ -242,35 +223,21 @@ void MasterControl::CreateScene()
         if (size >= 3.0f)
             boxObject->SetOccluder(true);
     }*/
-
-    //Create Jack node that will follow the path
-    /*impNode_ = world.scene_->CreateChild("Imp");
-    impNode_->SetPosition(Vector3(-5.0f, 0.0f, 20.0f));
-    impNode_->SetScale(0.1f);
-    StaticModel* modelObject = impNode_->CreateComponent<StaticModel>();
-    modelObject->SetModel(cache->GetResource<Model>("Resources/Models/imp.mdl"));
-
-    modelObject->SetMaterial(cache->GetResource<Material>("Resources/Materials/impclothed_lowpol.xml"));
-    modelObject->SetCastShadows(true);*/
-    for (int i = 0; i < 23; i++) Imp* imp = new Imp(context_, this);
+    //Spawn Imps
+    for (int i = 0; i < 10; i++) new Imp(context_, this);
 
     //Create the camera. Limit far clip distance to match the fog
     world.camera.translationNode_ = world.scene_->CreateChild("CamTrans");
     world.camera.rotationNode_ = world.camera.translationNode_->CreateChild("CamRot");
     world.camera.camera_ = world.camera.rotationNode_->CreateComponent<Camera>();
     world.camera.camera_->SetFarClip(1024.0f);
-
     //Set an initial position for the camera scene node above the plane
-    world.camera.translationNode_->SetPosition(Vector3(0.0f, 5.0f, 0.0f));
-
-    Node* camLightNode = world.camera.rotationNode_->CreateChild("Spot Light");
-    camLightNode->SetDirection(world.camera.rotationNode_->GetDirection());
-    world.camera.camLight_= camLightNode->CreateComponent<Light>();
-    world.camera.camLight_->SetLightType(LIGHT_SPOT);
-    world.camera.camLight_->SetFov(0.3f);
-    world.camera.camLight_->SetBrightness(1.5f);
-    world.camera.camLight_->SetRange(512.0f);
-    world.camera.camLight_->SetColor(Color(0.8f,1.0f,0.75f));
+    world.camera.translationNode_->SetPosition(Vector3(0.0f, 3.0f, 0.0f));
+    world.camera.rigidBody_ = world.camera.translationNode_->CreateComponent<RigidBody>();
+    world.camera.rigidBody_->SetAngularDamping(10.0f);
+    CollisionShape* collisionShape = world.camera.translationNode_->CreateComponent<CollisionShape>();
+    collisionShape->SetSphere(0.1f);
+    world.camera.rigidBody_->SetMass(1.0f);
 }
 
 void MasterControl::SetupViewport()
@@ -282,10 +249,10 @@ void MasterControl::SetupViewport()
     SharedPtr<Viewport> viewport(new Viewport(context_, world.scene_, world.camera.camera_));
     world.camera.viewport_ = viewport;
 
+    //Add anti-asliasing
     world.camera.effectRenderPath = world.camera.viewport_->GetRenderPath()->Clone();
     world.camera.effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA2.xml"));
-    // Make the bloom mixing parameter more pronounced
-        world.camera.effectRenderPath->SetEnabled("FXAA2", true);
+    world.camera.effectRenderPath->SetEnabled("FXAA2", true);
 
     world.camera.viewport_->SetRenderPath(world.camera.effectRenderPath);
     renderer->SetViewport(0, viewport);
@@ -293,7 +260,7 @@ void MasterControl::SetupViewport()
 void MasterControl::MoveCamera(float timeStep)
 {
     //Movement speed as world units per second
-    const float MOVE_SPEED = 20.0f;
+    const float MOVE_SPEED = 2000.0f;
     //Mouse sensitivity as degrees per pixel
     const float MOUSE_SENSITIVITY = 0.1f;
 
@@ -302,27 +269,28 @@ void MasterControl::MoveCamera(float timeStep)
     {*/
     Input* input = GetSubsystem<Input>();
     IntVector2 mouseMove = input->GetMouseMove();
-        world.camera.yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
-        world.camera.pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
+        world.camera.yawDelta_ = 0.5f*(world.camera.yawDelta_ + MOUSE_SENSITIVITY * mouseMove.x_);
+        world.camera.pitchDelta_ = 0.5f*(world.camera.pitchDelta_ + MOUSE_SENSITIVITY * mouseMove.y_);
+        world.camera.yaw_ += world.camera.yawDelta_;
+        world.camera.pitch_ += world.camera.pitchDelta_;
         world.camera.pitch_ = Clamp(world.camera.pitch_, -90.0f, 90.0f);
 
         //Construct new orientation for the camera scene node from yaw and pitch. Roll is fixed to zero
         world.camera.rotationNode_->SetRotation(Quaternion(world.camera.pitch_, world.camera.yaw_, 0.0f));
+
     /*}*/
 
     //Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
-    if (input->GetKeyDown('W'))
-        world.camera.translationNode_->Translate(Vector3::Scale(world.camera.rotationNode_->GetDirection(),Vector3(1.0f,0.0f,1.0f)).Normalized() * MOVE_SPEED * timeStep);
-    if (input->GetKeyDown('S'))
-        world.camera.translationNode_->Translate(Vector3::Scale(world.camera.rotationNode_->GetDirection(),Vector3(1.0f,0.0f,1.0f)).Normalized() * MOVE_SPEED * -timeStep);
-    if (input->GetKeyDown('A'))
-        world.camera.translationNode_->Translate(Vector3::Scale(world.camera.rotationNode_->GetRight(),Vector3(1.0f,0.0f,1.0f)).Normalized()  * MOVE_SPEED * -timeStep);
-    if (input->GetKeyDown('D'))
-        world.camera.translationNode_->Translate(Vector3::Scale(world.camera.rotationNode_->GetRight(),Vector3(1.0f,0.0f,1.0f)).Normalized() * MOVE_SPEED * timeStep);
-    if (input->GetKeyDown('Q'))
-        world.camera.translationNode_->Translate(Vector3::UP * MOVE_SPEED * timeStep);
-    if (input->GetKeyDown('E'))
-        world.camera.translationNode_->Translate(Vector3::DOWN * MOVE_SPEED * timeStep);
+    Vector3 camForce = Vector3::ZERO;
+    if (input->GetKeyDown('W')) camForce += Vector3::Scale(world.camera.rotationNode_->GetDirection(),Vector3(1.0f,0.0f,1.0f)).Normalized();
+    if (input->GetKeyDown('S')) camForce += Vector3::Scale(world.camera.rotationNode_->GetDirection(),Vector3(-1.0f,0.0f,-1.0f)).Normalized();
+    if (input->GetKeyDown('D')) camForce += Vector3::Scale(world.camera.rotationNode_->GetRight(),Vector3(1.0f,0.0f,1.0f)).Normalized();
+    if (input->GetKeyDown('A')) camForce += Vector3::Scale(world.camera.rotationNode_->GetRight(),Vector3(-1.0f,0.0f,-1.0f)).Normalized();
+    if (input->GetKeyDown('E')) camForce += Vector3::UP;
+    if (input->GetKeyDown('Q')) camForce += Vector3::DOWN;
+    camForce = camForce.Normalized() * MOVE_SPEED * timeStep;
+
+    world.camera.rigidBody_->ApplyForce(camForce - (2.0f*world.camera.rigidBody_->GetLinearVelocity()));
 }
 
 void MasterControl::HandleKeyDown(StringHash eventType, VariantMap &eventData)
@@ -427,8 +395,8 @@ void MasterControl::HandleSceneUpdate(StringHash eventType, VariantMap &eventDat
     float timeStep = eventData[P_TIMESTEP].GetFloat();
     //Move the camera, scale movement with time step
 
-    world.camera.camLight_->SetFov((2.0f + sinf(10.0f*world.scene_->GetElapsedTime()))/10.0f);
-    UpdateCursor();
+    //world.camera.camLight_->SetFov((2.0f + sinf(10.0f*world.scene_->GetElapsedTime()))/10.0f);
+    UpdateCursor(timeStep);
     MoveCamera(timeStep);
 }
 /*void Urho3DTemplate::HandlePostRenderUpdate(StringHash eventType, VariantMap &eventData)
@@ -459,15 +427,15 @@ void MasterControl::HandleMouseDown(StringHash eventType, VariantMap &eventData)
     using namespace MouseButtonDown;
     int key = eventData[P_BUTTON].GetInt();
     if (key == MOUSEB_LEFT){
-        CreateBlock(world.cursor_->GetPosition());
+        CreatePlatform(world.cursor.sceneCursor_->GetPosition());
     }
 }
 
-Node* MasterControl::CreateBlock(const Vector3 &pos)
+void MasterControl::CreatePlatform(const Vector3 &pos)
 {
-    Vector3 flooredPos = Vector3(round(pos.x_), 0.0f, round(pos.z_));
+    IntVector2 flooredPos = IntVector2(round(pos.x_), round(pos.z_));
 
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    /*ResourceCache* cache = GetSubsystem<ResourceCache>();
 
     Node* blockNode = world.scene_->CreateChild("Block");
     blockNode->SetPosition(flooredPos);
@@ -478,19 +446,17 @@ Node* MasterControl::CreateBlock(const Vector3 &pos)
     blockObject->SetMaterial(cache->GetResource<Material>("Materials/StoneTiled.xml"));
     blockObject->SetCastShadows(true);
 
-    return blockNode;
+    return blockNode;*/
+    //new Tile(context_, flooredPos, this);
+    new Platform(context_, pos, this);
 }
-void MasterControl::UpdateCursor()
+void MasterControl::UpdateCursor(float timeStep)
 {
-    float elapsedTime = world.scene_->GetElapsedTime();
-    world.cursor_->SetScale(Vector3(1.0f+(0.1f*sinf(2.0f*elapsedTime)),1.0f+(0.1f*sinf(10.0f*elapsedTime)),1.0f+(0.1f*sinf(6.0f*elapsedTime))));
-
+    world.cursor.sceneCursor_->Rotate(Quaternion(0.0f,timeStep,0.0f));
     HitInfo hitResult;
     if (RayCast(250.0f, hitResult))
     {
-        Vector3 flooredPos = Vector3(round(hitResult.position_.x_), 0.0f, round(hitResult.position_.z_));
-        world.cursor_->SetPosition(flooredPos);
-
+        world.cursor.sceneCursor_->SetPosition(Vector3(hitResult.position_.x_, 0.0f, hitResult.position_.z_));
     }
 
 }

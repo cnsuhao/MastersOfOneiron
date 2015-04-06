@@ -26,18 +26,26 @@ CONFIG -= qt
 
 SOURCES += \
     mastercontrol.cpp \
+    imp.cpp \
+    tile.cpp \
+    slot.cpp \
+    #common.cpp \
+    platform.cpp
+
 #/home/frode/Sync/Source/Urho3D/Source/Samples/29_SoundSynthesis/SoundSynthesis.cpp
     #poolobject.cpp \
     #objectpool.cpp \
     #poolmaster.cpp \
-    #common.cpp
-    imp.cpp
 
 HEADERS += \
     mastercontrol.h \
-    imp.h
+    imp.h \
+    tile.h \
+    slot.h \
+    #common.h \
+    platform.h
+
 #/home/frode/Sync/Source/Urho3D/Source/Samples/29_SoundSynthesis/SoundSynthesis.h
     #poolobject.h \
     #objectpool.h \
     #poolmaster.h \
-    #common.h

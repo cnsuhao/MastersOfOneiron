@@ -1,6 +1,7 @@
 #pragma once
 
-#include "common.h"
+//#include "common.h"
+#include "mastercontrol.h"
 #include <Urho3D/Urho3D.h>
 #include <Urho3D/Engine/Application.h>
 #include <Urho3D/Math/Plane.h>
@@ -36,4 +37,5 @@ private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     MasterControl* masterControl_;
     Node* rootNode_;
+    float randomizer_;
 };

@@ -1,8 +1,12 @@
 #pragma once
 
-//My Headers
+//Masters of Oneiron headers
 
 #include "mastercontrol.h"
+#include "platform.h"
+#include "imp.h"
+#include "tile.h"
+#include "slot.h"
 
 //#define URHO3D_API
 
