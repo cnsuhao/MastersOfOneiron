@@ -1,6 +1,5 @@
 #pragma once
 
-//#include "common.h"
 #include "mastercontrol.h"
 #include <Urho3D/Urho3D.h>
 #include <Urho3D/Engine/Application.h>
@@ -8,6 +7,8 @@
 #include <Urho3D/Physics/RigidBody.h>
 #include <Urho3D/Graphics/Viewport.h>
 #include <Urho3D/Graphics/Renderer.h>
+#include <Urho3D/Graphics/Animation.h>
+#include <Urho3D/Graphics/AnimationState.h>
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/UI/Text.h>
 #include <Urho3D/Audio/Sound.h>
@@ -32,10 +33,12 @@ public:
 
     virtual void Start();
     virtual void Stop();
-
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     MasterControl* masterControl_;
     Node* rootNode_;
+    Node* spinNode_;
+    AnimatedModel* impModel_;
     float randomizer_;
+    Animation* smokeAnim_;
 };

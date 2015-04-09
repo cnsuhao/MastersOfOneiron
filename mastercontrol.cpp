@@ -233,6 +233,7 @@ void MasterControl::CreateScene()
     world.camera.camera_->SetFarClip(1024.0f);
     //Set an initial position for the camera scene node above the plane
     world.camera.translationNode_->SetPosition(Vector3(0.0f, 3.0f, 0.0f));
+    world.camera.rotationNode_->SetRotation(Quaternion(0.0f, 90.0f, 0.0f));
     world.camera.rigidBody_ = world.camera.translationNode_->CreateComponent<RigidBody>();
     world.camera.rigidBody_->SetAngularDamping(10.0f);
     CollisionShape* collisionShape = world.camera.translationNode_->CreateComponent<CollisionShape>();

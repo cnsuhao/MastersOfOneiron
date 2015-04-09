@@ -14,24 +14,27 @@ class Sprite;
 
 using namespace Urho3D;
 
+class Platform;
+
 class Tile : public Object
 {
+    friend class Platform;
     OBJECT(Tile);
 public:
-    Tile(Context *context, const Pair<int, int> coords, Platform *platform);
+    Tile(Context *context, const IntVector2 coords, Platform *platform);
 
     virtual void Start();
     virtual void Stop();
-    enum TileElement {CENTER, NORTH, EAST, SOUTH, WEST, NORTHEAST, SOUTHEAST, SOUTHWEST, NORTHWEST, TILEELEMENT_LENGTH};
 
-    Pair<int,int> coords_;
+
+    IntVector2 coords_;
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     MasterControl* masterControl_;
     Platform* platform_;
     Node* rootNode_;
     CollisionShape* collisionShape_;
-    Node* elements_[TILEELEMENT_LENGTH];
+    Node* elements_[TE_LENGTH];
     //A node pointer for each element:
     // 516 ^
     // 402 N

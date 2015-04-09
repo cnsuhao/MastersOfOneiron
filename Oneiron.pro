@@ -17,7 +17,7 @@ QMAKE_CXXFLAGS += -std=c++11
 INCLUDEPATH += \
     /home/frode/Sync/Source/Urho3D/include \
     /home/frode/Sync/Source/Urho3D/include/Urho3D/ThirdParty \
-/home/frode/Sync/Source/Urho3D/Source/Samples
+    /home/frode/Sync/Source/Urho3D/Source/Samples
 
 TEMPLATE = app
 CONFIG += console
@@ -29,9 +29,7 @@ SOURCES += \
     imp.cpp \
     tile.cpp \
     slot.cpp \
-    #common.cpp \
     platform.cpp
-
 #/home/frode/Sync/Source/Urho3D/Source/Samples/29_SoundSynthesis/SoundSynthesis.cpp
     #poolobject.cpp \
     #objectpool.cpp \
@@ -42,8 +40,7 @@ HEADERS += \
     imp.h \
     tile.h \
     slot.h \
-    #common.h \
-    platform.h
+    platform.h \
 
 #/home/frode/Sync/Source/Urho3D/Source/Samples/29_SoundSynthesis/SoundSynthesis.h
     #poolobject.h \

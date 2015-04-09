@@ -6,14 +6,15 @@
 #include "slot.h"
 
 
-Slot::Slot(Context *context, Platform* platform, Pair<int, int> coords):
+Slot::Slot(Context *context, Platform* platform, IntVector2 coords):
 Object(context)
 {
     platform_ = platform;
+    coords_ = coords;
     ResourceCache* cache = GetSubsystem<ResourceCache>();
     SubscribeToEvent(E_UPDATE, HANDLER(Slot, HandleUpdate));
     rootNode_ = platform_->rootNode_->CreateChild("Slot");
-    rootNode_->SetPosition(Vector3(coords.first_, 0.0f, coords.second_));
+    rootNode_->SetPosition(Vector3(coords.x_, 0.0f, -coords.y_));
     StaticModel* model_ = rootNode_->CreateComponent<StaticModel>();
     model_->SetModel(cache->GetResource<Model>("Resources/Models/Slot.mdl"));
     model_->SetMaterial(cache->GetResource<Material>("Resources/Materials/glow.xml"));

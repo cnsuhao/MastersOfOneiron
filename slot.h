@@ -18,7 +18,8 @@ class Slot : public Object
 {
     OBJECT(Slot);
 public:
-    Slot(Context *context, Platform* platform, Pair<int, int> coords);
+    IntVector2 coords_;
+    Slot(Context *context, Platform* platform, IntVector2 coords);
 
     virtual void Start();
     virtual void Stop();
