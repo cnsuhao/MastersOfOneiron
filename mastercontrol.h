@@ -23,11 +23,11 @@
 #pragma once
 
 #include <Urho3D/Urho3D.h>
+#include <Urho3D/Container/HashMap.h>
 #include <Urho3D/Engine/Application.h>
 #include <Urho3D/Graphics/Viewport.h>
 #include <Urho3D/Graphics/Renderer.h>
 #include <Urho3D/UI/UI.h>
-#include <Urho3D/Input/Input.h>
 #include <Urho3D/Physics/RigidBody.h>
 
 namespace Urho3D {
@@ -39,29 +39,20 @@ class Sprite;
 
 using namespace Urho3D;
 
+class OneiroCam;
+class InputMaster;
+class Platform;
+
 typedef struct GameWorld
 {
-
-    struct
-    {
-        SharedPtr<Node> translationNode_;
-        SharedPtr<Node> rotationNode_;
-        SharedPtr<Camera> camera_;
-        SharedPtr<RigidBody> rigidBody_;
-        float yaw_ = 0.0f;
-        float pitch_ = 0.0f;
-        //float roll_ = 0.0f;
-        float yawDelta_ = 0.0f;
-        float pitchDelta_ = 0.0f;
-        SharedPtr<Viewport> viewport_;
-        SharedPtr<RenderPath> effectRenderPath;
-    } camera;
-    SharedPtr<Scene> scene_;
-    SharedPtr<Node> backgroundNode_;
-    SharedPtr<Node> mouseHitPlaneNode_;
+    SharedPtr<OneiroCam> camera;
+    SharedPtr<Scene> scene;
+    SharedPtr<Node> backgroundNode;
+    SharedPtr<Node> voidNode;
     struct {
-        SharedPtr<Node> sceneCursor_;
-        SharedPtr<Cursor> uiCursor_;
+        SharedPtr<Node> sceneCursor;
+        SharedPtr<Cursor> uiCursor;
+        PODVector<RayQueryResult> hitResults;
     } cursor;
 } GameWorld;
 
@@ -73,14 +64,23 @@ typedef struct HitInfo
     Drawable* drawable_;
 } HitInfo;
 
+namespace {
+StringHash const N_VOID = StringHash("Void");
+StringHash const N_CURSOR = StringHash("Cursor");
+StringHash const N_TILEPART = StringHash("TilePart");
+StringHash const N_SLOT = StringHash("Slot");
+}
+
 class MasterControl : public Application
 {
     /// Enable type information.
     OBJECT(MasterControl);
-
+    friend class InputMaster;
 public:
     /// Constructor.
     MasterControl(Context* context);
+    GameWorld world;
+    HashMap<unsigned, SharedPtr<Platform> > platformMap_;
 
     /// Setup before engine initialization. Modifies the engine paramaters.
     virtual void Setup();
@@ -88,18 +88,14 @@ public:
     virtual void Start();
     /// Cleanup after the main loop. Called by Application.
     virtual void Stop();
-
-    GameWorld world;
-protected:
+    void Exit();
+private:
     SharedPtr<ResourceCache> cache_;
-    SharedPtr<Input> input_;
     SharedPtr<UI> ui_;
     SharedPtr<Graphics> graphics_;
     SharedPtr<Renderer> renderer_;
-
     SharedPtr<XMLFile> defaultStyle_;
 
-private:
     /// Set custom window title and icon
     void SetWindowTitleAndIcon();
     /// Create console and debug HUD
@@ -109,17 +105,9 @@ private:
     void CreateScene();
     /// Construct user interface elements.
     void CreateUI();
-    /// Set up a viewport for displaying the scene.
-    void SetupViewport();
     /// Subscribe to application-wide logic update and post-render update events.
     void SubscribeToEvents();
-    /// Read input and moves the camera.
-    void MoveCamera(float timeStep);
 
-    /// Handle key down event to provess key controls.
-    void HandleKeyDown(StringHash eventType, VariantMap& eventData);
-    /// Add or remove object.
-    void HandleMouseDown(StringHash eventType, VariantMap &eventData);
     /// Handle scene update event to control camera's pitch and yaw.
     void HandleSceneUpdate(StringHash eventType, VariantMap& eventData);
     /// Handle the logic update event.
@@ -129,14 +117,12 @@ private:
 
     /// Create a mushroom object at position.
     void CreatePlatform(const Vector3& pos);
-    void UpdateCursor(float timeStep);
+    void UpdateCursor(double timeStep);
     /// Utility function to raycast to the cursor position. Return true if hit.
-    bool RayCast(float maxDistance, HitInfo& hitResult);
+    bool CursorRayCast(double maxDistance, PODVector<RayQueryResult> &hitResults);
 
     /// Pause flag
     bool paused_;
-
-
 };
 
 

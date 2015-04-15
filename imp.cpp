@@ -14,7 +14,7 @@ Object(context)
     randomizer_ = Random(0.9f,0.75f);
     ResourceCache* cache = GetSubsystem<ResourceCache>();
 
-    rootNode_ = masterControl_->world.scene_->CreateChild("Imp");
+    rootNode_ = masterControl_->world.scene->CreateChild("Imp");
     rootNode_->SetPosition(Vector3(Random(-10.0f,10.0f), 0.5f, Random(-10.0f,10.0f)));
     rootNode_->Rotate(Quaternion(0.0f,Random(360.0f),0.0f));
     rootNode_->SetScale(Random(0.1f,0.15f));
@@ -47,7 +47,7 @@ void Imp::Stop()
 void Imp::HandleUpdate(StringHash eventType, VariantMap &eventData)
 {
     using namespace Update;
-    float timeStep = eventData[P_TIMESTEP].GetFloat();
+    double timeStep = eventData[P_TIMESTEP].GetFloat();
     timeStep *= 5;
     rootNode_->Rotate(Quaternion(0.0f,timeStep*randomizer_,0.0f));
     rootNode_->Translate(0.0f,0.0f,-randomizer_*timeStep*0.1f);

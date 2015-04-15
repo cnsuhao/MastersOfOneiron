@@ -28,6 +28,7 @@ public:
 
 
     IntVector2 coords_;
+    BuildingType buildingType_ = B_NONE;
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     MasterControl* masterControl_;
@@ -39,4 +40,6 @@ private:
     // 516 ^
     // 402 N
     // 837 |
+    void SetBuilding(BuildingType type);
+    BuildingType GetBuilding();
 };

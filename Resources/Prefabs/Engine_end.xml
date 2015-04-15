@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<node id="4">
+	<attribute name="Is Enabled" value="true" />
+	<attribute name="Name" value="" />
+	<attribute name="Position" value="11.9288 12.0402 16.2311" />
+	<attribute name="Rotation" value="1 0 0 0" />
+	<attribute name="Scale" value="1 1 1" />
+	<attribute name="Variables" />
+	<component type="StaticModel" id="5">
+		<attribute name="Model" value="Model;build-Oneiron-Desktop-Debug/Resources/Models/Engine_end.mdl" />
+		<attribute name="Material" value="Material;build-Oneiron-Desktop-Debug/Resources/Materials/block_center.xml;build-Oneiron-Desktop-Debug/Resources/Materials/solid.xml" />
+	</component>
+	<node id="5">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="" />
+		<attribute name="Position" value="0.750478 -0.174172 0.248652" />
+		<attribute name="Rotation" value="0.5 0.866025 -1.59995e-08 -1.59995e-08" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="6">
+			<attribute name="Model" value="Model;build-Oneiron-Desktop-Debug/Resources/Models/Engine_flap.mdl" />
+			<attribute name="Material" value="Material;build-Oneiron-Desktop-Debug/Resources/Materials/solid.xml" />
+		</component>
+	</node>
+	<node id="6">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="" />
+		<attribute name="Position" value="0.750478 0.286157 0" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="7">
+			<attribute name="Model" value="Model;build-Oneiron-Desktop-Debug/Resources/Models/Engine_flap.mdl" />
+			<attribute name="Material" value="Material;build-Oneiron-Desktop-Debug/Resources/Materials/solid.xml" />
+		</component>
+	</node>
+	<node id="7">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="" />
+		<attribute name="Position" value="0.750478 -0.147687 -0.249208" />
+		<attribute name="Rotation" value="0.5 -0.866025 1.59995e-08 -1.59995e-08" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="8">
+			<attribute name="Model" value="Model;build-Oneiron-Desktop-Debug/Resources/Models/Engine_flap.mdl" />
+			<attribute name="Material" value="Material;build-Oneiron-Desktop-Debug/Resources/Materials/solid.xml" />
+		</component>
+	</node>
+</node>

@@ -39,6 +39,6 @@ private:
     Node* rootNode_;
     Node* spinNode_;
     AnimatedModel* impModel_;
-    float randomizer_;
+    double randomizer_;
     Animation* smokeAnim_;
 };

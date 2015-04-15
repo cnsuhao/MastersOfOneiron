@@ -29,7 +29,10 @@ SOURCES += \
     imp.cpp \
     tile.cpp \
     slot.cpp \
-    platform.cpp
+    platform.cpp \
+    oneirocam.cpp \
+    inputmaster.cpp
+#/home/frode/Sync/Source/Urho3D/Source/Samples/36_Urho2DTileMap/Urho2DTileMap.cpp
 #/home/frode/Sync/Source/Urho3D/Source/Samples/29_SoundSynthesis/SoundSynthesis.cpp
     #poolobject.cpp \
     #objectpool.cpp \
@@ -41,8 +44,11 @@ HEADERS += \
     tile.h \
     slot.h \
     platform.h \
+    oneirocam.h \
+    inputmaster.h
 
 #/home/frode/Sync/Source/Urho3D/Source/Samples/29_SoundSynthesis/SoundSynthesis.h
+#/home/frode/Sync/Source/Urho3D/Source/Samples/36_Urho2DTileMap/Urho2DTileMap.h
     #poolobject.h \
     #objectpool.h \
     #poolmaster.h \

@@ -1,6 +1,5 @@
 #include <Urho3D/Urho3D.h>
 #include <Urho3D/Scene/Scene.h>
-#include <Urho3D/Physics/RigidBody.h>
 #include <Urho3D/Container/Vector.h>
 #include <Urho3D/Math/Vector2.h>
 #include <Urho3D/Graphics/StaticModel.h>
@@ -12,24 +11,37 @@
 #include "tile.h"
 #include "slot.h"
 
+//Todo:
+//- boxObject->SetOccluder(true); ???
+
 Platform::Platform(Context *context, Vector3 position, MasterControl* masterControl):
 Object(context)
 {
     masterControl_ = masterControl;
     SubscribeToEvent(E_UPDATE, HANDLER(Platform, HandleUpdate));
-    rootNode_ = masterControl_->world.scene_->CreateChild("Platform");
+    rootNode_ = masterControl_->world.scene->CreateChild("Platform");
+    masterControl_->platformMap_[rootNode_->GetID()] = SharedPtr<Platform>(this);
+
     rootNode_->SetPosition(position);
-    rootNode_->SetRotation(Quaternion(0.0f, Random(360.0f), 0.0f));
+    //rootNode_->SetRotation(Quaternion(0.0f, Random(360.0f), 0.0f));
     rigidBody_ = rootNode_->CreateComponent<RigidBody>();
+    //rigidBody_->SetRotation(rootNode_->GetRotation());
     rigidBody_->SetMass(1.0f);
     rigidBody_->SetFriction(0.0f);
+    //rigidBody_->SetRestitution();
+    rigidBody_->SetLinearRestThreshold(0.1f);
+    rigidBody_->SetAngularRestThreshold(0.01f);
+    rigidBody_->SetLinearFactor(Vector3(1.0f, 0.0f, 1.0f));
+    rigidBody_->SetAngularFactor(Vector3(0.0f, 1.0f, 0.0f));
+
     // Add base tile
     IntVector2 firstCoordPair = IntVector2(0,0);
     tileMap_[firstCoordPair] = new Tile(context_, firstCoordPair, this);
     // Add random tiles
     int addedTiles = 1;
-    int platformSize = Random(8, 128);
-    while (addedTiles < platformSize){
+    int platformSize = Random(8, 23);
+    //Old random platform creation algorithm
+    /*while (addedTiles < platformSize){
         bool foundNeighbour = false;
         const IntVector2 coordPair = IntVector2(Random(-platformSize/Random(1,3),platformSize/Random(1,3)),Random(-platformSize/Random(1,3),platformSize/Random(1,3)));
         const IntVector2 xMirroredPair = coordPair * IntVector2(-1,1);
@@ -48,15 +60,48 @@ Object(context)
                 addedTiles++;
             }
         }
+    }*/
+
+    while (addedTiles < platformSize){
+        //Pick a random exsisting tile from a list.
+        Vector<IntVector2> coordsVector = tileMap_.Keys();
+        IntVector2 randomTileCoords = coordsVector[Random((int)coordsVector.Length())];
+
+        //Create a vector of numbers 1 to 4
+        /*Vector<int> directions;
+        for (int i = 1; i <= 4; i++){directions.Push(i);*/
+        //Check neighbours in random orer
+        char startDir = Random(1,4);
+        for (int direction = startDir; direction < startDir+4; direction++){
+            //int randomIndex = Random((int)directions.Length());
+            //int direction = directions[randomIndex];
+            //directions.Remove(direction);
+            int clampedDir = direction;
+            if (clampedDir > 4) clampedDir -= 4;
+            if (CheckEmptyNeighbour(randomTileCoords, (TileElement)clampedDir, true))
+            {
+                IntVector2 newTileCoords = GetNeighbourCoords(randomTileCoords, (TileElement)clampedDir);
+                AddTile(newTileCoords);
+                addedTiles++;
+                if (newTileCoords.x_ != 0) {
+                    newTileCoords *= IntVector2(-1,1);
+                    tileMap_[newTileCoords] = new Tile(context_, newTileCoords, this);
+                    addedTiles++;
+                }
+            }
+        }
     }
 
     //Add slots
     AddMissingSlots();
     FixFringe();
 
-    rigidBody_->ApplyForce(Vector3(Random(-100.0f,100.0f), 0.0f, Random(-100.0f,100.0f)));
-    rigidBody_->ApplyTorque(Vector3(0.0f, Random(-16.0f, 16.0f), 0.0f));
+    /*rigidBody_->ApplyForce(Vector3(Random(-100.0f,100.0f), 0.0f, Random(-100.0f,100.0f)));
+    rigidBody_->ApplyTorque(Vector3(0.0f, Random(-16.0f, 16.0f), 0.0f));*/
+
+    Deselect();
 }
+
 
 void Platform::Start()
 {
@@ -66,10 +111,40 @@ void Platform::Stop()
 {
 }
 
+void Platform::Select()
+{
+    selected_ = true;
+    for (int i = 0; i < slotMap_.Values().Length(); i++)
+    {
+        slotMap_.Values()[i]->rootNode_->SetEnabled(true);
+    }
+}
+
+void Platform::Deselect()
+{
+    selected_ = false;
+    for (int i = 0; i < slotMap_.Values().Length(); i++)
+    {
+        slotMap_.Values()[i]->rootNode_->SetEnabled(false);
+    }
+}
+
+void Platform::SetSelected(bool selected)
+{
+    if (selected == true) Select();
+    if (selected == false) Deselect();
+}
+
+bool Platform::GetSelected() const
+{
+    return selected_;
+}
+
+
+
 void Platform::HandleUpdate(StringHash eventType, VariantMap &eventData)
 {
-    AddMissingSlots();
-    using namespace Update; float timeStep = 100.0f * eventData[P_TIMESTEP].GetFloat();
+    /*using namespace Update; double timeStep = 100.0f * eventData[P_TIMESTEP].GetFloat();
     //Push object towards y-zeroplane
     rigidBody_->ApplyForce(timeStep * rigidBody_->GetMass() *
                            Vector3(-0.5f*rigidBody_->GetLinearVelocity().x_,
@@ -77,10 +152,29 @@ void Platform::HandleUpdate(StringHash eventType, VariantMap &eventData)
                                    -0.5f*rigidBody_->GetLinearVelocity().z_));
     //Ease object into hoirzontal allignment and apply angular friction at the same time
     rigidBody_->ApplyTorque(timeStep * rigidBody_->GetMass() *
-                            (rigidBody_->GetAngularVelocity()*Vector3(-1.5f, -0.1f, -1.5f)) +
-                            (0.5f*(Quaternion::IDENTITY - rootNode_->GetRotation()).EulerAngles()*Vector3(1.0f, 0.0f, 1.0f)));
+                            (rigidBody_->GetAngularVelocity()*Vector3(-1.5f, -2.0f, -1.5f)) +
+                            (0.5f*(Quaternion::IDENTITY - rootNode_->GetRotation()).EulerAngles()*Vector3(1.0f, 0.0f, 1.0f)));*/
                             //rootNode_->GetRotation().Slerp(Quaternion::IDENTITY, timeStep).EulerAngles()*Vector3(0.1f, 0.0f, 0.1f));
 }
+
+void Platform::AddTile(IntVector2 newTileCoords)
+{
+    tileMap_[newTileCoords] = new Tile(context_, newTileCoords, this);
+    //UpdateCenterOfMass();
+}
+
+/*void Platform::UpdateCenterOfMass()
+{
+    Vector3 newCenter = Vector3::ZERO;
+    int nTiles = tileMap_.Keys().Length();
+    for (int i = 0; i < nTiles; i++)
+    {
+        newCenter += Vector3(tileMap_.Keys()[i].x_, 0.0f, tileMap_.Keys()[i].y_);
+    }
+    newCenter /= nTiles;
+    newCenter = rootNode_->LocalToWorld(newCenter);
+    rigidBody_->SetPosition(newCenter);
+}*/
 
 void Platform::AddMissingSlots()
 {
@@ -105,10 +199,40 @@ void Platform::FixFringe()
             StaticModel* model = tiles[tile]->elements_[element]->GetComponent<StaticModel>();
             //Fix sides
             if (element <= 4){
+                //If corresponding neighbour is empty
                 if (CheckEmptyNeighbour(tiles[tile]->coords_, (TileElement)element, true))
                 {
-                    model->SetModel(cache->GetResource<Model>("Resources/Models/Block_side.mdl"));
+                    if (element == 1)
+                    {
+                        switch (tiles[tile]->GetBuilding())
+                        {
+                        case B_ENGINE : {
+                            model->SetModel(cache->GetResource<Model>("Resources/Models/Engine_end.mdl"));
+                            model->SetMaterial(0,cache->GetResource<Material>("Resources/Materials/block_center.xml"));
+                            model->SetMaterial(1,cache->GetResource<Material>("Resources/Materials/solid.xml"));
+                            model->SetMaterial(2,cache->GetResource<Material>("Resources/Materials/glow.xml"));
+                            model->SetMaterial(3,cache->GetResource<Material>("Resources/Materials/glass.xml"));
+                        } break;
+                        default: model->SetModel(cache->GetResource<Model>("Resources/Models/Block_side.mdl")); break;
+                        }
+                    }
+                    else if (element == 3)
+                    {
+                        switch (tiles[tile]->GetBuilding())
+                        {
+                        case B_ENGINE : {
+                            model->SetModel(cache->GetResource<Model>("Resources/Models/Engine_start.mdl"));
+                            model->SetMaterial(2,cache->GetResource<Material>("Resources/Materials/block_center.xml"));
+                            model->SetMaterial(0,cache->GetResource<Material>("Resources/Materials/solid.xml"));
+                            model->SetMaterial(3,cache->GetResource<Material>("Resources/Materials/glow.xml"));
+                            model->SetMaterial(1,cache->GetResource<Material>("Resources/Materials/glass.xml"));
+                        } break;
+                        default: model->SetModel(cache->GetResource<Model>("Resources/Models/Block_side.mdl")); break;
+                        }
+                    }
+                    else model->SetModel(cache->GetResource<Model>("Resources/Models/Block_side.mdl"));
                 }
+                //If neighbour is not empty
                 else {
                     if (element == 1 || element == 4) model->SetModel(cache->GetResource<Model>("Resources/Models/Block_tween.mdl"));
                     else model->SetModel(SharedPtr<Model>());
@@ -125,17 +249,24 @@ void Platform::FixFringe()
                 case CT_FILL:   model->SetModel(cache->GetResource<Model>("Resources/Models/Block_fillcorner.mdl")); break;
                 default: break;
                 }
+                model->SetMaterial(cache->GetResource<Material>("Resources/Materials/block_center.xml"));
             }
         }
     }
+}
+
+void Platform::SetBuilding(IntVector2 coords, BuildingType type)
+{
+    tileMap_[coords]->SetBuilding(type);
+    FixFringe();
 }
 
 bool Platform::CheckEmpty(IntVector2 coords, bool checkTiles = true) const
 {
     if (checkTiles) return (!tileMap_.Keys().Contains(coords));
     else return (!slotMap_.Keys().Contains(coords));
-
 }
+
 
 bool Platform::CheckEmptyNeighbour(IntVector2 coords, TileElement element, bool checkTiles = true) const
 {
@@ -161,7 +292,7 @@ IntVector2 Platform::GetNeighbourCoords(IntVector2 coords, TileElement element) 
     return coords + shift;
 }
 
-CornerType Platform::PickCornerType(IntVector2 tileCoords, TileElement element)
+CornerType Platform::PickCornerType(IntVector2 tileCoords, TileElement element) const
 {
     bool emptyCheck[3] = {false, false, false};
     switch (element){
