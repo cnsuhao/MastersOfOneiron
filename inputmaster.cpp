@@ -44,7 +44,7 @@ void InputMaster::HandleMouseDown(StringHash eventType, VariantMap &eventData)
             else
             {
                 SharedPtr<Platform> platform = masterControl_->platformMap_[firstHit->GetParent()->GetParent()->GetID()];
-                platform->SetSelected(!platform->GetSelected());
+                platform->SetSelected(!platform->IsSelected());
                 selectedPlatforms_ += platform;
             }
         }

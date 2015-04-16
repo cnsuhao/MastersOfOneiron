@@ -11,7 +11,7 @@ Imp::Imp(Context* context, MasterControl* masterControl):
 Object(context)
 {
     masterControl_ = masterControl;
-    randomizer_ = Random(0.9f,0.75f);
+    randomizer_ = Random(0.5f,0.75f);
     ResourceCache* cache = GetSubsystem<ResourceCache>();
 
     rootNode_ = masterControl_->world.scene->CreateChild("Imp");
@@ -52,9 +52,9 @@ void Imp::HandleUpdate(StringHash eventType, VariantMap &eventData)
     rootNode_->Rotate(Quaternion(0.0f,timeStep*randomizer_,0.0f));
     rootNode_->Translate(0.0f,0.0f,-randomizer_*timeStep*0.1f);
 
-    spinNode_->Rotate(Quaternion(0.0f,23.0f*timeStep*randomizer_,0.0f));
+    spinNode_->Rotate(Quaternion(0.0f,5.0f*timeStep*randomizer_,0.0f));
     if (impModel_->GetNumAnimationStates())
     {
-            impModel_->GetAnimationStates()[0]->AddTime(100.0f*timeStep);
+            impModel_->GetAnimationStates()[0]->AddTime(10.0f*timeStep);
     }
 }

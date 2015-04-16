@@ -65,9 +65,9 @@ void OneiroCam::SetupViewport()
     viewport_ = viewport;
 
     //Add anti-asliasing
-    effectRenderPath = viewport_->GetRenderPath()->Clone();
+    /*effectRenderPath = viewport_->GetRenderPath()->Clone();
     effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
-    effectRenderPath->SetEnabled("FXAA3", true);
+    effectRenderPath->SetEnabled("FXAA3", true);*/
 
     viewport_->SetRenderPath(effectRenderPath);
     renderer->SetViewport(0, viewport);

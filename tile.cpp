@@ -27,7 +27,7 @@ Object(context)
 
     //platform_->rigidBody_->EnableMassUpdate();
 
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    ResourceCache* cache = masterControl_->cache_;
     for (int i = 0; i <= 8; i++){
         //Set up center and edge nodes in this order:
         String name = "TilePart";
@@ -83,6 +83,7 @@ void Tile::HandleUpdate(StringHash eventType, VariantMap &eventData)
 void Tile::SetBuilding(BuildingType type)
 {
     buildingType_ = type;
+    if (buildingType_ > B_EMPTY) platform_->DisableSlot(coords_);
     ResourceCache* cache = GetSubsystem<ResourceCache>();
     StaticModel* model = elements_[0]->GetComponent<StaticModel>();
     switch (buildingType_)

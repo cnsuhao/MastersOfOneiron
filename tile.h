@@ -28,7 +28,7 @@ public:
 
 
     IntVector2 coords_;
-    BuildingType buildingType_ = B_NONE;
+    BuildingType buildingType_ = B_EMPTY;
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     MasterControl* masterControl_;

@@ -116,7 +116,8 @@ void Platform::Select()
     selected_ = true;
     for (int i = 0; i < slotMap_.Values().Length(); i++)
     {
-        slotMap_.Values()[i]->rootNode_->SetEnabled(true);
+        if (GetBuildingType(slotMap_.Values()[i]->coords_) <= B_EMPTY)
+            EnableSlot(slotMap_.Values()[i]->coords_);
     }
 }
 
@@ -125,7 +126,7 @@ void Platform::Deselect()
     selected_ = false;
     for (int i = 0; i < slotMap_.Values().Length(); i++)
     {
-        slotMap_.Values()[i]->rootNode_->SetEnabled(false);
+        DisableSlot(slotMap_.Values()[i]->coords_);
     }
 }
 
@@ -135,12 +136,20 @@ void Platform::SetSelected(bool selected)
     if (selected == false) Deselect();
 }
 
-bool Platform::GetSelected() const
+bool Platform::IsSelected() const
 {
     return selected_;
 }
 
+bool Platform::DisableSlot(IntVector2 coords)
+{
+    slotMap_[coords]->rootNode_->SetEnabled(false);
+}
 
+bool Platform::EnableSlot(IntVector2 coords)
+{
+    slotMap_[coords]->rootNode_->SetEnabled(true);
+}
 
 void Platform::HandleUpdate(StringHash eventType, VariantMap &eventData)
 {
@@ -162,19 +171,6 @@ void Platform::AddTile(IntVector2 newTileCoords)
     tileMap_[newTileCoords] = new Tile(context_, newTileCoords, this);
     //UpdateCenterOfMass();
 }
-
-/*void Platform::UpdateCenterOfMass()
-{
-    Vector3 newCenter = Vector3::ZERO;
-    int nTiles = tileMap_.Keys().Length();
-    for (int i = 0; i < nTiles; i++)
-    {
-        newCenter += Vector3(tileMap_.Keys()[i].x_, 0.0f, tileMap_.Keys()[i].y_);
-    }
-    newCenter /= nTiles;
-    newCenter = rootNode_->LocalToWorld(newCenter);
-    rigidBody_->SetPosition(newCenter);
-}*/
 
 void Platform::AddMissingSlots()
 {
@@ -224,8 +220,7 @@ void Platform::FixFringe()
                             model->SetModel(cache->GetResource<Model>("Resources/Models/Engine_start.mdl"));
                             model->SetMaterial(2,cache->GetResource<Material>("Resources/Materials/block_center.xml"));
                             model->SetMaterial(0,cache->GetResource<Material>("Resources/Materials/solid.xml"));
-                            model->SetMaterial(3,cache->GetResource<Material>("Resources/Materials/glow.xml"));
-                            model->SetMaterial(1,cache->GetResource<Material>("Resources/Materials/glass.xml"));
+                            model->SetMaterial(1,cache->GetResource<Material>("Resources/Materials/glow.xml"));
                         } break;
                         default: model->SetModel(cache->GetResource<Model>("Resources/Models/Block_side.mdl")); break;
                         }
@@ -234,7 +229,14 @@ void Platform::FixFringe()
                 }
                 //If neighbour is not empty
                 else {
-                    if (element == 1 || element == 4) model->SetModel(cache->GetResource<Model>("Resources/Models/Block_tween.mdl"));
+                    if (element == 1) {
+                        switch (tiles[tile]->GetBuilding())
+                        {
+                        case B_ENGINE : if (GetNeighbourType(tiles[tile]->coords_, (TileElement)element) == B_ENGINE) model->SetModel(SharedPtr<Model>()); break;
+                        default : model->SetModel(cache->GetResource<Model>("Resources/Models/Block_tween.mdl")); break;
+                        }
+                    }
+                    else if (element == 4) {model->SetModel(cache->GetResource<Model>("Resources/Models/Block_tween.mdl"));}
                     else model->SetModel(SharedPtr<Model>());
                 }
             }
@@ -292,6 +294,20 @@ IntVector2 Platform::GetNeighbourCoords(IntVector2 coords, TileElement element) 
     return coords + shift;
 }
 
+BuildingType Platform::GetBuildingType(IntVector2 coords)
+{
+    if (!CheckEmpty(coords))
+    {
+        return tileMap_[coords]->buildingType_;
+    }
+    else return B_SPACE;
+}
+
+BuildingType Platform::GetNeighbourType(IntVector2 coords, TileElement element)
+{
+    return GetBuildingType(GetNeighbourCoords(coords, element));
+}
+
 CornerType Platform::PickCornerType(IntVector2 tileCoords, TileElement element) const
 {
     bool emptyCheck[3] = {false, false, false};
@@ -321,7 +337,7 @@ CornerType Platform::PickCornerType(IntVector2 tileCoords, TileElement element) 
     }
     int neighbourMask = 0;
     for (int i = 2; i >= 0; i--){
-        neighbourMask += (!emptyCheck[i]) * (int)pow(2, i);
+        neighbourMask += !emptyCheck[i] << i;//(!emptyCheck[i]) * (int)pow(2, i);
     }
     switch (neighbourMask){
     case 0: return CT_OUT; break;

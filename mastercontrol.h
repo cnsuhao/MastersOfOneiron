@@ -80,6 +80,9 @@ public:
     /// Constructor.
     MasterControl(Context* context);
     GameWorld world;
+    SharedPtr<ResourceCache> cache_;
+    SharedPtr<Graphics> graphics_;
+
     HashMap<unsigned, SharedPtr<Platform> > platformMap_;
 
     /// Setup before engine initialization. Modifies the engine paramaters.
@@ -90,9 +93,7 @@ public:
     virtual void Stop();
     void Exit();
 private:
-    SharedPtr<ResourceCache> cache_;
     SharedPtr<UI> ui_;
-    SharedPtr<Graphics> graphics_;
     SharedPtr<Renderer> renderer_;
     SharedPtr<XMLFile> defaultStyle_;
 

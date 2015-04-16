@@ -74,8 +74,8 @@ void MasterControl::Setup()
     engineParameters_["LogName"] = GetSubsystem<FileSystem>()->GetAppPreferencesDir("urho3d", "logs")+"Oneiron.log";
     engineParameters_["FullScreen"] = true;
     engineParameters_["Headless"] = false;
-    engineParameters_["WindowWidth"] = 1280;
-    engineParameters_["WindowHeight"] = 720;
+    engineParameters_["WindowWidth"] = 1920;
+    engineParameters_["WindowHeight"] = 1080;
 }
 void MasterControl::Start()
 {
@@ -149,14 +149,12 @@ void MasterControl::CreateUI()
     ResourceCache* cache = GetSubsystem<ResourceCache>();
     UI* ui = GetSubsystem<UI>();
 
-    //Create a Cursor UI element because we want to be able to hide and show it at will. When hidden, the mouse cursor will control the camera, and when visible it will point the raycast target
-
+    //Create a Cursor UI element because we want to be able to hide and show it at will. When hidden, the mouse cursor will control the camera
     world.cursor.uiCursor = new Cursor(context_);
     world.cursor.uiCursor->SetVisible(false);
     ui->SetCursor(world.cursor.uiCursor);
 
     //Set starting position of the cursor at the rendering window center
-    //Graphics* graphics = GetSubsystem<Graphics>();
     world.cursor.uiCursor->SetPosition(graphics_->GetWidth()/2, graphics_->GetHeight()/2);
 
     //Construct new Text object, set string to display and font to use
@@ -173,8 +171,6 @@ void MasterControl::CreateUI()
 
 void MasterControl::CreateScene()
 {
-//    ResourceCache* cache_ = GetSubsystem<ResourceCache>();
-
     world.scene = new Scene(context_);
 
     //Create octree, use default volume (-1000, -1000, -1000) to (1000,1000,1000)
@@ -257,7 +253,7 @@ void MasterControl::HandleSceneUpdate(StringHash eventType, VariantMap &eventDat
 {
     using namespace Update;
     double timeStep = eventData[P_TIMESTEP].GetFloat();
-    world.voidNode->SetPosition((10.0f*Vector3::DOWN) + (world.camera->GetPosition()*Vector3(1.0f,0.0f,1.0f)));
+    world.voidNode->SetPosition((2.0f*Vector3::DOWN) + (world.camera->GetPosition()*Vector3(1.0f,0.0f,1.0f)));
     UpdateCursor(timeStep);
 }
 
@@ -274,7 +270,7 @@ void MasterControl::UpdateCursor(double timeStep)
                 Vector3 camHitDifference = world.camera->translationNode_->GetPosition() - world.cursor.hitResults[i].position_;
                 camHitDifference /= world.camera->translationNode_->GetPosition().y_ - world.voidNode->GetPosition().y_;
                 camHitDifference *= world.camera->translationNode_->GetPosition().y_;
-                world.cursor.sceneCursor->SetPosition(world.camera->translationNode_->GetPosition()-camHitDifference/*Vector3(world.cursor.hitResults[i].position_.x_, 0.0f, world.cursor.hitResults[i].position_.z_)*/);
+                world.cursor.sceneCursor->SetPosition(world.camera->translationNode_->GetPosition()-camHitDifference);
             }
         }
     }
