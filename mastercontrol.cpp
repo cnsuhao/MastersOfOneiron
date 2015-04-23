@@ -74,8 +74,8 @@ void MasterControl::Setup()
     engineParameters_["LogName"] = GetSubsystem<FileSystem>()->GetAppPreferencesDir("urho3d", "logs")+"Oneiron.log";
     engineParameters_["FullScreen"] = true;
     engineParameters_["Headless"] = false;
-    engineParameters_["WindowWidth"] = 1920;
-    engineParameters_["WindowHeight"] = 1080;
+    engineParameters_["WindowWidth"] = 1280;
+    engineParameters_["WindowHeight"] = 768;
 }
 void MasterControl::Start()
 {
@@ -162,11 +162,11 @@ void MasterControl::CreateUI()
     instructionText->SetText(
                 "Masters of Oneiron"
                 );
-    instructionText->SetFont(cache->GetResource<Font>("Resources/Fonts/Riau.ttf"), 64);
+    instructionText->SetFont(cache->GetResource<Font>("Resources/Fonts/Riau.ttf"), 32);
     //The text has multiple rows. Center them in relation to each other
     instructionText->SetHorizontalAlignment(HA_CENTER);
     instructionText->SetVerticalAlignment(VA_CENTER);
-    instructionText->SetPosition(0, ui->GetRoot()->GetHeight()/2.3);
+    instructionText->SetPosition(0, ui->GetRoot()->GetHeight()/2.1);
 }
 
 void MasterControl::CreateScene()
@@ -199,8 +199,8 @@ void MasterControl::CreateScene()
     for (int i = -2; i <= 2; i++){
         for (int j = -2; j <= 2; j++){
             world.backgroundNode = world.scene->CreateChild("BackPlane");
-            world.backgroundNode->SetScale(Vector3(200.0f, 1.0f, 200.0f));
-            world.backgroundNode->SetPosition(200.0f*i, -50.0f, 200.0f*j);
+            world.backgroundNode->SetScale(Vector3(512.0f, 1.0f, 512.0f));
+            world.backgroundNode->SetPosition(512.0f*i, -200.0f, 512.0f*j);
             StaticModel* backgroundObject = world.backgroundNode->CreateComponent<StaticModel>();
             backgroundObject->SetModel(cache_->GetResource<Model>("Models/Plane.mdl"));
             backgroundObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/dreamsky.xml"));
@@ -236,11 +236,9 @@ void MasterControl::CreateScene()
     light2->SetShadowBias(BiasParameters(0.00025f, 0.5f));
 
     //Set cascade splits at 10, 50, 200 world unitys, fade shadows at 80% of maximum shadow distance
-    light->SetShadowCascade(CascadeParameters(7.0f, 23.0f, 42.0f, 0.0f, 0.8f));
+    light->SetShadowCascade(CascadeParameters(7.0f, 23.0f, 42.0f, 500.0f, 0.8f));
 
-    //Spawn Imps
-    for (int i = 0; i < 3; i++) new Imp(context_, this);
-
+    //Create camera
     world.camera = new OneiroCam(context_, this);
 }
 
@@ -253,24 +251,24 @@ void MasterControl::HandleSceneUpdate(StringHash eventType, VariantMap &eventDat
 {
     using namespace Update;
     double timeStep = eventData[P_TIMESTEP].GetFloat();
-    world.voidNode->SetPosition((2.0f*Vector3::DOWN) + (world.camera->GetPosition()*Vector3(1.0f,0.0f,1.0f)));
+    world.voidNode->SetPosition((2.0f*Vector3::DOWN) + (world.camera->GetWorldPosition()*Vector3(1.0f,0.0f,1.0f)));
     UpdateCursor(timeStep);
 }
 
 void MasterControl::UpdateCursor(double timeStep)
 {
     world.cursor.sceneCursor->Rotate(Quaternion(0.0f,100.0f*timeStep,0.0f));
-    world.cursor.sceneCursor->SetScale((world.cursor.sceneCursor->GetPosition() - world.camera->GetPosition()).Length()*0.05f);
+    world.cursor.sceneCursor->SetScale((world.cursor.sceneCursor->GetWorldPosition() - world.camera->GetWorldPosition()).Length()*0.05f);
     if (CursorRayCast(250.0f, world.cursor.hitResults))
     {
         for (int i = 0; i < world.cursor.hitResults.Size(); i++)
         {
             if (world.cursor.hitResults[i].node_->GetNameHash() == N_VOID)
             {
-                Vector3 camHitDifference = world.camera->translationNode_->GetPosition() - world.cursor.hitResults[i].position_;
-                camHitDifference /= world.camera->translationNode_->GetPosition().y_ - world.voidNode->GetPosition().y_;
-                camHitDifference *= world.camera->translationNode_->GetPosition().y_;
-                world.cursor.sceneCursor->SetPosition(world.camera->translationNode_->GetPosition()-camHitDifference);
+                Vector3 camHitDifference = world.camera->translationNode_->GetWorldPosition() - world.cursor.hitResults[i].position_;
+                camHitDifference /= world.camera->translationNode_->GetWorldPosition().y_ - world.voidNode->GetPosition().y_;
+                camHitDifference *= world.camera->translationNode_->GetWorldPosition().y_;
+                world.cursor.sceneCursor->SetWorldPosition(world.camera->translationNode_->GetWorldPosition()-camHitDifference);
             }
         }
     }

@@ -16,7 +16,7 @@ using namespace Urho3D;
 
 class Slot : public Object
 {
-    OBJECT(Slot);
+    OBJECT(Tile);
     friend class Platform;
 public:
     IntVector2 coords_;

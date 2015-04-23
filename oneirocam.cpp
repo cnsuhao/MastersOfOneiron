@@ -73,9 +73,9 @@ void OneiroCam::SetupViewport()
     renderer->SetViewport(0, viewport);
 }
 
-Vector3 OneiroCam::GetPosition()
+Vector3 OneiroCam::GetWorldPosition()
 {
-    return translationNode_->GetPosition();
+    return translationNode_->GetWorldPosition();
 }
 
 Quaternion OneiroCam::GetRotation()
@@ -125,5 +125,16 @@ void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
     {
         translationNode_->SetPosition(translationNode_->GetPosition().x_, 1.0f, translationNode_->GetPosition().z_);
         rigidBody_->SetLinearVelocity(Vector3(rigidBody_->GetLinearVelocity().x_, 0.0f, rigidBody_->GetLinearVelocity().z_));
+    }
+}
+
+void OneiroCam::Lock(SharedPtr<Platform> platform)
+{
+    if (translationNode_->GetParent() == masterControl_->world.scene)
+    translationNode_->SetParent(platform->rootNode_);
+    else {
+        Vector3 worldPos = GetWorldPosition();
+        translationNode_->SetParent(masterControl_->world.scene);
+        translationNode_->SetPosition(worldPos);
     }
 }

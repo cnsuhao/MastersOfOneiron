@@ -20,14 +20,16 @@ Object(context)
     masterControl_ = masterControl;
     SubscribeToEvent(E_UPDATE, HANDLER(Platform, HandleUpdate));
     rootNode_ = masterControl_->world.scene->CreateChild("Platform");
-    masterControl_->platformMap_[rootNode_->GetID()] = SharedPtr<Platform>(this);
+    masterControl_->platformMap_[rootNode_->GetID()] = WeakPtr<Platform>(this);
 
     rootNode_->SetPosition(position);
+    SetMoveTarget(position);
     //rootNode_->SetRotation(Quaternion(0.0f, Random(360.0f), 0.0f));
     rigidBody_ = rootNode_->CreateComponent<RigidBody>();
     //rigidBody_->SetRotation(rootNode_->GetRotation());
-    rigidBody_->SetMass(1.0f);
-    rigidBody_->SetFriction(0.0f);
+    rigidBody_->SetMass(1.0);
+    rigidBody_->SetLinearDamping(0.369);
+    rigidBody_->SetAngularDamping(0.1);
     //rigidBody_->SetRestitution();
     rigidBody_->SetLinearRestThreshold(0.1f);
     rigidBody_->SetAngularRestThreshold(0.01f);
@@ -111,9 +113,12 @@ void Platform::Stop()
 {
 }
 
-void Platform::Select()
+bool Platform::EnableSlot(IntVector2 coords)
 {
-    selected_ = true;
+    slotMap_[coords]->rootNode_->SetEnabled(true);
+}
+void Platform::EnableSlots()
+{
     for (int i = 0; i < slotMap_.Values().Length(); i++)
     {
         if (GetBuildingType(slotMap_.Values()[i]->coords_) <= B_EMPTY)
@@ -121,13 +126,28 @@ void Platform::Select()
     }
 }
 
-void Platform::Deselect()
+bool Platform::DisableSlot(IntVector2 coords)
 {
-    selected_ = false;
+    slotMap_[coords]->rootNode_->SetEnabled(false);
+}
+void Platform::DisableSlots()
+{
     for (int i = 0; i < slotMap_.Values().Length(); i++)
     {
         DisableSlot(slotMap_.Values()[i]->coords_);
     }
+}
+
+void Platform::Select()
+{
+    selected_ = true;
+    EnableSlots();
+}
+
+void Platform::Deselect()
+{
+    selected_ = false;
+    DisableSlots();
 }
 
 void Platform::SetSelected(bool selected)
@@ -141,35 +161,26 @@ bool Platform::IsSelected() const
     return selected_;
 }
 
-bool Platform::DisableSlot(IntVector2 coords)
-{
-    slotMap_[coords]->rootNode_->SetEnabled(false);
-}
 
-bool Platform::EnableSlot(IntVector2 coords)
-{
-    slotMap_[coords]->rootNode_->SetEnabled(true);
-}
 
 void Platform::HandleUpdate(StringHash eventType, VariantMap &eventData)
 {
-    /*using namespace Update; double timeStep = 100.0f * eventData[P_TIMESTEP].GetFloat();
-    //Push object towards y-zeroplane
-    rigidBody_->ApplyForce(timeStep * rigidBody_->GetMass() *
-                           Vector3(-0.5f*rigidBody_->GetLinearVelocity().x_,
-                                   -5.0f*(rootNode_->GetPosition().y_+rigidBody_->GetLinearVelocity().y_),
-                                   -0.5f*rigidBody_->GetLinearVelocity().z_));
-    //Ease object into hoirzontal allignment and apply angular friction at the same time
-    rigidBody_->ApplyTorque(timeStep * rigidBody_->GetMass() *
-                            (rigidBody_->GetAngularVelocity()*Vector3(-1.5f, -2.0f, -1.5f)) +
-                            (0.5f*(Quaternion::IDENTITY - rootNode_->GetRotation()).EulerAngles()*Vector3(1.0f, 0.0f, 1.0f)));*/
-                            //rootNode_->GetRotation().Slerp(Quaternion::IDENTITY, timeStep).EulerAngles()*Vector3(0.1f, 0.0f, 0.1f));
+    using namespace Update; double timeStep = 100.0f * eventData[P_TIMESTEP].GetFloat();
+    if (moveTarget_ != rootNode_->GetPosition()) Move(timeStep);
+}
+
+void Platform::Move(double timeStep)
+{
+    Vector3 relativeMoveTarget = moveTarget_ - rootNode_->GetPosition();
+    if (relativeMoveTarget.Length() > 1.0){
+        rigidBody_->ApplyForce(10.0f*relativeMoveTarget.Normalized()*timeStep);
+        rigidBody_->ApplyTorque(Vector3(0.0f, rootNode_->GetDirection().Angle(relativeMoveTarget)*timeStep*0.1 - pow(rigidBody_->GetAngularVelocity().y_, 3.0f), 0.0f));
+    }
 }
 
 void Platform::AddTile(IntVector2 newTileCoords)
 {
     tileMap_[newTileCoords] = new Tile(context_, newTileCoords, this);
-    //UpdateCenterOfMass();
 }
 
 void Platform::AddMissingSlots()
@@ -186,81 +197,26 @@ void Platform::AddMissingSlots()
 
 void Platform::FixFringe()
 {
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
-    Vector<SharedPtr<Tile>> tiles = tileMap_.Values();
+    Vector<SharedPtr<Tile> > tiles = tileMap_.Values();
     for (int tile = 0; tile < tiles.Length(); tile++)
     {
-        for (int element = 1; element < TE_LENGTH; element++)
-        {
-            StaticModel* model = tiles[tile]->elements_[element]->GetComponent<StaticModel>();
-            //Fix sides
-            if (element <= 4){
-                //If corresponding neighbour is empty
-                if (CheckEmptyNeighbour(tiles[tile]->coords_, (TileElement)element, true))
-                {
-                    if (element == 1)
-                    {
-                        switch (tiles[tile]->GetBuilding())
-                        {
-                        case B_ENGINE : {
-                            model->SetModel(cache->GetResource<Model>("Resources/Models/Engine_end.mdl"));
-                            model->SetMaterial(0,cache->GetResource<Material>("Resources/Materials/block_center.xml"));
-                            model->SetMaterial(1,cache->GetResource<Material>("Resources/Materials/solid.xml"));
-                            model->SetMaterial(2,cache->GetResource<Material>("Resources/Materials/glow.xml"));
-                            model->SetMaterial(3,cache->GetResource<Material>("Resources/Materials/glass.xml"));
-                        } break;
-                        default: model->SetModel(cache->GetResource<Model>("Resources/Models/Block_side.mdl")); break;
-                        }
-                    }
-                    else if (element == 3)
-                    {
-                        switch (tiles[tile]->GetBuilding())
-                        {
-                        case B_ENGINE : {
-                            model->SetModel(cache->GetResource<Model>("Resources/Models/Engine_start.mdl"));
-                            model->SetMaterial(2,cache->GetResource<Material>("Resources/Materials/block_center.xml"));
-                            model->SetMaterial(0,cache->GetResource<Material>("Resources/Materials/solid.xml"));
-                            model->SetMaterial(1,cache->GetResource<Material>("Resources/Materials/glow.xml"));
-                        } break;
-                        default: model->SetModel(cache->GetResource<Model>("Resources/Models/Block_side.mdl")); break;
-                        }
-                    }
-                    else model->SetModel(cache->GetResource<Model>("Resources/Models/Block_side.mdl"));
-                }
-                //If neighbour is not empty
-                else {
-                    if (element == 1) {
-                        switch (tiles[tile]->GetBuilding())
-                        {
-                        case B_ENGINE : if (GetNeighbourType(tiles[tile]->coords_, (TileElement)element) == B_ENGINE) model->SetModel(SharedPtr<Model>()); break;
-                        default : model->SetModel(cache->GetResource<Model>("Resources/Models/Block_tween.mdl")); break;
-                        }
-                    }
-                    else if (element == 4) {model->SetModel(cache->GetResource<Model>("Resources/Models/Block_tween.mdl"));}
-                    else model->SetModel(SharedPtr<Model>());
-                }
-            }
-            //Fix corners
-            else {
-                switch (PickCornerType(tiles[tile]->coords_, (TileElement)element)){
-                case CT_NONE:   model->SetModel(SharedPtr<Model>()); break;
-                case CT_IN:     model->SetModel(cache->GetResource<Model>("Resources/Models/Block_incorner.mdl")); break;
-                case CT_OUT:    model->SetModel(cache->GetResource<Model>("Resources/Models/Block_outcorner.mdl")); break;
-                case CT_TWEEN:  model->SetModel(cache->GetResource<Model>("Resources/Models/Block_tweencorner.mdl")); break;
-                case CT_DOUBLE: model->SetModel(cache->GetResource<Model>("Resources/Models/Block_doublecorner.mdl")); break;
-                case CT_FILL:   model->SetModel(cache->GetResource<Model>("Resources/Models/Block_fillcorner.mdl")); break;
-                default: break;
-                }
-                model->SetMaterial(cache->GetResource<Material>("Resources/Materials/block_center.xml"));
-            }
-        }
+        tiles[tile]->FixFringe();
+    }
+}
+
+void Platform::FixFringe(IntVector2 coords)
+{
+    for (int coordsOffset = 0; coordsOffset < TE_LENGTH; coordsOffset++)
+    {
+        IntVector2 neighbourCoords = GetNeighbourCoords(coords, (TileElement)coordsOffset);
+        if (!CheckEmpty(neighbourCoords, true)) tileMap_[neighbourCoords]->FixFringe();
     }
 }
 
 void Platform::SetBuilding(IntVector2 coords, BuildingType type)
 {
     tileMap_[coords]->SetBuilding(type);
-    FixFringe();
+    FixFringe(coords);
 }
 
 bool Platform::CheckEmpty(IntVector2 coords, bool checkTiles = true) const
@@ -335,9 +291,10 @@ CornerType Platform::PickCornerType(IntVector2 tileCoords, TileElement element) 
     }break;
     default: break;
     }
+
     int neighbourMask = 0;
     for (int i = 2; i >= 0; i--){
-        neighbourMask += !emptyCheck[i] << i;//(!emptyCheck[i]) * (int)pow(2, i);
+        neighbourMask += !emptyCheck[i] << i;
     }
     switch (neighbourMask){
     case 0: return CT_OUT; break;
@@ -347,10 +304,7 @@ CornerType Platform::PickCornerType(IntVector2 tileCoords, TileElement element) 
     case 4: return CT_NONE; break;
     case 5: return CT_IN; break;
     case 6: return CT_NONE; break;
-    case 7: if (element == TE_SOUTHEAST){
-            return CT_FILL;
-        } else return CT_NONE;
-        break;
+    case 7: return (element == TE_SOUTHEAST) ? CT_FILL : CT_NONE; break;
     default: return CT_NONE; break;
     }
 }

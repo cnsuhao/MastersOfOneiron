@@ -1,7 +1,3 @@
-# Add this to the constructor
-# std::system("ln -s ../../../Source/Urho3D/bin/Data");
-# std::system("ln -s ../../../Source/Urho3D/bin/CoreData");
-
 LIBS += /home/frode/Sync/Source/Urho3D/lib/libUrho3D.a \
     -lpthread \
     -lSDL \
@@ -10,14 +6,14 @@ LIBS += /home/frode/Sync/Source/Urho3D/lib/libUrho3D.a \
 
 DEFINES += URHO3D_COMPILE_QT
 
-QMAKE_CXXFLAGS += -std=c++11
+#QMAKE_CXXFLAGS += -std=c++11
 
 
 
 INCLUDEPATH += \
     /home/frode/Sync/Source/Urho3D/include \
     /home/frode/Sync/Source/Urho3D/include/Urho3D/ThirdParty \
-    /home/frode/Sync/Source/Urho3D/Source/Samples
+    #/home/frode/Sync/Source/Urho3D/Source/Samples
 
 TEMPLATE = app
 CONFIG += console
@@ -31,7 +27,9 @@ SOURCES += \
     slot.cpp \
     platform.cpp \
     oneirocam.cpp \
-    inputmaster.cpp
+    inputmaster.cpp \
+    grass.cpp \
+    frop.cpp
 #/home/frode/Sync/Source/Urho3D/Source/Samples/36_Urho2DTileMap/Urho2DTileMap.cpp
 #/home/frode/Sync/Source/Urho3D/Source/Samples/29_SoundSynthesis/SoundSynthesis.cpp
     #poolobject.cpp \
@@ -45,7 +43,9 @@ HEADERS += \
     slot.h \
     platform.h \
     oneirocam.h \
-    inputmaster.h
+    inputmaster.h \
+    grass.h \
+    frop.h
 
 #/home/frode/Sync/Source/Urho3D/Source/Samples/29_SoundSynthesis/SoundSynthesis.h
 #/home/frode/Sync/Source/Urho3D/Source/Samples/36_Urho2DTileMap/Urho2DTileMap.h

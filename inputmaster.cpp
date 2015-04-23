@@ -6,7 +6,7 @@
 
 #include "inputmaster.h"
 #include "platform.h"
-
+#include "oneirocam.h"
 
 InputMaster::InputMaster(Context* context, MasterControl* masterControl) : Object(context)
 {
@@ -26,39 +26,39 @@ void InputMaster::HandleMouseDown(StringHash eventType, VariantMap &eventData)
         //See through cursor
         int first = 0;
         if (masterControl_->world.cursor.hitResults[first].node_->GetNameHash() == N_CURSOR) first = 1;
-        SharedPtr<Node> firstHit = SharedPtr<Node>(masterControl_->world.cursor.hitResults[first].node_);
+        firstHit_ = SharedPtr<Node>(masterControl_->world.cursor.hitResults[first].node_);
         //Void interaction (create new platform)
-        if (firstHit->GetNameHash() == N_VOID){
+        if (firstHit_->GetNameHash() == N_VOID){
             new Platform(context_, masterControl_->world.cursor.sceneCursor->GetPosition(), masterControl_);
         }
         //Platform selection
-        else if (firstHit->GetNameHash() == N_TILEPART)
+        else if (firstHit_->GetNameHash() == N_TILEPART)
         {
             //Select single platform
             if (!(input_->GetKeyDown(KEY_LSHIFT)||input_->GetKeyDown(KEY_RSHIFT)))
             {
-                SharedPtr<Platform> platform = masterControl_->platformMap_[firstHit->GetParent()->GetParent()->GetID()];
+                SharedPtr<Platform> platform = masterControl_->platformMap_[firstHit_->GetParent()->GetParent()->GetID()];
                 SetSelection(platform);
             }
             //Add platform to selection when either of the shift keys is held down
             else
             {
-                SharedPtr<Platform> platform = masterControl_->platformMap_[firstHit->GetParent()->GetParent()->GetID()];
+                SharedPtr<Platform> platform = masterControl_->platformMap_[firstHit_->GetParent()->GetParent()->GetID()];
                 platform->SetSelected(!platform->IsSelected());
                 selectedPlatforms_ += platform;
             }
         }
         //Building interaction, if platform was already selected
         //Slot interaction, if Former was selected
-        else if (firstHit->GetNameHash() == N_SLOT)
+        else if (firstHit_->GetNameHash() == N_SLOT)
         {
-            SharedPtr<Platform> platform = masterControl_->platformMap_[firstHit->GetParent()->GetID()];
-            IntVector2 coords = IntVector2(firstHit->GetPosition().x_, -firstHit->GetPosition().z_);
+            SharedPtr<Platform> platform = masterControl_->platformMap_[firstHit_->GetParent()->GetID()];
+            IntVector2 coords = IntVector2(firstHit_->GetPosition().x_, -firstHit_->GetPosition().z_);
             if (platform->CheckEmpty(coords, true))
             {
                 //Add tile
                 platform->AddTile(coords);
-                platform->FixFringe();
+                platform->FixFringe(coords);
                 platform->AddMissingSlots();
             }
             else {
@@ -72,6 +72,9 @@ void InputMaster::HandleMouseDown(StringHash eventType, VariantMap &eventData)
     }
     else if (button == MOUSEB_RIGHT){
         //Platform move command for each selected platform
+        for (int i = 0; i < selectedPlatforms_.Length(); i++){
+            selectedPlatforms_[i]->SetMoveTarget(masterControl_->world.cursor.sceneCursor->GetPosition());
+        }
     }
 }
 
@@ -98,7 +101,7 @@ void InputMaster::HandleKeyDown(StringHash eventType, VariantMap &eventData)
     if (key == KEY_ESC) DeselectAll();//masterControl_->Exit();
 
     //Take screenshot
-    else if (key == '9')
+    else if (key == KEY_9)
     {
         Graphics* graphics = GetSubsystem<Graphics>();
         Image screenshot(context_);
@@ -108,6 +111,13 @@ void InputMaster::HandleKeyDown(StringHash eventType, VariantMap &eventData)
                 Time::GetTimeStamp().Replaced(':', '_').Replaced('.', '_').Replaced(' ', '_')+".png";
         //Log::Write(1, fileName);
         screenshot.SavePNG(fileName);
+    }
+    else if (key == KEY_L)
+    {
+        SharedPtr<Platform> platform = SharedPtr<Platform>();
+        if (firstHit_->GetNameHash() == N_TILEPART) platform = masterControl_->platformMap_[firstHit_->GetParent()->GetParent()->GetID()];
+        else if (firstHit_->GetNameHash() == N_SLOT) platform = masterControl_->platformMap_[firstHit_->GetParent()->GetID()];
+        if (platform) masterControl_->world.camera->Lock(platform);
     }
 }
 

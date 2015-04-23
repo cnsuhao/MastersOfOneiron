@@ -25,21 +25,18 @@ class Sprite;
 
 using namespace Urho3D;
 
-class Imp : public Object
+class Grass : public Object
 {
-    OBJECT(Imp);
+    OBJECT(Grass);
 public:
-    Imp(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
-    Imp(Context *context, MasterControl *masterControl) : Imp(context, masterControl, masterControl->world.scene, Vector3::ZERO){}
-
+    Grass(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
+    Grass(Context* context, MasterControl* masterControl): Grass(context, masterControl, masterControl->world.scene, Vector3::ZERO){}
     virtual void Start();
     virtual void Stop();
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     MasterControl* masterControl_;
     Node* rootNode_;
-    Node* spinNode_;
-    AnimatedModel* impModel_;
+    StaticModel* grassModel_;
     double randomizer_;
-    Animation* smokeAnim_;
 };

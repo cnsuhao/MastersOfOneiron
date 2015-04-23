@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mastercontrol.h"
+#include "platform.h"
 
 namespace Urho3D {
 class Drawable;
@@ -18,6 +19,7 @@ class OneiroCam : public Object
 {
     OBJECT(OneiroCam);
     friend class MasterControl;
+    friend class InputMaster;
 public:
     OneiroCam(Context *context, MasterControl* masterControl);
 
@@ -28,7 +30,7 @@ public:
     SharedPtr<Viewport> viewport_;
     SharedPtr<RenderPath> effectRenderPath;
 
-    Vector3 GetPosition();
+    Vector3 GetWorldPosition();
     Quaternion GetRotation();
 private:
     MasterControl* masterControl_;
@@ -44,4 +46,5 @@ private:
     double pitchDelta_ = 0.0;
     double forceMultiplier = 1.0;
     void SetupViewport();
+    void Lock(SharedPtr<Platform> platform);
 };

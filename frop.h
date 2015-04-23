@@ -25,21 +25,22 @@ class Sprite;
 
 using namespace Urho3D;
 
-class Imp : public Object
+class Frop : public Object
 {
-    OBJECT(Imp);
+    OBJECT(Frop);
 public:
-    Imp(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
-    Imp(Context *context, MasterControl *masterControl) : Imp(context, masterControl, masterControl->world.scene, Vector3::ZERO){}
-
+    Frop(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
+    Frop(Context* context, MasterControl* masterControl): Frop(context, masterControl, masterControl->world.scene, Vector3::ZERO){}
     virtual void Start();
     virtual void Stop();
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     MasterControl* masterControl_;
     Node* rootNode_;
-    Node* spinNode_;
-    AnimatedModel* impModel_;
-    double randomizer_;
-    Animation* smokeAnim_;
+    StaticModel* fropModel_;
+    Vector3 scale_;
+
+    double growthStart_;
+
+    double age_ = 0.0;
 };

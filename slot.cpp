@@ -42,7 +42,7 @@ void Slot::HandleUpdate(StringHash eventType, VariantMap &eventData)
     //rootNode_->SetScale(Vector3(1.0f+(0.1f*sinf(2.0f*elapsedTime)),1.0f+(0.1f*sinf(10.0f*elapsedTime)),1.0f+(0.1f*sinf(6.0f*elapsedTime))));
 
     double cursorDist = Max(0.0f, (rootNode_->GetWorldPosition() - cursor_->GetPosition()).Length()-0.7f);
-    double scale = Clamp(1.0f - (0.1f*cursorDist), 0.0f, 1.0f);
+    double scale = Clamp(1.0 - (0.1*cursorDist), 0.0, 1.0);
     for (int i = 0; i < 3; i ++) scale *= scale;
     rootNode_->SetScale(scale);
     //model_->GetMaterial()->SetShaderParameter("MatDiffColor", Color(0.125f, 1.0f, 1.0f, 0.7f));

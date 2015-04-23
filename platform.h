@@ -30,28 +30,38 @@ public:
     Node* rootNode_;
     RigidBody* rigidBody_;
 
+    bool CheckEmpty(Vector3 coords, bool checkTiles) const { CheckEmpty(IntVector2(round(coords.x_), round(coords.z_)), checkTiles); }
+    bool CheckEmpty(IntVector2 coords, bool checkTiles) const;
+    bool CheckEmptyNeighbour(IntVector2 coords, TileElement element, bool tileMap) const;
+    IntVector2 GetNeighbourCoords(IntVector2 coords, TileElement element) const;
+    CornerType PickCornerType(IntVector2 tileCoords, TileElement element) const;
+    BuildingType GetBuildingType(IntVector2 coords);
+    BuildingType GetNeighbourType(IntVector2 coords, TileElement element);
+
+
     virtual void Start();
     virtual void Stop();
     void AddMissingSlots();
     void FixFringe();
-    bool CheckEmpty(IntVector2 coords, bool checkTiles) const;
-    bool CheckEmpty(Vector3 coords, bool checkTiles) const { CheckEmpty(IntVector2(round(coords.x_), round(coords.z_)), checkTiles); }
+    void FixFringe(IntVector2 coords);
+
     void AddTile(IntVector2 newTileCoords);
     bool DisableSlot(IntVector2 coords);
     bool EnableSlot(IntVector2 coords);
+    void SetMoveTarget(Vector3 moveTarget) {moveTarget_ = moveTarget;}
+    void EnableSlots();
+    void DisableSlots();
 private:
-    HashMap<IntVector2, SharedPtr<Tile>> tileMap_;
-    HashMap<IntVector2, SharedPtr<Slot>> slotMap_;
+    HashMap<IntVector2, SharedPtr<Tile> > tileMap_;
+    HashMap<IntVector2, SharedPtr<Slot> > slotMap_;
     HashMap<IntVector2, BuildingType> buildingMap_;
 
     bool selected_ = false;
+    Vector3 moveTarget_;
 
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
-    bool CheckEmptyNeighbour(IntVector2 coords, TileElement element, bool tileMap) const;
-    IntVector2 GetNeighbourCoords(IntVector2 coords, TileElement element) const;
-    BuildingType GetBuildingType(IntVector2 coords);
-    BuildingType GetNeighbourType(IntVector2 coords, TileElement element);
-    CornerType PickCornerType(IntVector2 tileCoords, TileElement element) const;
+
+
 
     void Select();
     void Deselect();
@@ -61,4 +71,5 @@ private:
     void SetBuilding(IntVector2 coords, BuildingType type = B_ENGINE);
     void RemoveBuilding(IntVector2 coords) {SetBuilding(coords, B_EMPTY);}
     void UpdateCenterOfMass();
+    void Move(double timeStep);
 };
