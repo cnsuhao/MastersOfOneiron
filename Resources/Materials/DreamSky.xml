@@ -1,0 +1,4 @@
+<material>
+	<technique name="CoreData/Techniques/Diff.xml" quality="1"/>
+	<texture name="Resources/Textures/DreamSky.png" unit="diffuse"/>
+</material>

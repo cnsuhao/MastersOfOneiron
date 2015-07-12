@@ -17,11 +17,11 @@ Object(context)
     rootNode_->SetPosition(Vector3(coords.x_, 0.0f, -coords.y_));
     StaticModel* model = rootNode_->CreateComponent<StaticModel>();
     model->SetModel(cache->GetResource<Model>("Resources/Models/Slot.mdl"));
-    model->SetMaterial(cache->GetResource<Material>("Resources/Materials/glow.xml"));
+    model->SetMaterial(cache->GetResource<Material>("Resources/Materials/Glow.xml"));
     model->SetCastShadows(false);
     StaticModel* hitModel = rootNode_->CreateComponent<StaticModel>();
     hitModel->SetModel(cache->GetResource<Model>("Resources/Models/SlotHitPlane.mdl"));
-    hitModel->SetMaterial(cache->GetResource<Material>("Resources/Materials/invisible.xml"));
+    hitModel->SetMaterial(cache->GetResource<Material>("Resources/Materials/Invisible.xml"));
     model->SetCastShadows(false);
 
     cursor_ = platform_->masterControl_->world.cursor.sceneCursor;

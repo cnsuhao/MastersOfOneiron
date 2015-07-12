@@ -1,5 +1,0 @@
-<material>
-	<technique name="CoreData/Techniques/DiffSpec.xml" quality="1"/>
-	<texture name="Resources/Textures/BlockCenterDiffuse.png" unit="diffuse"/>
-	<texture name="Resources/Textures/BlockCenterSpecular.png" unit="spec"/>
-</material>

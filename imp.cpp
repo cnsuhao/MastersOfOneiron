@@ -5,6 +5,7 @@
 #include <Urho3D/Graphics/AnimatedModel.h>
 #include <Urho3D/Graphics/Animation.h>
 #include <Urho3D/Graphics/AnimationState.h>
+#include <Urho3D/Graphics/AnimationController.h>
 
 #include "imp.h"
 
@@ -15,24 +16,20 @@ Object(context)
     randomizer_ = Random(0.5f,0.75f);
 
     rootNode_ = parent->CreateChild("Imp");
-    //rootNode_->SetPosition(Vector3(Random(-10.0f,10.0f), 0.5f, Random(-10.0f,10.0f)));
+    rootNode_->SetPosition(pos);
     rootNode_->Rotate(Quaternion(0.0f,Random(360.0f),0.0f));
-    rootNode_->SetScale(Random(0.01f,0.015f));
+    rootNode_->SetScale(Random(0.015f,0.023f));
     spinNode_= rootNode_->CreateChild("ImpModelNode");
     impModel_ = spinNode_->CreateComponent<AnimatedModel>();
-    impModel_->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/imp.mdl"));
-    impModel_->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/impclothed_lowpol.xml"));
+    impModel_->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/ImpClothed_lowpoly.mdl"));
+    impModel_->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/ImpClothed.xml"));
     impModel_->SetCastShadows(true);
+    impModel_->SetAnimationEnabled(true);
 
-    smokeAnim_ = masterControl_->cache_->GetResource<Animation>("Resources/Animations/Smoke.ani");
-    AnimationState* smokeState = impModel_->AddAnimationState(smokeAnim_);
 
-    if (smokeState)
-    {
-        smokeState->SetWeight(1.0f);
-        smokeState->SetLooped(true);
-        smokeState->SetLayer(0);
-    }
+    AnimationController* animCtrl = rootNode_->CreateComponent<AnimationController>();
+    animCtrl->PlayExclusive("Resources/Animations/Smoke.ani", 0, true);
+    animCtrl->SetSpeed("Resources/Animations/Smoke.ani", 0.5f+randomizer_);
 
     SubscribeToEvent(E_UPDATE, HANDLER(Imp, HandleUpdate));
 }
@@ -48,13 +45,4 @@ void Imp::HandleUpdate(StringHash eventType, VariantMap &eventData)
 {
     using namespace Update;
     double timeStep = eventData[P_TIMESTEP].GetFloat();
-    timeStep *= 5;
-    rootNode_->Rotate(Quaternion(0.0f,timeStep*randomizer_*10.0f,0.0f));
-    rootNode_->Translate(0.0f,0.0f,-randomizer_*timeStep*0.01f);
-
-    //spinNode_->Rotate(Quaternion(0.0f,5.0f*timeStep*randomizer_,0.0f));
-    if (impModel_->GetNumAnimationStates())
-    {
-            impModel_->GetAnimationStates()[0]->AddTime(10.0f*timeStep);
-    }
 }

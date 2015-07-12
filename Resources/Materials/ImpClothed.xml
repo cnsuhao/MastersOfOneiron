@@ -1,0 +1,6 @@
+<material>
+	<technique name="CoreData/Techniques/DiffNormalSpec.xml" quality="1"/>
+	<texture name="Resources/Textures/ImpClothedDiffuse.png" unit="diffuse"/>
+	<texture name="Resources/Textures/ImpClothedNormals.png" unit="normal"/>
+	<texture name="Resources/Textures/ImpClothedSpecular.png" unit="specular"/>
+</material>

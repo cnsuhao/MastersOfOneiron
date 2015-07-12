@@ -74,8 +74,8 @@ void MasterControl::Setup()
     engineParameters_["LogName"] = GetSubsystem<FileSystem>()->GetAppPreferencesDir("urho3d", "logs")+"Oneiron.log";
     engineParameters_["FullScreen"] = true;
     engineParameters_["Headless"] = false;
-    engineParameters_["WindowWidth"] = 1280;
-    engineParameters_["WindowHeight"] = 768;
+    engineParameters_["WindowWidth"] = 960;
+    engineParameters_["WindowHeight"] = 540;
 }
 void MasterControl::Start()
 {
@@ -159,10 +159,9 @@ void MasterControl::CreateUI()
 
     //Construct new Text object, set string to display and font to use
     Text* instructionText = ui->GetRoot()->CreateChild<Text>();
-    instructionText->SetText(
-                "Masters of Oneiron"
-                );
+    instructionText->SetText("Masters of Oneiron");
     instructionText->SetFont(cache->GetResource<Font>("Resources/Fonts/Riau.ttf"), 32);
+    instructionText->SetColor(Color(0.023f, 1.0f, 0.95f, 0.75f));
     //The text has multiple rows. Center them in relation to each other
     instructionText->SetHorizontalAlignment(HA_CENTER);
     instructionText->SetVerticalAlignment(VA_CENTER);
@@ -174,8 +173,8 @@ void MasterControl::CreateScene()
     world.scene = new Scene(context_);
 
     //Create octree, use default volume (-1000, -1000, -1000) to (1000,1000,1000)
-    /*Octree* octree = */world.scene->CreateComponent<Octree>();
-    //octree->SetSize(BoundingBox(Vector3(-10000, -100, -10000), Vector3(10000, 1000, 10000)), 1024);
+    world.scene->CreateComponent<Octree>();
+
     PhysicsWorld* physicsWorld = world.scene->CreateComponent<PhysicsWorld>();
     physicsWorld->SetGravity(Vector3::ZERO);
     world.scene->CreateComponent<DebugRenderer>();
@@ -185,15 +184,15 @@ void MasterControl::CreateScene()
     world.cursor.sceneCursor->SetPosition(Vector3(0.0f,0.0f,0.0f));
     StaticModel* cursorObject = world.cursor.sceneCursor->CreateComponent<StaticModel>();
     cursorObject->SetModel(cache_->GetResource<Model>("Resources/Models/Cursor.mdl"));
-    cursorObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/glow.xml"));
+    cursorObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/Glow.xml"));
 
-    //Create an invisible plane for mouse raycasting
+    //Create an Invisible plane for mouse raycasting
     world.voidNode = world.scene->CreateChild("Void");
     //Location is set in update since the plane moves with the camera.
     world.voidNode->SetScale(Vector3(1000.0f, 1.0f, 1000.0f));
     StaticModel* planeObject = world.voidNode->CreateComponent<StaticModel>();
     planeObject->SetModel(cache_->GetResource<Model>("Models/Plane.mdl"));
-    planeObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/invisible.xml"));
+    planeObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/Invisible.xml"));
 
     //Create background
     for (int i = -2; i <= 2; i++){
@@ -203,7 +202,7 @@ void MasterControl::CreateScene()
             world.backgroundNode->SetPosition(512.0f*i, -200.0f, 512.0f*j);
             StaticModel* backgroundObject = world.backgroundNode->CreateComponent<StaticModel>();
             backgroundObject->SetModel(cache_->GetResource<Model>("Models/Plane.mdl"));
-            backgroundObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/dreamsky.xml"));
+            backgroundObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/DreamSky.xml"));
         }
     }
     //Create a Zone component for ambient lighting & fog control
@@ -223,7 +222,9 @@ void MasterControl::CreateScene()
     light->SetBrightness(1.0f);
     light->SetColor(Color(1.0f, 0.8f, 0.7f));
     light->SetCastShadows(true);
-    light->SetShadowBias(BiasParameters(0.00025f, 0.5f));
+    light->SetShadowIntensity(0.666f);
+    light->SetShadowBias(BiasParameters(0.0000025f, 0.9f));
+    light->SetShadowResolution(0.25f);
 
     //Create a second directional light without shadows
     Node* lightNode2 = world.scene->CreateChild("DirectionalLight");

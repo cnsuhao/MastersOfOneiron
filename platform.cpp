@@ -30,7 +30,6 @@ Object(context)
     rigidBody_->SetMass(1.0);
     rigidBody_->SetLinearDamping(0.369);
     rigidBody_->SetAngularDamping(0.1);
-    //rigidBody_->SetRestitution();
     rigidBody_->SetLinearRestThreshold(0.1f);
     rigidBody_->SetAngularRestThreshold(0.01f);
     rigidBody_->SetLinearFactor(Vector3(1.0f, 0.0f, 1.0f));
@@ -75,9 +74,6 @@ Object(context)
         //Check neighbours in random orer
         char startDir = Random(1,4);
         for (int direction = startDir; direction < startDir+4; direction++){
-            //int randomIndex = Random((int)directions.Length());
-            //int direction = directions[randomIndex];
-            //directions.Remove(direction);
             int clampedDir = direction;
             if (clampedDir > 4) clampedDir -= 4;
             if (CheckEmptyNeighbour(randomTileCoords, (TileElement)clampedDir, true))
@@ -98,8 +94,8 @@ Object(context)
     AddMissingSlots();
     FixFringe();
 
-    /*rigidBody_->ApplyForce(Vector3(Random(-100.0f,100.0f), 0.0f, Random(-100.0f,100.0f)));
-    rigidBody_->ApplyTorque(Vector3(0.0f, Random(-16.0f, 16.0f), 0.0f));*/
+    rigidBody_->ApplyForce(Vector3(Random(-100.0f,100.0f), 0.0f, Random(-100.0f,100.0f)));
+    rigidBody_->ApplyTorque(Vector3(0.0f, Random(-16.0f, 16.0f), 0.0f));
 
     Deselect();
 }
@@ -171,11 +167,11 @@ void Platform::HandleUpdate(StringHash eventType, VariantMap &eventData)
 
 void Platform::Move(double timeStep)
 {
-    Vector3 relativeMoveTarget = moveTarget_ - rootNode_->GetPosition();
+    /*Vector3 relativeMoveTarget = moveTarget_ - rootNode_->GetPosition();
     if (relativeMoveTarget.Length() > 1.0){
         rigidBody_->ApplyForce(10.0f*relativeMoveTarget.Normalized()*timeStep);
         rigidBody_->ApplyTorque(Vector3(0.0f, rootNode_->GetDirection().Angle(relativeMoveTarget)*timeStep*0.1 - pow(rigidBody_->GetAngularVelocity().y_, 3.0f), 0.0f));
-    }
+    }*/
 }
 
 void Platform::AddTile(IntVector2 newTileCoords)

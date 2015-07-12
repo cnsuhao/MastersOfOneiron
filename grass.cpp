@@ -18,8 +18,8 @@ Grass::Grass(Context *context, MasterControl *masterControl, Node *parent, Vecto
     rootNode_->SetScale(randomWidth, Random(0.25f,randomWidth), randomWidth);
     grassModel_ = rootNode_->CreateComponent<StaticModel>();
     grassModel_->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Grass.mdl"));
-    grassModel_->SetMaterial(0, masterControl_->cache_->GetResource<Material>("Resources/Materials/block_center.xml"));
-    grassModel_->SetMaterial(1, masterControl_->cache_->GetResource<Material>("Resources/Materials/shadow.xml"));
+    grassModel_->SetMaterial(0, masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
+    grassModel_->SetMaterial(1, masterControl_->cache_->GetResource<Material>("Resources/Materials/Shadow.xml"));
     grassModel_->SetCastShadows(false);
 
     SubscribeToEvent(E_UPDATE, HANDLER(Grass, HandleUpdate));

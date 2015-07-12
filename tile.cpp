@@ -4,6 +4,8 @@
 #include <Urho3D/Graphics/StaticModel.h>
 #include <Urho3D/Graphics/Model.h>
 #include <Urho3D/Graphics/Material.h>
+#include <Urho3D/Graphics/ParticleEmitter.h>
+#include <Urho3D/Graphics/ParticleEffect.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Input/Input.h>
 
@@ -37,21 +39,35 @@ Object(context)
         Node* spireNode = rootNode_->CreateChild("Spire");
         StaticModel* model = spireNode->CreateComponent<StaticModel>();
         model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Dreamspire.mdl"));
-        model->SetMaterial(0,masterControl_->cache_->GetResource<Material>("Resources/Materials/solid.xml"));
-        model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/glass.xml"));
+        model->SetMaterial(0,masterControl_->cache_->GetResource<Material>("Resources/Materials/Structure.xml"));
+        model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glass.xml"));
         model->SetCastShadows(true);
     }
     //Create random imps
     else if (extraRandomizer < 7){
-        Vector3 randomPosition = Vector3(Random(-0.3f, 0.3f), 0.0f, Random(-0.3f, 0.3f));
-        new Imp(context_, masterControl_, rootNode_, randomPosition);
+        int totalImps = Random(1,5);
+        for (int i = 0; i < totalImps; i++){
+            Vector3 position = Vector3(-0.075f*totalImps+0.15f*i, 0.0f, Random(-0.5f, 0.5f));
+            new Imp(context_, masterControl_, rootNode_, position);
+        }
+    }
+    //Create fire
+    else if (extraRandomizer == 8){
+        ParticleEmitter* particleEmitter = rootNode_->CreateComponent<ParticleEmitter>();
+        particleEmitter->SetEffect(masterControl_->cache_->GetResource<ParticleEffect>("Resources/Particles/Fire.xml"));
     }
     //Create random plants
-    else if (extraRandomizer > 8){
-        for (int i = 0; i < extraRandomizer - 8; i++){
+    else if (extraRandomizer > 8 && coords.y_%2 == 0){
+        for (int i = 0; i < 4; i++){
+            for (int j = 0; j < 3; j++){
+                    Vector3 position = Vector3(-0.375f+i*0.25f, 0.0f, -0.3f+j*0.3f);
+                    new Frop(context_, masterControl_, rootNode_, position);
+            }
+        }
+        /*for (int i = 0; i < extraRandomizer - 8; i++){
             Vector3 randomPosition = Vector3(Random(-0.4f, 0.4f), 0.0f, Random(-0.4f, 0.4f));
             new Frop(context_, masterControl_, rootNode_, randomPosition);
-        }
+        }*/
     }
 
     /*for (int i = 0; i < (23-extraRandomizer)+16; i++){
@@ -67,15 +83,21 @@ Object(context)
         //Add the right model to the node
         StaticModel* model = elements_[i]->CreateComponent<StaticModel>();
         switch (i){
-        case TE_CENTER:    model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_center.mdl"));break;
+        case TE_CENTER:    model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_center.mdl"));
+            model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
+            break;
         case TE_NORTH:case TE_EAST:case TE_SOUTH:case TE_WEST:
-            model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_side.mdl"));break;
+            model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_side.mdl"));
+            model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/RockSide.xml"));
+            break;
         case TE_NORTHEAST:case TE_SOUTHEAST:case TE_SOUTHWEST:case TE_NORTHWEST:
-            model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_outcorner.mdl"));break;
+            model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_outcorner.mdl"));
+            model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
+            break;
                 default:break;
         }
 
-        model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/block_center.xml"));
+
         model->SetCastShadows(true);
     }
 
@@ -96,6 +118,9 @@ void Tile::HandleUpdate(StringHash eventType, VariantMap &eventData)
     if (buildingType_ == B_ENGINE && input->GetKeyDown(KEY_UP)){
         platform_->rigidBody_->ApplyForce(platform_->rootNode_->GetRotation() * rootNode_->GetDirection() * 500.0f*timeStep, platform_->rootNode_->GetRotation() * rootNode_->GetPosition());
     }
+    else if (buildingType_ == B_ENGINE && input->GetKeyDown(KEY_DOWN)){
+        platform_->rigidBody_->ApplyForce(platform_->rootNode_->GetRotation() * rootNode_->GetDirection() * -500.0f*timeStep, platform_->rootNode_->GetRotation() * rootNode_->GetPosition());
+    }
 }
 
 void Tile::SetBuilding(BuildingType type)
@@ -112,10 +137,10 @@ void Tile::SetBuilding(BuildingType type)
     {
     case B_ENGINE: {
         model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Engine_center.mdl"));
-        model->SetMaterial(0,masterControl_->cache_->GetResource<Material>("Resources/Materials/block_center.xml"));
-        model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/solid.xml"));
-        model->SetMaterial(2,masterControl_->cache_->GetResource<Material>("Resources/Materials/glow.xml"));
-        model->SetMaterial(3,masterControl_->cache_->GetResource<Material>("Resources/Materials/glass.xml"));
+        model->SetMaterial(0,masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
+        model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/Structure.xml"));
+        model->SetMaterial(2,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glow.xml"));
+        model->SetMaterial(3,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glass.xml"));
     } break;
     default: break;
     }
@@ -143,12 +168,12 @@ void Tile::FixFringe()
                     {
                     case B_ENGINE :
                         model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Engine_end.mdl"));
-                        model->SetMaterial(0,masterControl_->cache_->GetResource<Material>("Resources/Materials/block_center.xml"));
-                        model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/solid.xml"));
-                        model->SetMaterial(2,masterControl_->cache_->GetResource<Material>("Resources/Materials/glow.xml"));
-                        model->SetMaterial(3,masterControl_->cache_->GetResource<Material>("Resources/Materials/glass.xml"));
+                        model->SetMaterial(0,masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
+                        model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/Structure.xml"));
+                        model->SetMaterial(2,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glow.xml"));
+                        model->SetMaterial(3,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glass.xml"));
                     break;
-                    default: model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_side.mdl"));
+                    default: model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_side.mdl"));
                     break;
                     }
                 }
@@ -158,15 +183,15 @@ void Tile::FixFringe()
                     {
                     case B_ENGINE :
                         model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Engine_start.mdl"));
-                        model->SetMaterial(2,masterControl_->cache_->GetResource<Material>("Resources/Materials/block_center.xml"));
-                        model->SetMaterial(0,masterControl_->cache_->GetResource<Material>("Resources/Materials/solid.xml"));
-                        model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/glow.xml"));
+                        model->SetMaterial(2,masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
+                        model->SetMaterial(0,masterControl_->cache_->GetResource<Material>("Resources/Materials/Structure.xml"));
+                        model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glow.xml"));
                     break;
-                    default: model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_side.mdl"));
+                    default: model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_side.mdl"));
                     break;
                     }
                 }
-                else model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_side.mdl"));
+                else model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_side.mdl"));
             }
             //If neighbour is not empty
             else {
@@ -174,25 +199,34 @@ void Tile::FixFringe()
                     switch (GetBuilding())
                     {
                     case B_ENGINE : if (platform_->GetNeighbourType(coords_, (TileElement)element) == B_ENGINE) model->SetModel(SharedPtr<Model>()); break;
-                    default : model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_tween.mdl")); break;
+                    default :
+                        model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_tween.mdl"));
+                        model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
+                        break;
                     }
                 }
-                else if (element == 4) {model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_tween.mdl"));}
+                else if (element == 4) {
+                    model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_tween.mdl"));
+                    model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
+                }
                 else model->SetModel(SharedPtr<Model>());
             }
         }
         //Fix corners
         else {
+            bool fill = false;
             switch (platform_->PickCornerType(coords_, (TileElement)element)){
             case CT_NONE:   model->SetModel(SharedPtr<Model>()); break;
-            case CT_IN:     model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_incorner.mdl")); break;
-            case CT_OUT:    model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_outcorner.mdl")); break;
-            case CT_TWEEN:  model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_tweencorner.mdl")); break;
-            case CT_DOUBLE: model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_doublecorner.mdl")); break;
-            case CT_FILL:   model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_fillcorner.mdl")); break;
+            case CT_IN:     model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_incorner.mdl")); break;
+            case CT_OUT:    model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_outcorner.mdl")); break;
+            case CT_TWEEN:  model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_tweencorner.mdl")); break;
+            case CT_DOUBLE: model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_doublecorner.mdl")); break;
+            case CT_FILL:   model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_fillcorner.mdl")); fill = true; break;
             default: break;
             }
-            model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/block_center.xml"));
+            model->SetMaterial(!fill ?
+masterControl_->cache_->GetResource<Material>("Resources/Materials/RockSide.xml") :
+masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
         }
     }
 }

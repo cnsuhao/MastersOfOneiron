@@ -65,9 +65,12 @@ void OneiroCam::SetupViewport()
     viewport_ = viewport;
 
     //Add anti-asliasing
-    /*effectRenderPath = viewport_->GetRenderPath()->Clone();
+    effectRenderPath = viewport_->GetRenderPath()->Clone();
     effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
-    effectRenderPath->SetEnabled("FXAA3", true);*/
+    effectRenderPath->SetEnabled("FXAA3", true);
+    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Bloom.xml"));
+    effectRenderPath->SetShaderParameter("BloomThreshold", 0.5f);
+    effectRenderPath->SetShaderParameter("BloomMix", Vector2(0.75f, 1.0f));
 
     viewport_->SetRenderPath(effectRenderPath);
     renderer->SetViewport(0, viewport);
@@ -131,7 +134,10 @@ void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
 void OneiroCam::Lock(SharedPtr<Platform> platform)
 {
     if (translationNode_->GetParent() == masterControl_->world.scene)
-    translationNode_->SetParent(platform->rootNode_);
+    {
+        translationNode_->SetParent(platform->rootNode_);
+        rotationNode_->SetParent(translationNode_);
+    }
     else {
         Vector3 worldPos = GetWorldPosition();
         translationNode_->SetParent(masterControl_->world.scene);

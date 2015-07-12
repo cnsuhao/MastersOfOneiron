@@ -20,8 +20,8 @@ Frop::Frop(Context *context, MasterControl *masterControl, Node *parent, Vector3
     scale_ = Vector3(randomWidth, Random(0.5f,0.5f+randomWidth), randomWidth);
     fropModel_ = rootNode_->CreateComponent<StaticModel>();
     fropModel_->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Frop.mdl"));
-    fropModel_->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/frop.xml"));
-    fropModel_->SetCastShadows(false);
+    fropModel_->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/Frop.xml"));
+    fropModel_->SetCastShadows(true);
 
     SubscribeToEvent(E_UPDATE, HANDLER(Frop, HandleUpdate));
 }
