@@ -7,3 +7,6 @@ Platforms of development:
 
 Controls:
 WASDQE, Mouse movement and left click.
+
+Screenshot:
+![MoO screenshot](https://raw.githubusercontent.com/LucKeyProductions/MastersOfOneiron/master/Screenshots/Screenshot_Sun_Jul_12_15_32_06_2015.png)
