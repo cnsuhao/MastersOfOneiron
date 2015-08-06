@@ -1,19 +1,13 @@
-LIBS += /home/frode/Sync/Source/Urho3D/lib/libUrho3D.a \
+LIBS += ../MastersOfOneiron/Urho3D/lib/libUrho3D.a \
     -lpthread \
-    -lSDL \
     -ldl \
     -lGL
 
 DEFINES += URHO3D_COMPILE_QT
 
-#QMAKE_CXXFLAGS += -std=c++11
-
-
-
 INCLUDEPATH += \
-    /home/frode/Sync/Source/Urho3D/include \
-    /home/frode/Sync/Source/Urho3D/include/Urho3D/ThirdParty \
-    #/home/frode/Sync/Source/Urho3D/Source/Samples
+    ../MastersOfOneiron/Urho3D/include \
+    ../MastersOfOneiron/Urho3D/include/Urho3D/ThirdParty \
 
 TEMPLATE = app
 CONFIG += console
@@ -29,12 +23,8 @@ SOURCES += \
     oneirocam.cpp \
     inputmaster.cpp \
     grass.cpp \
-    frop.cpp
-#/home/frode/Sync/Source/Urho3D/Source/Samples/36_Urho2DTileMap/Urho2DTileMap.cpp
-#/home/frode/Sync/Source/Urho3D/Source/Samples/29_SoundSynthesis/SoundSynthesis.cpp
-    #poolobject.cpp \
-    #objectpool.cpp \
-    #poolmaster.cpp \
+    frop.cpp \
+    helper.cpp
 
 HEADERS += \
     mastercontrol.h \
@@ -45,10 +35,5 @@ HEADERS += \
     oneirocam.h \
     inputmaster.h \
     grass.h \
-    frop.h
-
-#/home/frode/Sync/Source/Urho3D/Source/Samples/29_SoundSynthesis/SoundSynthesis.h
-#/home/frode/Sync/Source/Urho3D/Source/Samples/36_Urho2DTileMap/Urho2DTileMap.h
-    #poolobject.h \
-    #objectpool.h \
-    #poolmaster.h \
+    frop.h \
+    helper.h

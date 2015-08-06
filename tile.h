@@ -1,9 +1,28 @@
-#pragma once
+/* Masters of Oneiron
+// Copyright (C) 2015 LucKey Productions (luckeyproductions.nl)
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+#ifndef TILE_H
+#define TILE_H
+
+#include <Urho3D/Urho3D.h>
 
 #include "mastercontrol.h"
 #include "platform.h"
-#include <Urho3D/Physics/RigidBody.h>
-#include <Urho3D/Core/CoreEvents.h>
 
 namespace Urho3D {
 class Drawable;
@@ -29,8 +48,8 @@ public:
 
     IntVector2 coords_;
     BuildingType buildingType_ = B_EMPTY;
-    double GetHealth(){return health_;}
-    double ApplyDamage(double damage){health_ = Max(health_ - damage, 0.0);}
+    float GetHealth(){return health_;}
+    float ApplyDamage(float damage){health_ = Max(health_ - damage, 0.0f);}
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     MasterControl* masterControl_;
@@ -38,7 +57,7 @@ private:
     Node* rootNode_;
     CollisionShape* collisionShape_;
     Node* elements_[TE_LENGTH];
-    double health_ = 1.0;
+    float health_ = 1.0f;
     //A node pointer for each element:
     // 516 ^
     // 402 N
@@ -47,3 +66,5 @@ private:
     BuildingType GetBuilding();
     void FixFringe();
 };
+
+#endif // TILE_H

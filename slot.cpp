@@ -1,10 +1,22 @@
-#include <Urho3D/Urho3D.h>
-#include <Urho3D/Scene/Scene.h>
-#include <Urho3D/Graphics/Model.h>
-#include <Urho3D/Graphics/Material.h>
-#include <Urho3D/Resource/ResourceCache.h>
-#include "slot.h"
+/* Masters of Oneiron
+// Copyright (C) 2015 LucKey Productions (luckeyproductions.nl)
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 
+#include "slot.h"
 
 Slot::Slot(Context *context, Platform* platform, IntVector2 coords):
 Object(context)
@@ -41,8 +53,8 @@ void Slot::HandleUpdate(StringHash eventType, VariantMap &eventData)
     //double elapsedTime = platform_->masterControl_->world.scene_->GetElapsedTime();
     //rootNode_->SetScale(Vector3(1.0f+(0.1f*sinf(2.0f*elapsedTime)),1.0f+(0.1f*sinf(10.0f*elapsedTime)),1.0f+(0.1f*sinf(6.0f*elapsedTime))));
 
-    double cursorDist = Max(0.0f, (rootNode_->GetWorldPosition() - cursor_->GetPosition()).Length()-0.7f);
-    double scale = Clamp(1.0 - (0.1*cursorDist), 0.0, 1.0);
+    float cursorDist = Max(0.0f, (rootNode_->GetWorldPosition() - cursor_->GetPosition()).Length()-0.7f);
+    float scale = Clamp(1.0f - (0.1f*cursorDist), 0.0f, 1.0f);
     for (int i = 0; i < 3; i ++) scale *= scale;
     rootNode_->SetScale(scale);
     //model_->GetMaterial()->SetShaderParameter("MatDiffColor", Color(0.125f, 1.0f, 1.0f, 0.7f));

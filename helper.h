@@ -16,40 +16,27 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef FROP_H
-#define FROP_H
+#ifndef ONEIRON_HELPER_H
+#define ONEIRON_HELPER_H
 
 #include <Urho3D/Urho3D.h>
+#include <Urho3D/Math/Vector3.h>
+#include <Urho3D/Container/HashBase.h>
 
-#include "mastercontrol.h"
+namespace Oneiron {
 
-namespace Urho3D {
-class Drawable;
-class Node;
-class Scene;
-class Sprite;
+template <class T>
+T Cycle(T x, T min, T max){
+    return (x < min) ?
+                x + (max - min) * abs(ceil((min - x) / (max - min)))
+              : (x > max) ?
+                x - (max - min) * abs(ceil((x - max) / (max - min)))
+                  : x;
 }
 
-using namespace Urho3D;
+float Distance(const Urho3D::Vector3 from, const Urho3D::Vector3 to);
+unsigned IntVector2ToHash(Urho3D::IntVector2 vec);
+Urho3D::Vector3 Scale(const Urho3D::Vector3 lhs, const Urho3D::Vector3 rhs);
+}
 
-class Frop : public Object
-{
-    OBJECT(Frop);
-public:
-    Frop(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
-    Frop(Context* context, MasterControl* masterControl): Frop(context, masterControl, masterControl->world.scene, Vector3::ZERO){}
-    virtual void Start();
-    virtual void Stop();
-private:
-    void HandleUpdate(StringHash eventType, VariantMap& eventData);
-    MasterControl* masterControl_;
-    Node* rootNode_;
-    StaticModel* fropModel_;
-    Vector3 scale_;
-
-    double growthStart_;
-
-    double age_ = 0.0;
-};
-
-#endif // FROP_H
+#endif // ONEIRON_HELPER_H

@@ -1,13 +1,20 @@
-#include <Urho3D/Urho3D.h>
-#include <Urho3D/Scene/Scene.h>
-#include <Urho3D/Physics/CollisionShape.h>
-#include <Urho3D/Graphics/StaticModel.h>
-#include <Urho3D/Graphics/Model.h>
-#include <Urho3D/Graphics/Material.h>
-#include <Urho3D/Graphics/ParticleEmitter.h>
-#include <Urho3D/Graphics/ParticleEffect.h>
-#include <Urho3D/Resource/ResourceCache.h>
-#include <Urho3D/Input/Input.h>
+/* Masters of Oneiron
+// Copyright (C) 2015 LucKey Productions (luckeyproductions.nl)
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 
 #include "tile.h"
 #include "imp.h"
@@ -126,7 +133,7 @@ void Tile::HandleUpdate(StringHash eventType, VariantMap &eventData)
 void Tile::SetBuilding(BuildingType type)
 {
     Vector<SharedPtr<Node> > children = rootNode_->GetChildren();
-    for (int i = 0; i < children.Length(); i++)
+    for (unsigned i = 0; i < children.Size(); i++)
         if (children[i]->GetNameHash() != N_TILEPART)
             children[i]->SetEnabledRecursive(false);
 
