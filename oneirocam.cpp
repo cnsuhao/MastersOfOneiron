@@ -100,12 +100,12 @@ void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
 {
     using namespace Update;
 
-    //Take the frame time step, which is stored as a double
-    double timeStep = eventData[P_TIMESTEP].GetFloat();
+    //Take the frame time step, which is stored as a float
+    float timeStep = eventData[P_TIMESTEP].GetFloat();
     //Movement speed as world units per second
-    const double MOVE_SPEED = 2000.0;
+    const float MOVE_SPEED = 2000.0;
     //Mouse sensitivity as degrees per pixel
-    const double MOUSE_SENSITIVITY = 0.1;
+    const float MOUSE_SENSITIVITY = 0.1;
 
     //Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch between -90 and 90 degrees. Only move the camera when the cursor is hidden.
     Input* input = GetSubsystem<Input>();

@@ -35,7 +35,6 @@ Object(context)
     impModel_->SetCastShadows(true);
     impModel_->SetAnimationEnabled(true);
 
-
     AnimationController* animCtrl = rootNode_->CreateComponent<AnimationController>();
     animCtrl->PlayExclusive("Resources/Animations/Smoke.ani", 0, true);
     animCtrl->SetSpeed("Resources/Animations/Smoke.ani", 0.5f+randomizer_);

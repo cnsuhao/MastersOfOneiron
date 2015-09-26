@@ -48,7 +48,6 @@ private:
     Node* spinNode_;
     AnimatedModel* impModel_;
     float randomizer_;
-    Animation* smokeAnim_;
 };
 
 #endif // IMP_H
