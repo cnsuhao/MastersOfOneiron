@@ -32,12 +32,12 @@ class Sprite;
 
 using namespace Urho3D;
 
-class Imp : public Object
+class Kekelplithf : public Object
 {
-    OBJECT(Imp);
+    OBJECT(Kekelplithf);
 public:
-    Imp(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
-    Imp(Context *context, MasterControl *masterControl) : Imp(context, masterControl, masterControl->world.scene, Vector3::ZERO){}
+    Kekelplithf(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
+    Kekelplithf(Context *context, MasterControl *masterControl) : Kekelplithf(context, masterControl, masterControl->world.scene, Vector3::ZERO){}
 
     virtual void Start();
     virtual void Stop();

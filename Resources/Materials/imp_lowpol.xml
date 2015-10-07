@@ -1,6 +1,0 @@
-<material>
-	<technique name="Techniques/NoTexture.xml"/>
-	<texture name="Textures/impnormals.png" unit="normal"/>
-	<parameter name="MatDiffColor" value="0.198814 0.467995 0.64 1"/>
-	<parameter name="MatSpecColor" value="0.5 0.5 0.5 50"/>
-</material>

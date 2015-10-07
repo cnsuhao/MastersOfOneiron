@@ -16,9 +16,9 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "imp.h"
+#include "kekelplithf.h"
 
-Imp::Imp(Context* context, MasterControl* masterControl, Node* parent, Vector3 pos):
+Kekelplithf::Kekelplithf(Context* context, MasterControl* masterControl, Node* parent, Vector3 pos):
 Object(context)
 {
     masterControl_ = masterControl;
@@ -30,8 +30,8 @@ Object(context)
     rootNode_->SetScale(Random(0.015f,0.023f));
     spinNode_= rootNode_->CreateChild("ImpModelNode");
     impModel_ = spinNode_->CreateComponent<AnimatedModel>();
-    impModel_->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/ImpClothed_lowpoly.mdl"));
-    impModel_->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/ImpClothed.xml"));
+    impModel_->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Kekelplithf.mdl"));
+    impModel_->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/Kekelplithf.xml"));
     impModel_->SetCastShadows(true);
     impModel_->SetAnimationEnabled(true);
 
@@ -39,17 +39,17 @@ Object(context)
     animCtrl->PlayExclusive("Resources/Animations/Smoke.ani", 0, true);
     animCtrl->SetSpeed("Resources/Animations/Smoke.ani", 0.5f+randomizer_);
 
-    SubscribeToEvent(E_UPDATE, HANDLER(Imp, HandleUpdate));
+    SubscribeToEvent(E_UPDATE, HANDLER(Kekelplithf, HandleUpdate));
 }
 
-void Imp::Start()
+void Kekelplithf::Start()
 {
 }
-void Imp::Stop()
+void Kekelplithf::Stop()
 {
 }
 
-void Imp::HandleUpdate(StringHash eventType, VariantMap &eventData)
+void Kekelplithf::HandleUpdate(StringHash eventType, VariantMap &eventData)
 {
     using namespace Update;
     double timeStep = eventData[P_TIMESTEP].GetFloat();

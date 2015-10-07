@@ -1,0 +1,6 @@
+<material>
+	<technique name="CoreData/Techniques/DiffNormalSpec.xml" quality="1"/>
+	<texture name="Resources/Textures/KekelplithfDiffuse.png" unit="diffuse"/>
+	<texture name="Resources/Textures/KekelplithfNormals.png" unit="normal"/>
+	<texture name="Resources/Textures/KekelplithfSpecular.png" unit="specular"/>
+</material>

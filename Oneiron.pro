@@ -16,7 +16,6 @@ CONFIG -= qt
 
 SOURCES += \
     mastercontrol.cpp \
-    imp.cpp \
     tile.cpp \
     slot.cpp \
     platform.cpp \
@@ -24,11 +23,11 @@ SOURCES += \
     inputmaster.cpp \
     grass.cpp \
     frop.cpp \
-    helper.cpp
+    helper.cpp \
+    kekelplithf.cpp
 
 HEADERS += \
     mastercontrol.h \
-    imp.h \
     tile.h \
     slot.h \
     platform.h \
@@ -36,4 +35,5 @@ HEADERS += \
     inputmaster.h \
     grass.h \
     frop.h \
-    helper.h
+    helper.h \
+    kekelplithf.h

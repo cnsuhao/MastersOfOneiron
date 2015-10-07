@@ -67,7 +67,7 @@ void OneiroCam::Stop()
 
 void OneiroCam::SetupViewport()
 {
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+//    ResourceCache* cache = GetSubsystem<ResourceCache>();
     Renderer* renderer = GetSubsystem<Renderer>();
 
     //Set up a viewport to the Renderer subsystem so that the 3D scene can be seen
@@ -75,12 +75,12 @@ void OneiroCam::SetupViewport()
     viewport_ = viewport;
 
     //Add anti-asliasing
-    effectRenderPath = viewport_->GetRenderPath()->Clone();
-    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
-    effectRenderPath->SetEnabled("FXAA3", true);
-    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Bloom.xml"));
-    effectRenderPath->SetShaderParameter("BloomThreshold", 0.5f);
-    effectRenderPath->SetShaderParameter("BloomMix", Vector2(0.75f, 1.0f));
+//    effectRenderPath = viewport_->GetRenderPath()->Clone();
+//    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
+//    effectRenderPath->SetEnabled("FXAA3", true);
+//    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Bloom.xml"));
+//    effectRenderPath->SetShaderParameter("BloomThreshold", 0.5f);
+//    effectRenderPath->SetShaderParameter("BloomMix", Vector2(0.75f, 1.0f));
 
     viewport_->SetRenderPath(effectRenderPath);
     renderer->SetViewport(0, viewport);
@@ -126,7 +126,7 @@ void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
     if (input->GetKeyDown('D')) camForce += Oneiron::Scale( rotationNode_->GetRight(), Vector3(1.0f,0.0f,1.0f) ).Normalized();
     if (input->GetKeyDown('A')) camForce += Oneiron::Scale( rotationNode_->GetRight(), Vector3(-1.0f,0.0f,-1.0f) ).Normalized();
     if (input->GetKeyDown('E')) camForce += Vector3::UP;
-    if (input->GetKeyDown('Q') && translationNode_->GetPosition().y_ > 1.0f) camForce += Vector3::DOWN;
+    if (input->GetKeyDown('Q')) camForce += Vector3::DOWN;
     camForce = camForce.Normalized() * MOVE_SPEED * timeStep;
 
     if ( forceMultiplier < 8.0 && (input->GetKeyDown(KEY_LSHIFT)||input->GetKeyDown(KEY_RSHIFT)) ){
@@ -134,11 +134,11 @@ void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
     } else forceMultiplier = pow(forceMultiplier, 0.75);
     rigidBody_->ApplyForce( (forceMultiplier * camForce) - (2.3f * rigidBody_->GetLinearVelocity()) );
 
-    if (translationNode_->GetPosition().y_ < 1.0f)
-    {
-        translationNode_->SetPosition(Vector3(translationNode_->GetPosition().x_, 1.0f, translationNode_->GetPosition().z_));
-        rigidBody_->SetLinearVelocity(Vector3(rigidBody_->GetLinearVelocity().x_, 0.0f, rigidBody_->GetLinearVelocity().z_));
-    }
+//    if (translationNode_->GetPosition().y_ < 1.0f)
+//    {
+//        translationNode_->SetPosition(Vector3(translationNode_->GetPosition().x_, 1.0f, translationNode_->GetPosition().z_));
+//        rigidBody_->SetLinearVelocity(Vector3(rigidBody_->GetLinearVelocity().x_, 0.0f, rigidBody_->GetLinearVelocity().z_));
+//    }
 }
 
 void OneiroCam::Lock(SharedPtr<Platform> platform)

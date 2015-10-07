@@ -17,7 +17,7 @@
 */
 
 #include "tile.h"
-#include "imp.h"
+#include "kekelplithf.h"
 #include "frop.h"
 #include "grass.h"
 
@@ -50,18 +50,23 @@ Object(context)
         model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glass.xml"));
         model->SetCastShadows(true);
     }
-    //Create random imps
+    //Create random kekelplithfs
     else if (extraRandomizer < 7){
         int totalImps = Random(1,5);
         for (int i = 0; i < totalImps; i++){
             Vector3 position = Vector3(-0.075f*totalImps+0.15f*i, 0.0f, Random(-0.5f, 0.5f));
-            new Imp(context_, masterControl_, rootNode_, position);
+            new Kekelplithf(context_, masterControl_, rootNode_, position);
         }
     }
     //Create fire
     else if (extraRandomizer == 8){
-        ParticleEmitter* particleEmitter = rootNode_->CreateComponent<ParticleEmitter>();
+        Node* fireNode = rootNode_->CreateChild("Fire");
+        ParticleEmitter* particleEmitter = fireNode->CreateComponent<ParticleEmitter>();
         particleEmitter->SetEffect(masterControl_->cache_->GetResource<ParticleEffect>("Resources/Particles/Fire.xml"));
+        Light* fireLight = fireNode->CreateComponent<Light>();
+        fireLight->SetRange(2.3f);
+        fireLight->SetColor(Color(1.0f, 0.88f, 0.666f));
+        fireLight->SetCastShadows(true);
     }
     //Create random plants
     else if (extraRandomizer > 8 && coords.y_%2 == 0){
