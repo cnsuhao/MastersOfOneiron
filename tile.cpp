@@ -68,7 +68,7 @@ Object(context)
         fireLight->SetColor(Color(1.0f, 0.88f, 0.666f));
         fireLight->SetCastShadows(true);
     }
-    //Create random plants
+    //Create frop crops
     else if (extraRandomizer > 8 && coords.y_%2 == 0){
         for (int i = 0; i < 4; i++){
             for (int j = 0; j < 3; j++){

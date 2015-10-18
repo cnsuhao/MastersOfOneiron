@@ -38,10 +38,10 @@ void MasterControl::Setup()
     //Set custom window title and icon.
     engineParameters_["WindowTitle"] = "Masters of Oneiron";
     engineParameters_["LogName"] = GetSubsystem<FileSystem>()->GetAppPreferencesDir("urho3d", "logs")+"Oneiron.log";
-    engineParameters_["FullScreen"] = true;
-    engineParameters_["Headless"] = false;
-    engineParameters_["WindowWidth"] = 1920;
-    engineParameters_["WindowHeight"] = 1080;
+//    engineParameters_["FullScreen"] = true;
+//    engineParameters_["Headless"] = false;
+//    engineParameters_["WindowWidth"] = 1920;
+//    engineParameters_["WindowHeight"] = 1080;
 }
 void MasterControl::Start()
 {

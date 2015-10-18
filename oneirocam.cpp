@@ -44,14 +44,6 @@ OneiroCam::OneiroCam(Context *context, MasterControl *masterControl):
     collisionShape->SetSphere(0.1f);
     rigidBody_->SetMass(1.0f);
 
-    Node* lightNode = translationNode_->CreateChild("DirectionalLight");
-    lightNode->SetDirection(Vector3(0.0f, -1.0f, 0.0f));
-    Light* light = lightNode->CreateComponent<Light>();
-    light->SetLightType(LIGHT_POINT);
-    light->SetBrightness(0.5f);
-    light->SetColor(Color(0.7f, 0.9f, 0.6f));
-    light->SetCastShadows(false);
-
     SetupViewport();
 }
 
@@ -121,10 +113,10 @@ void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
 
     //Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
     Vector3 camForce = Vector3::ZERO;
-    if (input->GetKeyDown('W')) camForce += Oneiron::Scale( rotationNode_->GetDirection(), Vector3(1.0f,0.0f,1.0f) ).Normalized();
-    if (input->GetKeyDown('S')) camForce += Oneiron::Scale( rotationNode_->GetDirection(), Vector3(-1.0f,0.0f,-1.0f) ).Normalized();
-    if (input->GetKeyDown('D')) camForce += Oneiron::Scale( rotationNode_->GetRight(), Vector3(1.0f,0.0f,1.0f) ).Normalized();
-    if (input->GetKeyDown('A')) camForce += Oneiron::Scale( rotationNode_->GetRight(), Vector3(-1.0f,0.0f,-1.0f) ).Normalized();
+    if (input->GetKeyDown('W')) camForce += LucKey::Scale( rotationNode_->GetDirection(), Vector3(1.0f,0.0f,1.0f) ).Normalized();
+    if (input->GetKeyDown('S')) camForce += LucKey::Scale( rotationNode_->GetDirection(), Vector3(-1.0f,0.0f,-1.0f) ).Normalized();
+    if (input->GetKeyDown('D')) camForce += LucKey::Scale( rotationNode_->GetRight(), Vector3(1.0f,0.0f,1.0f) ).Normalized();
+    if (input->GetKeyDown('A')) camForce += LucKey::Scale( rotationNode_->GetRight(), Vector3(-1.0f,0.0f,-1.0f) ).Normalized();
     if (input->GetKeyDown('E')) camForce += Vector3::UP;
     if (input->GetKeyDown('Q')) camForce += Vector3::DOWN;
     camForce = camForce.Normalized() * MOVE_SPEED * timeStep;

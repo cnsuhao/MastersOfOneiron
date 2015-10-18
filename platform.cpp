@@ -23,7 +23,7 @@
 namespace Urho3D {
 template <> unsigned MakeHash(const IntVector2& value)
   {
-    return Oneiron::IntVector2ToHash(value);
+    return LucKey::IntVector2ToHash(value);
   }
 }
 

@@ -5,6 +5,8 @@ LIBS += ../MastersOfOneiron/Urho3D/lib/libUrho3D.a \
 
 DEFINES += URHO3D_COMPILE_QT
 
+QMAKE_CXXFLAGS += -std=c++11
+
 INCLUDEPATH += \
     ../MastersOfOneiron/Urho3D/include \
     ../MastersOfOneiron/Urho3D/include/Urho3D/ThirdParty \
@@ -23,7 +25,7 @@ SOURCES += \
     inputmaster.cpp \
     grass.cpp \
     frop.cpp \
-    helper.cpp \
+    luckey.cpp \
     kekelplithf.cpp
 
 HEADERS += \
@@ -35,5 +37,5 @@ HEADERS += \
     inputmaster.h \
     grass.h \
     frop.h \
-    helper.h \
+    luckey.h \
     kekelplithf.h

@@ -23,7 +23,7 @@
 #include <Urho3D/Math/Vector3.h>
 #include <Urho3D/Container/HashBase.h>
 
-namespace Oneiron {
+namespace LucKey {
 
 template <class T>
 T Cycle(T x, T min, T max){
