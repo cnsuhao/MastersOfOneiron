@@ -23,7 +23,7 @@
 
 #include "mastercontrol.h"
 
-DEFINE_APPLICATION_MAIN(MasterControl);
+URHO3D_DEFINE_APPLICATION_MAIN(MasterControl);
 
 MasterControl::MasterControl(Context *context):
     Application(context),
@@ -40,8 +40,8 @@ void MasterControl::Setup()
     engineParameters_["LogName"] = GetSubsystem<FileSystem>()->GetAppPreferencesDir("urho3d", "logs")+"Oneiron.log";
 //    engineParameters_["FullScreen"] = true;
 //    engineParameters_["Headless"] = false;
-//    engineParameters_["WindowWidth"] = 1920;
-//    engineParameters_["WindowHeight"] = 1080;
+//    engineParameters_["WindowWidth"] = 960;
+//    engineParameters_["WindowHeight"] = 540;
 }
 void MasterControl::Start()
 {
@@ -79,11 +79,11 @@ void MasterControl::Stop()
 void MasterControl::SubscribeToEvents()
 {
     //Subscribe scene update event.
-    SubscribeToEvent(E_SCENEUPDATE, HANDLER(MasterControl, HandleSceneUpdate));
+    SubscribeToEvent(E_SCENEUPDATE, URHO3D_HANDLER(MasterControl, HandleSceneUpdate));
     //Subscribe HandleUpdate() function for processing update events
-    SubscribeToEvent(E_UPDATE, HANDLER(MasterControl, HandleUpdate));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(MasterControl, HandleUpdate));
     //Subscribe scene update event.
-    SubscribeToEvent(E_SCENEUPDATE, HANDLER(MasterControl, HandleSceneUpdate));
+    SubscribeToEvent(E_SCENEUPDATE, URHO3D_HANDLER(MasterControl, HandleSceneUpdate));
 }
 
 void MasterControl::SetWindowTitleAndIcon()
@@ -149,7 +149,7 @@ void MasterControl::CreateScene()
     world.cursor.sceneCursor = world.scene->CreateChild("Cursor");
     world.cursor.sceneCursor->SetPosition(Vector3(0.0f,0.0f,0.0f));
     StaticModel* cursorObject = world.cursor.sceneCursor->CreateComponent<StaticModel>();
-    cursorObject->SetModel(cache_->GetResource<Model>("Resources/Models/Cursor.mdl"));
+    cursorObject->SetModel(cache_->GetResource<Model>("Resources/Models/Kekelplithf.mdl"));
     cursorObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/Glow.xml"));
 
     //Create an Invisible plane for mouse raycasting
@@ -171,16 +171,7 @@ void MasterControl::CreateScene()
             backgroundObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/DreamSky.xml"));
         }
     }
-    //Create a Zone component for ambient lighting & fog control
-    /*Node* zoneNode = world.scene_->CreateChild("Zone");
-    Zone* zone = zoneNode->CreateComponent<Zone>();
-    zone->SetBoundingBox(BoundingBox(Vector3(-1000.0f, -10.0f, -1000.0f),Vector3(1000.0f, 20.0f, 1000.0f)));
-    zone->SetAmbientColor(Color(0.15f, 0.15f, 0.15f));
-    zone->SetFogColor(Color(0.2f, 0.1f, 0.3f));
-    zone->SetFogStart(100.0f);
-    zone->SetFogEnd(110.0f);*/
 
-    //Create a directional light to the world. Enable cascaded shadows on it
     Node* lightNode = world.scene->CreateChild("DirectionalLight");
     lightNode->SetDirection(Vector3(0.0f, -1.0f, 0.0f));
     Light* light = lightNode->CreateComponent<Light>();
@@ -188,22 +179,20 @@ void MasterControl::CreateScene()
     light->SetBrightness(1.0f);
     light->SetColor(Color(1.0f, 0.8f, 0.7f));
     light->SetCastShadows(true);
-    light->SetShadowIntensity(0.666f);
     light->SetShadowBias(BiasParameters(0.0000025f, 0.9f));
-    light->SetShadowResolution(0.25f);
+    light->SetShadowResolution(1.0f);
+    light->SetShadowCascade(CascadeParameters(2.0f, 8.0f, 16.0f, 100.0f, 0.8f));
 
-    //Create a second directional light without shadows
     Node* lightNode2 = world.scene->CreateChild("DirectionalLight");
     lightNode2->SetDirection(Vector3(0.0f, 1.0f, 0.0f));
     Light* light2 = lightNode2->CreateComponent<Light>();
     light2->SetLightType(LIGHT_DIRECTIONAL);
-    light2->SetBrightness(0.25f);
+    light2->SetBrightness(0.23f);
     light2->SetColor(Color(1.0f, 1.0f, 0.9f));
     light2->SetCastShadows(true);
     light2->SetShadowBias(BiasParameters(0.00025f, 0.5f));
+    light2->SetShadowResolution(0.666f);
 
-    //Set cascade splits at 10, 50, 200 world unitys, fade shadows at 80% of maximum shadow distance
-    light->SetShadowCascade(CascadeParameters(7.0f, 23.0f, 42.0f, 500.0f, 0.8f));
 
     //Create camera
     world.camera = new OneiroCam(context_, this);
@@ -225,7 +214,7 @@ void MasterControl::HandleSceneUpdate(StringHash eventType, VariantMap &eventDat
 void MasterControl::UpdateCursor(double timeStep)
 {
     world.cursor.sceneCursor->Rotate(Quaternion(0.0f,100.0f*timeStep,0.0f));
-    world.cursor.sceneCursor->SetScale((world.cursor.sceneCursor->GetWorldPosition() - world.camera->GetWorldPosition()).Length()*0.05f);
+    world.cursor.sceneCursor->SetScale((world.cursor.sceneCursor->GetWorldPosition() - world.camera->GetWorldPosition()).Length()*0.0023f);
     if (CursorRayCast(250.0f, world.cursor.hitResults))
     {
         for (int i = 0; i < world.cursor.hitResults.Size(); i++)

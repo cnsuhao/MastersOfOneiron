@@ -31,7 +31,7 @@ Platform::Platform(Context *context, Vector3 position, MasterControl* masterCont
 Object(context)
 {
     masterControl_ = masterControl;
-    SubscribeToEvent(E_UPDATE, HANDLER(Platform, HandleUpdate));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Platform, HandleUpdate));
     rootNode_ = masterControl_->world.scene->CreateChild("Platform");
     masterControl_->platformMap_[rootNode_->GetID()] = WeakPtr<Platform>(this);
 

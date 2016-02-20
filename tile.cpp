@@ -44,10 +44,10 @@ Object(context)
     //Create a dreamspire at random
     if (extraRandomizer == 7) {
         Node* spireNode = rootNode_->CreateChild("Spire");
+        if (coords_.x_%2) spireNode->Rotate(Quaternion(180.0f, Vector3::UP));
         StaticModel* model = spireNode->CreateComponent<StaticModel>();
-        model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Dreamspire.mdl"));
-        model->SetMaterial(0,masterControl_->cache_->GetResource<Material>("Resources/Materials/Structure.xml"));
-        model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glass.xml"));
+        model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Abode.mdl"));
+        model->SetMaterial(0, masterControl_->cache_->GetResource<Material>("Resources/Materials/Abode.xml"));
         model->SetCastShadows(true);
     }
     //Create random kekelplithfs
@@ -61,8 +61,10 @@ Object(context)
     //Create fire
     else if (extraRandomizer == 8){
         Node* fireNode = rootNode_->CreateChild("Fire");
+        fireNode->Translate(Vector3::DOWN);
         ParticleEmitter* particleEmitter = fireNode->CreateComponent<ParticleEmitter>();
-        particleEmitter->SetEffect(masterControl_->cache_->GetResource<ParticleEffect>("Resources/Particles/Fire.xml"));
+        ParticleEffect* particleEffect = masterControl_->cache_->GetResource<ParticleEffect>("Resources/Particles/Fire.xml");
+        particleEmitter->SetEffect(particleEffect);
         Light* fireLight = fireNode->CreateComponent<Light>();
         fireLight->SetRange(2.3f);
         fireLight->SetColor(Color(1.0f, 0.88f, 0.666f));
@@ -113,7 +115,7 @@ Object(context)
         model->SetCastShadows(true);
     }
 
-    SubscribeToEvent(E_UPDATE, HANDLER(Tile, HandleUpdate));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Tile, HandleUpdate));
 }
 
 void Tile::Start()

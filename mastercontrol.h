@@ -67,7 +67,7 @@ StringHash const N_SLOT = StringHash("Slot");
 class MasterControl : public Application
 {
     /// Enable type information.
-    OBJECT(MasterControl);
+    URHO3D_OBJECT(MasterControl, Application);
     friend class InputMaster;
 public:
     /// Constructor.

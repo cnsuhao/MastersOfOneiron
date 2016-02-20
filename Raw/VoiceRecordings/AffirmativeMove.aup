@@ -1,0 +1,122 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE project PUBLIC "-//audacityproject-1.3.0//DTD//EN" "http://audacity.sourceforge.net/xml/audacityproject-1.3.0.dtd" >
+<project xmlns="http://audacity.sourceforge.net/xml/" projname="AffirmativeMove_data" version="1.3.0" audacityversion="2.0.6" sel0="0.0000000000" sel1="0.0000000000" vpos="48" h="0.0000000000" zoom="86.1328125000" rate="44100.0" snapto="off" selectionformat="hh:mm:ss + milliseconds">
+	<tags>
+		<tag name="TRACKNUMBER" value="3"/>
+		<tag name="ALBUM" value="Masters of Oneiron"/>
+		<tag name="ARTIST" value="Frode &apos;Modanung&apos; Lindeijer"/>
+		<tag name="YEAR" value="2016"/>
+		<tag name="GENRE" value="SFX"/>
+		<tag name="TITLE" value="Min Gane"/>
+	</tags>
+	<wavetrack name="Audio Track" channel="0" linked="1" mute="0" solo="0" height="74" minimized="0" isSelected="1" rate="44100" gain="0.316228" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="118163">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000e14.au" len="4608" min="-0.000161" max="0.000122" rms="0.000005"/>
+				</waveblock>
+				<waveblock start="4608">
+					<simpleblockfile filename="e0000e97.au" len="113555" min="-0.777382" max="0.891251" rms="0.089116"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="Audio Track" channel="1" linked="0" mute="0" solo="0" height="74" minimized="0" isSelected="1" rate="44100" gain="0.316228" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="118163">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000168.au" len="4608" min="-0.000032" max="0.000039" rms="0.000001"/>
+				</waveblock>
+				<waveblock start="4608">
+					<simpleblockfile filename="e000030a.au" len="113555" min="-0.886174" max="0.891251" rms="0.131183"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="Audio Track" channel="0" linked="1" mute="0" solo="0" height="74" minimized="0" isSelected="0" rate="44100" gain="1.0" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="118163">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000936.au" len="118163" min="-0.835754" max="0.891251" rms="0.080883"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="Audio Track" channel="1" linked="0" mute="0" solo="0" height="74" minimized="0" isSelected="0" rate="44100" gain="1.0" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="118163">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000391.au" len="118163" min="-0.891251" max="0.682759" rms="0.094117"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="Audio Track" channel="0" linked="1" mute="0" solo="0" height="74" minimized="0" isSelected="0" rate="44100" gain="0.281838" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="118163">
+				<waveblock start="0">
+					<simpleblockfile filename="e00005c3.au" len="118163" min="-0.783295" max="0.891251" rms="0.114448"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="Audio Track" channel="1" linked="0" mute="0" solo="0" height="74" minimized="0" isSelected="0" rate="44100" gain="0.281838" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="118163">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000d4c.au" len="118163" min="-0.891251" max="0.720678" rms="0.121147"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="Audio Track" channel="0" linked="1" mute="0" solo="0" height="74" minimized="0" isSelected="0" rate="44100" gain="0.316228" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="118163">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000880.au" len="118163" min="-0.891251" max="0.860471" rms="0.110278"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="Audio Track" channel="1" linked="0" mute="0" solo="0" height="74" minimized="0" isSelected="0" rate="44100" gain="0.316228" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="118163">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000236.au" len="118163" min="-0.891251" max="0.891251" rms="0.120815"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="Audio Track" channel="0" linked="1" mute="0" solo="0" height="67" minimized="0" isSelected="0" rate="44100" gain="0.177828" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="118163">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000b3e.au" len="118163" min="-0.74047" max="0.891251" rms="0.09559"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="Audio Track" channel="1" linked="0" mute="0" solo="0" height="67" minimized="0" isSelected="0" rate="44100" gain="0.177828" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="118163">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000a7a.au" len="118163" min="-0.891251" max="0.645109" rms="0.100762"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<labeltrack name="Label Track" numlabels="2" height="73" minimized="0" isSelected="0">
+		<label t="0.03482993" t1="1.40480726" title="Min gane"/>
+		<label t="1.38158730" t1="2.63546485" title="Mi gane"/>
+	</labeltrack>
+</project>

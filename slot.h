@@ -34,7 +34,7 @@ using namespace Urho3D;
 
 class Slot : public Object
 {
-    OBJECT(Tile);
+    URHO3D_OBJECT(Tile, Object);
     friend class Platform;
 public:
     IntVector2 coords_;

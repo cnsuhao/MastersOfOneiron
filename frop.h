@@ -34,7 +34,7 @@ using namespace Urho3D;
 
 class Frop : public Object
 {
-    OBJECT(Frop);
+    URHO3D_OBJECT(Frop, Object);
 public:
     Frop(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
     Frop(Context* context, MasterControl* masterControl): Frop(context, masterControl, masterControl->world.scene, Vector3::ZERO){}

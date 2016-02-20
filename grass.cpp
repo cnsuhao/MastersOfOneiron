@@ -32,7 +32,7 @@ Grass::Grass(Context *context, MasterControl *masterControl, Node *parent, Vecto
     grassModel_->SetMaterial(1, masterControl_->cache_->GetResource<Material>("Resources/Materials/Shadow.xml"));
     grassModel_->SetCastShadows(false);
 
-    SubscribeToEvent(E_UPDATE, HANDLER(Grass, HandleUpdate));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Grass, HandleUpdate));
 }
 
 void Grass::Start()

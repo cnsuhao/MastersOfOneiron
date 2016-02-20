@@ -35,7 +35,7 @@ using namespace Urho3D;
 
 class InputMaster : public Object
 {
-    OBJECT(InputMaster);
+    URHO3D_OBJECT(InputMaster, Object);
 public:
     InputMaster(Context* context, MasterControl* masterControl);
     WeakPtr<Node> firstHit_;

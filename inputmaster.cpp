@@ -25,9 +25,9 @@ InputMaster::InputMaster(Context* context, MasterControl* masterControl) : Objec
     masterControl_ = masterControl;
     input_ = GetSubsystem<Input>();
     //Subscribe mouse down event
-    SubscribeToEvent(E_MOUSEBUTTONDOWN, HANDLER(InputMaster, HandleMouseDown));
+    SubscribeToEvent(E_MOUSEBUTTONDOWN, URHO3D_HANDLER(InputMaster, HandleMouseDown));
     //Subscribe key down event.
-    SubscribeToEvent(E_KEYDOWN, HANDLER(InputMaster, HandleKeyDown));
+    SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(InputMaster, HandleKeyDown));
 }
 
 void InputMaster::HandleMouseDown(StringHash eventType, VariantMap &eventData)

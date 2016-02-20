@@ -1,0 +1,6 @@
+<material>
+	<technique name="CoreData/Techniques/NoTextureNormal.xml" quality="1"/>
+	<!--texture name="Resources/Textures/AbodeDiffuse.png" unit="diffuse"/-->
+	<texture name="Resources/Textures/AbodeNormals.png" unit="normal"/>
+	<!--texture name="Resources/Textures/AbodeSpecular.png" unit="specular"/-->
+</material>

@@ -24,7 +24,7 @@ Object(context)
     platform_ = platform;
     coords_ = coords;
     ResourceCache* cache = GetSubsystem<ResourceCache>();
-    SubscribeToEvent(E_UPDATE, HANDLER(Slot, HandleUpdate));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Slot, HandleUpdate));
     rootNode_ = platform_->rootNode_->CreateChild("Slot");
     rootNode_->SetPosition(Vector3(coords.x_, 0.0f, -coords.y_));
     StaticModel* model = rootNode_->CreateComponent<StaticModel>();

@@ -38,7 +38,7 @@ using namespace Urho3D;
 
 class OneiroCam : public Object
 {
-    OBJECT(OneiroCam);
+    URHO3D_OBJECT(OneiroCam, Object);
     friend class MasterControl;
     friend class InputMaster;
 public:
@@ -65,7 +65,7 @@ private:
     float roll_;
     float yawDelta_;
     float pitchDelta_;
-    float forceMultiplier;
+    float forceMultiplier_;
     void SetupViewport();
     void Lock(SharedPtr<Platform> platform);
 };

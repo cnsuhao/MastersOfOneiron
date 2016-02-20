@@ -41,7 +41,7 @@ enum BuildingType {B_SPACE, B_EMPTY, B_ENGINE};
 
 class Platform : public Object
 {
-    OBJECT(Platform);
+    URHO3D_OBJECT(Platform, Object);
     friend class InputMaster;
 public:
     Platform(Context *context, Vector3 position, MasterControl* masterControl);

@@ -27,7 +27,7 @@ Object(context)
     rootNode_ = parent->CreateChild("Imp");
     rootNode_->SetPosition(pos);
     rootNode_->Rotate(Quaternion(0.0f,Random(360.0f),0.0f));
-    rootNode_->SetScale(Random(0.015f,0.023f));
+    rootNode_->SetScale(Random(0.015f,0.016f));
     spinNode_= rootNode_->CreateChild("ImpModelNode");
     impModel_ = spinNode_->CreateComponent<AnimatedModel>();
     impModel_->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Kekelplithf.mdl"));
@@ -39,7 +39,7 @@ Object(context)
     animCtrl->PlayExclusive("Resources/Animations/Smoke.ani", 0, true);
     animCtrl->SetSpeed("Resources/Animations/Smoke.ani", 0.5f+randomizer_);
 
-    SubscribeToEvent(E_UPDATE, HANDLER(Kekelplithf, HandleUpdate));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Kekelplithf, HandleUpdate));
 }
 
 void Kekelplithf::Start()

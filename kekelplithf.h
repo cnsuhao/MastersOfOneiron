@@ -34,7 +34,7 @@ using namespace Urho3D;
 
 class Kekelplithf : public Object
 {
-    OBJECT(Kekelplithf);
+    URHO3D_OBJECT(Kekelplithf, Object);
 public:
     Kekelplithf(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
     Kekelplithf(Context *context, MasterControl *masterControl) : Kekelplithf(context, masterControl, masterControl->world.scene, Vector3::ZERO){}

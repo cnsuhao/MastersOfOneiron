@@ -25,10 +25,10 @@ OneiroCam::OneiroCam(Context *context, MasterControl *masterControl):
     roll_{0.0f},
     yawDelta_{0.0f},
     pitchDelta_{0.0f},
-    forceMultiplier{1.0f}
+    forceMultiplier_{1.0f}
 {
     masterControl_ = masterControl;
-    SubscribeToEvent(E_SCENEUPDATE, HANDLER(OneiroCam, HandleSceneUpdate));
+    SubscribeToEvent(E_SCENEUPDATE, URHO3D_HANDLER(OneiroCam, HandleSceneUpdate));
 
     //Create the camera. Limit far clip distance to match the fog
     translationNode_ = masterControl_->world.scene->CreateChild("CamTrans");
@@ -43,6 +43,10 @@ OneiroCam::OneiroCam(Context *context, MasterControl *masterControl):
     CollisionShape* collisionShape = translationNode_->CreateComponent<CollisionShape>();
     collisionShape->SetSphere(0.1f);
     rigidBody_->SetMass(1.0f);
+
+    Light* light = rotationNode_->CreateComponent<Light>();
+    light->SetLightType(LIGHT_DIRECTIONAL);
+    light->SetBrightness(0.23f);
 
     SetupViewport();
 }
@@ -67,12 +71,12 @@ void OneiroCam::SetupViewport()
     viewport_ = viewport;
 
     //Add anti-asliasing
-//    effectRenderPath = viewport_->GetRenderPath()->Clone();
-//    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
-//    effectRenderPath->SetEnabled("FXAA3", true);
-//    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Bloom.xml"));
-//    effectRenderPath->SetShaderParameter("BloomThreshold", 0.5f);
-//    effectRenderPath->SetShaderParameter("BloomMix", Vector2(0.75f, 1.0f));
+    effectRenderPath = viewport_->GetRenderPath()->Clone();
+    effectRenderPath->Append(masterControl_->cache_->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
+    effectRenderPath->SetEnabled("FXAA3", true);
+    effectRenderPath->Append(masterControl_->cache_->GetResource<XMLFile>("PostProcess/Bloom.xml"));
+    effectRenderPath->SetShaderParameter("BloomThreshold", 0.5f);
+    effectRenderPath->SetShaderParameter("BloomMix", Vector2(0.75f, 1.0f));
 
     viewport_->SetRenderPath(effectRenderPath);
     renderer->SetViewport(0, viewport);
@@ -95,15 +99,15 @@ void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
     //Take the frame time step, which is stored as a float
     float timeStep = eventData[P_TIMESTEP].GetFloat();
     //Movement speed as world units per second
-    const float MOVE_SPEED = 2000.0;
+    const float MOVE_SPEED = 2000.0f;
     //Mouse sensitivity as degrees per pixel
-    const float MOUSE_SENSITIVITY = 0.1;
+    const float MOUSE_SENSITIVITY = 0.1f;
 
     //Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch between -90 and 90 degrees. Only move the camera when the cursor is hidden.
     Input* input = GetSubsystem<Input>();
     IntVector2 mouseMove = input->GetMouseMove();
-    yawDelta_ = 0.5*(yawDelta_ + MOUSE_SENSITIVITY * mouseMove.x_);
-    pitchDelta_ = 0.5*(pitchDelta_ + MOUSE_SENSITIVITY * mouseMove.y_);
+    yawDelta_ = 0.5f*(yawDelta_ + MOUSE_SENSITIVITY * mouseMove.x_);
+    pitchDelta_ = 0.5f*(pitchDelta_ + MOUSE_SENSITIVITY * mouseMove.y_);
     yaw_ += yawDelta_;
     pitch_ += pitchDelta_;
     pitch_ = Clamp(pitch_, -89.0f, 89.0f);
@@ -121,10 +125,10 @@ void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
     if (input->GetKeyDown('Q')) camForce += Vector3::DOWN;
     camForce = camForce.Normalized() * MOVE_SPEED * timeStep;
 
-    if ( forceMultiplier < 8.0 && (input->GetKeyDown(KEY_LSHIFT)||input->GetKeyDown(KEY_RSHIFT)) ){
-        forceMultiplier += 0.23;
-    } else forceMultiplier = pow(forceMultiplier, 0.75);
-    rigidBody_->ApplyForce( (forceMultiplier * camForce) - (2.3f * rigidBody_->GetLinearVelocity()) );
+    if ( forceMultiplier_ < 8.0f && (input->GetKeyDown(KEY_LSHIFT)||input->GetKeyDown(KEY_RSHIFT)) ){
+        forceMultiplier_ += 0.23f;
+    } else forceMultiplier_ = pow(forceMultiplier_, 0.75f);
+    rigidBody_->ApplyForce( (forceMultiplier_ * camForce) - (2.3f * rigidBody_->GetLinearVelocity()) );
 
 //    if (translationNode_->GetPosition().y_ < 1.0f)
 //    {

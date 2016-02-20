@@ -34,7 +34,7 @@ using namespace Urho3D;
 
 class Grass : public Object
 {
-    OBJECT(Grass);
+    URHO3D_OBJECT(Grass, Object);
 public:
     Grass(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
     Grass(Context* context, MasterControl* masterControl): Grass(context, masterControl, masterControl->world.scene, Vector3::ZERO){}

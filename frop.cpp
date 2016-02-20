@@ -33,7 +33,7 @@ Frop::Frop(Context *context, MasterControl *masterControl, Node *parent, Vector3
     fropModel_->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/Frop.xml"));
     fropModel_->SetCastShadows(true);
 
-    SubscribeToEvent(E_UPDATE, HANDLER(Frop, HandleUpdate));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Frop, HandleUpdate));
 }
 
 void Frop::Start()

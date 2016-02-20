@@ -38,7 +38,7 @@ class Platform;
 class Tile : public Object
 {
     friend class Platform;
-    OBJECT(Tile);
+    URHO3D_OBJECT(Tile, Object);
 public:
     Tile(Context *context, const IntVector2 coords, Platform *platform);
 
