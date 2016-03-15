@@ -172,16 +172,16 @@ void MasterControl::CreateScene()
         }
     }
 
-    Node* lightNode = world.scene->CreateChild("DirectionalLight");
-    lightNode->SetDirection(Vector3(0.0f, -1.0f, 0.0f));
-    Light* light = lightNode->CreateComponent<Light>();
-    light->SetLightType(LIGHT_DIRECTIONAL);
-    light->SetBrightness(1.0f);
-    light->SetColor(Color(1.0f, 0.8f, 0.7f));
-    light->SetCastShadows(true);
-    light->SetShadowBias(BiasParameters(0.0000025f, 0.9f));
-    light->SetShadowResolution(1.0f);
-    light->SetShadowCascade(CascadeParameters(2.0f, 8.0f, 16.0f, 100.0f, 0.8f));
+    world.sunLightNode = world.scene->CreateChild("DirectionalLight");
+    world.sunLightNode->SetDirection(Vector3(0.0f, -1.0f, 0.0f));
+    world.sunLight = world.sunLightNode->CreateComponent<Light>();
+    world.sunLight->SetLightType(LIGHT_DIRECTIONAL);
+    world.sunLight->SetBrightness(1.0f);
+    world.sunLight->SetColor(Color(1.0f, 0.8f, 0.7f));
+    world.sunLight->SetCastShadows(true);
+    world.sunLight->SetShadowBias(BiasParameters(0.0000023f, 0.42f));
+    world.sunLight->SetShadowResolution(2.0f);
+    world.sunLight->SetShadowCascade(CascadeParameters(4.0f, 16.0f, 64.0f, 128.0f, 1.0f));
 
     Node* lightNode2 = world.scene->CreateChild("DirectionalLight");
     lightNode2->SetDirection(Vector3(0.0f, 1.0f, 0.0f));
@@ -196,6 +196,11 @@ void MasterControl::CreateScene()
 
     //Create camera
     world.camera = new OneiroCam(context_, this);
+
+    //Add some random platforms
+    for (int p = 5; p <= 23; ++p){
+        new Platform(context_, Quaternion(Random(60.0f)+72.0f*(p%5), Vector3::UP) * Vector3::FORWARD*p*5.0f, this, true);
+    }
 }
 
 void MasterControl::HandleUpdate(StringHash eventType, VariantMap &eventData)
@@ -209,6 +214,10 @@ void MasterControl::HandleSceneUpdate(StringHash eventType, VariantMap &eventDat
     double timeStep = eventData[P_TIMESTEP].GetFloat();
     world.voidNode->SetPosition((2.0f*Vector3::DOWN) + (world.camera->GetWorldPosition()*Vector3(1.0f,0.0f,1.0f)));
     UpdateCursor(timeStep);
+
+//    world.sunLightNode->SetDirection(Vector3(sin(world.scene->GetElapsedTime() * 0.23f),
+//                                             -5.0f,
+//                                             sin(world.scene->GetElapsedTime() * 0.42f)));
 }
 
 void MasterControl::UpdateCursor(double timeStep)

@@ -39,7 +39,7 @@ OneiroCam::OneiroCam(Context *context, MasterControl *masterControl):
     translationNode_->SetPosition(Vector3(0.0f, 3.0f, 0.0f));
     rotationNode_->SetRotation(Quaternion(0.0f, 90.0f, 0.0f));
     rigidBody_ = translationNode_->CreateComponent<RigidBody>();
-    rigidBody_->SetAngularDamping(10.0f);
+    rigidBody_->SetAngularFactor(Vector3::ZERO);
     CollisionShape* collisionShape = translationNode_->CreateComponent<CollisionShape>();
     collisionShape->SetSphere(0.1f);
     rigidBody_->SetMass(1.0f);
@@ -65,6 +65,7 @@ void OneiroCam::SetupViewport()
 {
 //    ResourceCache* cache = GetSubsystem<ResourceCache>();
     Renderer* renderer = GetSubsystem<Renderer>();
+    renderer->SetShadowQuality(SHADOWQUALITY_PCF_24BIT);
 
     //Set up a viewport to the Renderer subsystem so that the 3D scene can be seen
     SharedPtr<Viewport> viewport(new Viewport(context_, masterControl_->world.scene, camera_));

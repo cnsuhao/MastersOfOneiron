@@ -44,7 +44,7 @@ class Platform : public Object
     URHO3D_OBJECT(Platform, Object);
     friend class InputMaster;
 public:
-    Platform(Context *context, Vector3 position, MasterControl* masterControl);
+    Platform(Context *context, Vector3 position, MasterControl* masterControl, bool random = false);
 
     MasterControl* masterControl_;
     Node* rootNode_;

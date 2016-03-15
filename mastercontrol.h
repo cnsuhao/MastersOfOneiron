@@ -42,6 +42,8 @@ typedef struct GameWorld
     SharedPtr<Scene> scene;
     SharedPtr<Node> backgroundNode;
     SharedPtr<Node> voidNode;
+    SharedPtr<Node> sunLightNode;
+    Light* sunLight;
     struct {
         SharedPtr<Node> sceneCursor;
         SharedPtr<Cursor> uiCursor;

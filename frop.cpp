@@ -20,7 +20,7 @@
 
 Frop::Frop(Context *context, MasterControl *masterControl, Node *parent, Vector3 pos) : Object(context)
 {
-    growthStart_ = Random(0.0f, 5.0f);
+    growthStart_ = Random(0.0f, 23.0f);
     masterControl_ = masterControl;
     rootNode_ = parent->CreateChild("Frop");
     rootNode_->SetPosition(pos);
@@ -50,5 +50,5 @@ void Frop::HandleUpdate(StringHash eventType, VariantMap &eventData)
     double timeStep = eventData[P_TIMESTEP].GetFloat();
     age_ += timeStep;
     if (age_ > growthStart_ && rootNode_->GetScale().Length() < scale_.Length())
-        rootNode_->SetScale(rootNode_->GetScale()+(timeStep*(scale_ - rootNode_->GetScale())));
+        rootNode_->SetScale(rootNode_->GetScale()+(5.0f * timeStep*(scale_ - rootNode_->GetScale())));
 }

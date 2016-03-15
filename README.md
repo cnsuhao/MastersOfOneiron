@@ -13,4 +13,4 @@ MoO is being developed in C++ using Urho3D as its game engine.
 WASDQE and Shift, Mouse movement and left click.
 
 ###Screenshot
-![MoO screenshot](https://raw.githubusercontent.com/LucKeyProductions/MastersOfOneiron/master/Screenshots/Screenshot_Sun_Jul_12_15_32_06_2015.png)
+![MoO screenshot](https://raw.githubusercontent.com/LucKeyProductions/MastersOfOneiron/master/Screenshots/Screenshot_Tue_Mar_15_20_25_32_2016.png)

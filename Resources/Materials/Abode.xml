@@ -1,6 +1,10 @@
 <material>
-	<technique name="CoreData/Techniques/NoTextureNormal.xml" quality="1"/>
-	<!--texture name="Resources/Textures/AbodeDiffuse.png" unit="diffuse"/-->
+	<technique name="CoreData/Techniques/DiffNormalSpecEmissive.xml"/>
+	<parameter name="MatDiffColor" value="1 1 1 1" />
+	<parameter name="MatEmissiveColor" value="1 1 1" />
+	<parameter name="MatSpecColor" value="1 1 1 23" />
+	<texture name="Resources/Textures/AbodeDiffuse.png" unit="diffuse"/>
 	<texture name="Resources/Textures/AbodeNormals.png" unit="normal"/>
-	<!--texture name="Resources/Textures/AbodeSpecular.png" unit="specular"/-->
+	<texture name="Resources/Textures/AbodeSpecular.png" unit="specular"/>
+	<texture name="Resources/Textures/AbodeEmission.png" unit="emissive"/>
 </material>

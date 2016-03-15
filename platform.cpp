@@ -27,7 +27,7 @@ template <> unsigned MakeHash(const IntVector2& value)
   }
 }
 
-Platform::Platform(Context *context, Vector3 position, MasterControl* masterControl):
+Platform::Platform(Context *context, Vector3 position, MasterControl* masterControl, bool random):
 Object(context)
 {
     masterControl_ = masterControl;
@@ -52,52 +52,34 @@ Object(context)
     IntVector2 firstCoordPair = IntVector2(0,0);
     tileMap_[firstCoordPair] = new Tile(context_, firstCoordPair, this);
     // Add random tiles
-    int addedTiles = 1;
-    int platformSize = Random(8, 23);
-    //Old random platform creation algorithm
-    /*while (addedTiles < platformSize){
-        bool foundNeighbour = false;
-        const IntVector2 coordPair = IntVector2(Random(-platformSize/Random(1,3),platformSize/Random(1,3)),Random(-platformSize/Random(1,3),platformSize/Random(1,3)));
-        const IntVector2 xMirroredPair = coordPair * IntVector2(-1,1);
-        Vector<IntVector2> tileCoords = tileMap_.Keys();
-        if (tileCoords.Contains(coordPair) || tileCoords.Contains(coordPair)) continue;
+    if (random){
+        rootNode_->Rotate(Quaternion(Random(360.0f), Vector3::UP));
 
-        for (int direction = 1; direction <= 4; direction++){
-            if(!CheckEmptyNeighbour(coordPair, (TileElement)direction, true) ) foundNeighbour = true; continue;
-        }
+        bool symmetrical = static_cast<bool>(Random(2));
+        int addedTiles = 1;
+        int platformSize = Random(5, 88);
 
-        if (foundNeighbour){
-            addedTiles++;
-            tileMap_[coordPair] = new Tile(context_, coordPair, this);
-            if (coordPair.x_ != xMirroredPair.x_){
-                tileMap_[xMirroredPair] = new Tile(context_, xMirroredPair, this);
-                addedTiles++;
-            }
-        }
-    }*/
+        while (addedTiles < platformSize){
+            //Pick a random exsisting tile from a list.
+            Vector<IntVector2> coordsVector = tileMap_.Keys();
+            IntVector2 randomTileCoords = coordsVector[Random((int)coordsVector.Size())];
 
-    while (addedTiles < platformSize){
-        //Pick a random exsisting tile from a list.
-        Vector<IntVector2> coordsVector = tileMap_.Keys();
-        IntVector2 randomTileCoords = coordsVector[Random((int)coordsVector.Size())];
-
-        //Create a vector of numbers 1 to 4
-        /*Vector<int> directions;
-        for (int i = 1; i <= 4; i++){directions.Push(i);*/
-        //Check neighbours in random orer
-        char startDir = Random(1,4);
-        for (int direction = startDir; direction < startDir+4; direction++){
-            int clampedDir = direction;
-            if (clampedDir > 4) clampedDir -= 4;
-            if (CheckEmptyNeighbour(randomTileCoords, (TileElement)clampedDir, true))
-            {
-                IntVector2 newTileCoords = GetNeighbourCoords(randomTileCoords, (TileElement)clampedDir);
-                AddTile(newTileCoords);
-                addedTiles++;
-                if (newTileCoords.x_ != 0) {
-                    newTileCoords = IntVector2(-newTileCoords.x_,newTileCoords.y_);
-                    tileMap_[newTileCoords] = new Tile(context_, newTileCoords, this);
+            char startDir = Random(0,4);
+            for (int direction = startDir; direction < startDir+3; direction++){
+                int cycledDir = LucKey::Cycle(direction, 1, 4);
+                assert(cycledDir > 0 && cycledDir < 5);
+                TileElement tileElement = static_cast<TileElement>(cycledDir);
+                if (CheckEmptyNeighbour(randomTileCoords, tileElement, true))
+                {
+                    IntVector2 newTileCoords = GetNeighbourCoords(randomTileCoords, tileElement);
+                    AddTile(newTileCoords);
                     addedTiles++;
+                    if (newTileCoords.x_ != 0 && symmetrical) {
+                        newTileCoords = IntVector2(-newTileCoords.x_, newTileCoords.y_);
+                        AddTile(newTileCoords);
+//                        tileMap_[newTileCoords] = new Tile(context_, newTileCoords, this);
+                        addedTiles++;
+                    }
                 }
             }
         }
@@ -105,12 +87,12 @@ Object(context)
 
     //Add slots
     AddMissingSlots();
+    DisableSlots();
     FixFringe();
 
-    rigidBody_->ApplyForce(Vector3(Random(-100.0f,100.0f), 0.0f, Random(-100.0f,100.0f)));
-    rigidBody_->ApplyTorque(Vector3(0.0f, Random(-16.0f, 16.0f), 0.0f));
+//    rigidBody_->ApplyForce(Vector3(Random(-100.0f,100.0f), 0.0f, Random(-100.0f,100.0f)));
+//    rigidBody_->ApplyTorque(Vector3(0.0f, Random(-16.0f, 16.0f), 0.0f));
 
-    Deselect();
 }
 
 

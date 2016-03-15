@@ -22,12 +22,11 @@
 #include "grass.h"
 
 Tile::Tile(Context *context, const IntVector2 coords, Platform *platform):
-Object(context)
+Object(context),
+  platform_{platform},
+  masterControl_{platform->masterControl_},
+  coords_{coords}
 {
-    masterControl_ = platform->masterControl_;
-    platform_ = platform;
-    coords_ = coords;
-
     rootNode_ = platform_->rootNode_->CreateChild("Tile");
     rootNode_->SetPosition(Vector3((double)coords_.x_, 0.0f, -(double)coords_.y_));
     //Increase platform mass
@@ -41,7 +40,7 @@ Object(context)
     //Create random tile addons
     int extraRandomizer = Random(23);
 
-    //Create a dreamspire at random
+    //Create a dreamspire
     if (extraRandomizer == 7) {
         Node* spireNode = rootNode_->CreateChild("Spire");
         if (coords_.x_%2) spireNode->Rotate(Quaternion(180.0f, Vector3::UP));
@@ -52,9 +51,9 @@ Object(context)
     }
     //Create random kekelplithfs
     else if (extraRandomizer < 7){
-        int totalImps = Random(1,5);
+        int totalImps = Random(1, 5);
         for (int i = 0; i < totalImps; i++){
-            Vector3 position = Vector3(-0.075f*totalImps+0.15f*i, 0.0f, Random(-0.5f, 0.5f));
+            Vector3 position = Vector3(-0.075f * totalImps + 0.15f * i, 0.0f, Random(-0.5f, 0.5f));
             new Kekelplithf(context_, masterControl_, rootNode_, position);
         }
     }
