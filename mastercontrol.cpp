@@ -179,9 +179,9 @@ void MasterControl::CreateScene()
     world.sunLight->SetBrightness(1.0f);
     world.sunLight->SetColor(Color(1.0f, 0.8f, 0.7f));
     world.sunLight->SetCastShadows(true);
-    world.sunLight->SetShadowBias(BiasParameters(0.0000023f, 0.42f));
+    world.sunLight->SetShadowBias(BiasParameters(0.0000023f, 0.23f));
     world.sunLight->SetShadowResolution(2.0f);
-    world.sunLight->SetShadowCascade(CascadeParameters(4.0f, 16.0f, 64.0f, 128.0f, 1.0f));
+    world.sunLight->SetShadowCascade(CascadeParameters(4.0f, 16.0f, 64.0f, 0.5f, 1.0f));
 
     Node* lightNode2 = world.scene->CreateChild("DirectionalLight");
     lightNode2->SetDirection(Vector3(0.0f, 1.0f, 0.0f));
@@ -199,7 +199,7 @@ void MasterControl::CreateScene()
 
     //Add some random platforms
     for (int p = 5; p <= 23; ++p){
-        new Platform(context_, Quaternion(Random(60.0f)+72.0f*(p%5), Vector3::UP) * Vector3::FORWARD*p*5.0f, this, true);
+        new Platform(context_, Quaternion(Random(60.0f)+72.0f*(p%5), Vector3::UP) * Vector3::FORWARD * p * 5.0f, this, true);
     }
 }
 
