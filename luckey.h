@@ -97,8 +97,8 @@ enum class SixaxisButton {  SELECT, LEFTSTICK, RIGHTSTICK, START,
 
 template <class T>
 T Cycle(T x, T min, T max){
-    T range = max - min + 1;
-    T res = x;
+    T range{max - min + 1};
+    T res{x};
     if (x < min) {
         res += (range) * abs(ceil((max - x) / (range)));
     }

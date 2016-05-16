@@ -35,7 +35,7 @@ Object(context)
     impModel_->SetCastShadows(true);
     impModel_->SetAnimationEnabled(true);
 
-    AnimationController* animCtrl = rootNode_->CreateComponent<AnimationController>();
+    AnimationController* animCtrl{rootNode_->CreateComponent<AnimationController>()};
     animCtrl->PlayExclusive("Resources/Animations/Smoke.ani", 0, true);
     animCtrl->SetSpeed("Resources/Animations/Smoke.ani", 0.5f+randomizer_);
 
@@ -51,6 +51,5 @@ void Kekelplithf::Stop()
 
 void Kekelplithf::HandleUpdate(StringHash eventType, VariantMap &eventData)
 {
-    using namespace Update;
-    double timeStep = eventData[P_TIMESTEP].GetFloat();
+//    double timeStep = eventData[Update::P_TIMESTEP].GetFloat();
 }

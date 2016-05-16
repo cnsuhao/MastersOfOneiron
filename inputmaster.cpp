@@ -32,39 +32,39 @@ InputMaster::InputMaster(Context* context, MasterControl* masterControl) : Objec
 
 void InputMaster::HandleMouseDown(StringHash eventType, VariantMap &eventData)
 {
-    using namespace MouseButtonDown;
-    int button = eventData[P_BUTTON].GetInt();
-    if (button == MOUSEB_LEFT){
+    int button{eventData[MouseButtonDown::P_BUTTON].GetInt()};
+    if (button == MOUSEB_LEFT) {
         //See through cursor
-        int first = 0;
+        int first{0};
         if (masterControl_->world.cursor.hitResults[first].node_->GetNameHash() == N_CURSOR) first = 1;
         firstHit_ = SharedPtr<Node>(masterControl_->world.cursor.hitResults[first].node_);
         //Void interaction (create new platform)
-        if (firstHit_->GetNameHash() == N_VOID){
+        if (firstHit_->GetNameHash() == N_VOID) {
             new Platform(context_, masterControl_->world.cursor.sceneCursor->GetPosition(), masterControl_);
         }
         //Platform selection
-        else if (firstHit_->GetNameHash() == N_TILEPART)
-        {
+        else if (firstHit_->GetNameHash() == N_TILEPART) {
             //Select single platform
-            if (!(input_->GetKeyDown(KEY_LSHIFT)||input_->GetKeyDown(KEY_RSHIFT)))
-            {
-                SharedPtr<Platform> platform = masterControl_->platformMap_[firstHit_->GetParent()->GetParent()->GetID()];
+            if (!(input_->GetKeyDown(KEY_LSHIFT)||input_->GetKeyDown(KEY_RSHIFT))) {
+                SharedPtr<Platform> platform{masterControl_->platformMap_[firstHit_->GetParent()->GetParent()->GetID()]};
                 SetSelection(platform);
-            }
+            } else {
             //Add platform to selection when either of the shift keys is held down
-            else
-            {
-                SharedPtr<Platform> platform = masterControl_->platformMap_[firstHit_->GetParent()->GetParent()->GetID()];
-                platform->SetSelected(!platform->IsSelected());
-                selectedPlatforms_ += platform;
+                SharedPtr<Platform> platform{masterControl_->platformMap_[firstHit_->GetParent()->GetParent()->GetID()]};
+                if (platform->IsSelected()) {
+                    platform->SetSelected(false);
+                    selectedPlatforms_.Remove(platform);
+                } else {
+                    platform->SetSelected(true);
+                    selectedPlatforms_ += platform;
+                }
             }
         }
         //Building interaction, if platform was already selected
         //Slot interaction, if Former was selected
         else if (firstHit_->GetNameHash() == N_SLOT)
         {
-            SharedPtr<Platform> platform = masterControl_->platformMap_[firstHit_->GetParent()->GetID()];
+            SharedPtr<Platform> platform{masterControl_->platformMap_[firstHit_->GetParent()->GetID()]};
             IntVector2 coords = IntVector2(firstHit_->GetPosition().x_, -firstHit_->GetPosition().z_);
             if (platform->CheckEmpty(coords, true))
             {

@@ -28,7 +28,9 @@ Object(context),
   coords_{coords}
 {
     rootNode_ = platform_->rootNode_->CreateChild("Tile");
-    rootNode_->SetPosition(Vector3((double)coords_.x_, 0.0f, -(double)coords_.y_));
+    rootNode_->SetPosition(Vector3(static_cast<double>(coords_.x_),
+                                   0.0f,
+                                   -static_cast<double>(coords_.y_)));
     //Increase platform mass
     platform_->rigidBody_->SetMass(platform_->rigidBody_->GetMass()+1.0f);
     //Add collision shape to platform
@@ -38,42 +40,42 @@ Object(context),
     //platform_->rigidBody_->EnableMassUpdate();
 
     //Create random tile addons
-    int extraRandomizer = Random(23);
+    int extraRandomizer{Random(23)};
 
     //Create a dreamspire
     if (extraRandomizer == 7) {
-        Node* spireNode = rootNode_->CreateChild("Spire");
+        Node* spireNode{rootNode_->CreateChild("Spire")};
         if (coords_.x_%2) spireNode->Rotate(Quaternion(180.0f, Vector3::UP));
-        StaticModel* model = spireNode->CreateComponent<StaticModel>();
+        StaticModel* model{spireNode->CreateComponent<StaticModel>()};
         model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Abode.mdl"));
         model->SetMaterial(0, masterControl_->cache_->GetResource<Material>("Resources/Materials/Abode.xml"));
         model->SetCastShadows(true);
     }
     //Create random kekelplithfs
     else if (extraRandomizer < 7){
-        int totalImps = Random(1, 5);
-        for (int i = 0; i < totalImps; i++){
+        int totalImps{Random(1, 5)};
+        for (int i{0}; i < totalImps; i++){
             Vector3 position = Vector3(-0.075f * totalImps + 0.15f * i, 0.0f, Random(-0.5f, 0.5f));
             new Kekelplithf(context_, masterControl_, rootNode_, position);
         }
     }
     //Create fire
     else if (extraRandomizer == 8){
-        Node* fireNode = rootNode_->CreateChild("Fire");
+        Node* fireNode{rootNode_->CreateChild("Fire")};
         fireNode->Translate(Vector3::DOWN);
-        ParticleEmitter* particleEmitter = fireNode->CreateComponent<ParticleEmitter>();
-        ParticleEffect* particleEffect = masterControl_->cache_->GetResource<ParticleEffect>("Resources/Particles/Fire.xml");
+        ParticleEmitter* particleEmitter{fireNode->CreateComponent<ParticleEmitter>()};
+        ParticleEffect* particleEffect{masterControl_->cache_->GetResource<ParticleEffect>("Resources/Particles/Fire.xml")};
         particleEmitter->SetEffect(particleEffect);
-        Light* fireLight = fireNode->CreateComponent<Light>();
+        Light* fireLight{fireNode->CreateComponent<Light>()};
         fireLight->SetRange(2.3f);
         fireLight->SetColor(Color(1.0f, 0.88f, 0.666f));
         fireLight->SetCastShadows(true);
     }
     //Create frop crops
     else if (extraRandomizer > 8 && coords.y_%2 == 0){
-        for (int i = 0; i < 4; i++){
-            for (int j = 0; j < 3; j++){
-                    Vector3 position = Vector3(-0.375f+i*0.25f, 0.0f, -0.3f+j*0.3f);
+        for (int i{0}; i < 4; ++i){
+            for (int j{0}; j < 3; ++j){
+                    Vector3 position = Vector3(-0.375f + i * 0.25f, 0.0f, -0.3f + j * 0.3f);
                     new Frop(context_, masterControl_, rootNode_, position);
             }
         }
@@ -89,12 +91,12 @@ Object(context),
     }*/
 
     //Set up center and edge nodes.
-    for (int i = 0; i <= 8; i++){
+    for (int i{0}; i <= 8; i++){
         elements_[i] = rootNode_->CreateChild("TilePart");
-        int nthOfType = ((i-1)%4);
+        int nthOfType{(i-1)%4};
         if (i > 0) elements_[i]->Rotate(Quaternion(0.0f, 90.0f-nthOfType*90.0f, 0.0f));
         //Add the right model to the node
-        StaticModel* model = elements_[i]->CreateComponent<StaticModel>();
+        StaticModel* model{elements_[i]->CreateComponent<StaticModel>()};
         switch (i){
         case TE_CENTER:    model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_center.mdl"));
             model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
@@ -126,7 +128,7 @@ void Tile::Stop()
 
 void Tile::HandleUpdate(StringHash eventType, VariantMap &eventData)
 {
-    Input* input = GetSubsystem<Input>();
+    Input* input{GetSubsystem<Input>()};
     using namespace Update; double timeStep = eventData[P_TIMESTEP].GetFloat();
     if (buildingType_ == B_ENGINE && input->GetKeyDown(KEY_UP)){
         platform_->rigidBody_->ApplyForce(platform_->rootNode_->GetRotation() * rootNode_->GetDirection() * 500.0f*timeStep, platform_->rootNode_->GetRotation() * rootNode_->GetPosition());
@@ -138,22 +140,22 @@ void Tile::HandleUpdate(StringHash eventType, VariantMap &eventData)
 
 void Tile::SetBuilding(BuildingType type)
 {
-    Vector<SharedPtr<Node> > children = rootNode_->GetChildren();
-    for (unsigned i = 0; i < children.Size(); i++)
+    Vector<SharedPtr<Node> > children{rootNode_->GetChildren()};
+    for (unsigned i{0}; i < children.Size(); i++)
         if (children[i]->GetNameHash() != N_TILEPART)
             children[i]->SetEnabledRecursive(false);
 
     buildingType_ = type;
     if (buildingType_ > B_EMPTY) platform_->DisableSlot(coords_);
-    StaticModel* model = elements_[0]->GetComponent<StaticModel>();
+    StaticModel* model{elements_[0]->GetComponent<StaticModel>()};
     switch (buildingType_)
     {
     case B_ENGINE: {
         model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Engine_center.mdl"));
-        model->SetMaterial(0,masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
-        model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/Structure.xml"));
-        model->SetMaterial(2,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glow.xml"));
-        model->SetMaterial(3,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glass.xml"));
+        model->SetMaterial(0, masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
+        model->SetMaterial(1, masterControl_->cache_->GetResource<Material>("Resources/Materials/Structure.xml"));
+        model->SetMaterial(2, masterControl_->cache_->GetResource<Material>("Resources/Materials/Glow.xml"));
+        model->SetMaterial(3, masterControl_->cache_->GetResource<Material>("Resources/Materials/Glass.xml"));
     } break;
     default: break;
     }
@@ -167,9 +169,9 @@ BuildingType Tile::GetBuilding()
 //Fix this tile's element models and materials according to
 void Tile::FixFringe()
 {
-    for (int element = 1; element < TE_LENGTH; element++)
+    for (int element{1}; element < TE_LENGTH; element++)
     {
-        StaticModel* model = elements_[element]->GetComponent<StaticModel>();
+        StaticModel* model{elements_[element]->GetComponent<StaticModel>()};
         //Fix sides
         if (element <= 4){
             //If corresponding neighbour is empty
@@ -227,8 +229,8 @@ void Tile::FixFringe()
         }
         //Fix corners
         else {
-            bool fill = false;
-            switch (platform_->PickCornerType(coords_, (TileElement)element)){
+            bool fill{false};
+            switch (platform_->PickCornerType(coords_, static_cast<TileElement>(element) )) {
             case CT_NONE:   model->SetModel(SharedPtr<Model>()); break;
             case CT_IN:     model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_incorner.mdl")); break;
             case CT_OUT:    model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_outcorner.mdl")); break;

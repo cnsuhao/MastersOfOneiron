@@ -64,7 +64,7 @@ EL      : blade
 F	: light
 PLITH   : against / towards
 TO	: with / along / towards
-LO	: path
+LO	: aim / goal
 RI 	: tooth
 SER	: sharp
 TA      : material / resource / thing
@@ -137,6 +137,7 @@ UF-HU-YI	: hero / fool / dare devil
 OT-TA-WA 	: specialist / craftsman
 UR-HO 		: unity
 BA-WA		: mouth
+LO-TO		: path
 LO-TO-GA	: journey
 LO-TO-GA-NE	: travelling
 LO-TO-GA-YI	: traveler

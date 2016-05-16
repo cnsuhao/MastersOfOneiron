@@ -113,7 +113,7 @@ private:
 
     /// Create a mushroom object at position.
     void CreatePlatform(const Vector3 pos);
-    void UpdateCursor(double timeStep);
+    void UpdateCursor(float timeStep);
     /// Utility function to raycast to the cursor position. Return true if hit.
     bool CursorRayCast(double maxDistance, PODVector<RayQueryResult> &hitResults);
 

@@ -24,7 +24,7 @@ Grass::Grass(Context *context, MasterControl *masterControl, Node *parent, Vecto
     rootNode_ = parent->CreateChild("Grass");
     rootNode_->SetPosition(pos);
     rootNode_->Rotate(Quaternion(Random(-10.0f, 10.0f),Random(360.0f),Random(-10.0f, 10.0f)));
-    float randomWidth = Random(0.5f,1.5f);
+    float randomWidth{Random(0.5f,1.5f)};
     rootNode_->SetScale(Vector3(randomWidth, Random(0.25f,randomWidth), randomWidth));
     grassModel_ = rootNode_->CreateComponent<StaticModel>();
     grassModel_->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Grass.mdl"));
