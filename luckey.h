@@ -20,6 +20,7 @@
 #define LUCKEY_H
 
 #include <Urho3D/Urho3D.h>
+#include <Urho3D/Audio/Audio.h>
 #include <Urho3D/Audio/Sound.h>
 #include <Urho3D/Audio/SoundSource.h>
 #include <Urho3D/Container/HashBase.h>
@@ -61,6 +62,7 @@
 #include <Urho3D/Math/Vector2.h>
 #include <Urho3D/Math/Vector3.h>
 #include <Urho3D/Physics/CollisionShape.h>
+#include <Urho3D/Physics/Constraint.h>
 #include <Urho3D/Physics/PhysicsEvents.h>
 #include <Urho3D/Physics/PhysicsWorld.h>
 #include <Urho3D/Physics/RigidBody.h>

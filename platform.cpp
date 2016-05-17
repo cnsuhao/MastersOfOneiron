@@ -45,8 +45,12 @@ Platform::Platform(Context *context, Vector3 position, MasterControl* masterCont
     rigidBody_->SetAngularDamping(0.1);
     rigidBody_->SetLinearRestThreshold(0.1f);
     rigidBody_->SetAngularRestThreshold(0.01f);
-    rigidBody_->SetLinearFactor(Vector3(1.0f, 0.0f, 1.0f));
+//    rigidBody_->SetLinearFactor(Vector3(1.0f, 0.0f, 1.0f));
     rigidBody_->SetAngularFactor(Vector3(0.0f, 1.0f, 0.0f));
+
+    Constraint* worldConstraint{rootNode_->CreateComponent<Constraint>()};
+    worldConstraint->SetConstraintType(CONSTRAINT_POINT);
+    worldConstraint->SetOtherBody(MC->);
 
     // Add base tile
     IntVector2 firstCoordPair{IntVector2(0,0)};
@@ -60,7 +64,7 @@ Platform::Platform(Context *context, Vector3 position, MasterControl* masterCont
         int platformSize{Random(5, 88)};
 
         while (addedTiles < platformSize) {
-            //Pick a random exsisting tile from a list.
+            //Pick a random exsisting tile
             Vector<IntVector2> coordsVector{tileMap_.Keys()};
             IntVector2 randomTileCoords{coordsVector[Random((int)coordsVector.Size())]};
 
@@ -76,7 +80,6 @@ Platform::Platform(Context *context, Vector3 position, MasterControl* masterCont
                     if (newTileCoords.x_ != 0 && symmetrical) {
                         newTileCoords = IntVector2(-newTileCoords.x_, newTileCoords.y_);
                         AddTile(newTileCoords);
-//                        tileMap_[newTileCoords] = new Tile(context_, newTileCoords, this);
                         addedTiles++;
                     }
                 }

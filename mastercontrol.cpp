@@ -144,6 +144,8 @@ void MasterControl::CreateScene()
 
     PhysicsWorld* physicsWorld{world.scene->CreateComponent<PhysicsWorld>()};
     physicsWorld->SetGravity(Vector3::ZERO);
+    world.scene->CreateComponent<RigidBody>();
+
     world.scene->CreateComponent<DebugRenderer>();
 
     //Create cursor
@@ -162,16 +164,16 @@ void MasterControl::CreateScene()
     planeObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/Invisible.xml"));
 
     //Create background
-//    for (int i{-2}; i <= 2; ++i){
-//        for (int j{-2}; j <= 2; ++j){
-//            world.backgroundNode = world.scene->CreateChild("BackPlane");
-//            world.backgroundNode->SetScale(Vector3(512.0f, 1.0f, 512.0f));
-//            world.backgroundNode->SetPosition(Vector3(512.0f * i, -200.0f, 512.0f * j));
-//            StaticModel* backgroundObject{world.backgroundNode->CreateComponent<StaticModel>()};
-//            backgroundObject->SetModel(cache_->GetResource<Model>("Models/Plane.mdl"));
-//            backgroundObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/DreamSky.xml"));
-//        }
-//    }
+    for (int i{-2}; i <= 2; ++i){
+        for (int j{-2}; j <= 2; ++j){
+            world.backgroundNode = world.scene->CreateChild("BackPlane");
+            world.backgroundNode->SetScale(Vector3(512.0f, 1.0f, 512.0f));
+            world.backgroundNode->SetPosition(Vector3(512.0f * i, -200.0f, 512.0f * j));
+            StaticModel* backgroundObject{world.backgroundNode->CreateComponent<StaticModel>()};
+            backgroundObject->SetModel(cache_->GetResource<Model>("Models/Plane.mdl"));
+            backgroundObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/DreamSky.xml"));
+        }
+    }
 
     world.sunLightNode = world.scene->CreateChild("DirectionalLight");
     world.sunLightNode->SetDirection(Vector3(0.0f, -1.0f, 0.0f));
