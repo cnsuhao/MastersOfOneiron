@@ -1,5 +1,5 @@
 /*
-// Copyright (C) 2015 LucKey Productions (luckeyproductions.nl)
+// Copyright (C) 2016 LucKey Productions (luckeyproductions.nl)
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -78,15 +78,8 @@
 
 #include <Urho3D/DebugNew.h>
 
-namespace Urho3D {
-class Drawable;
-class Node;
-class Scene;
-class Sprite;
-class Viewport;
-class RenderPath;
-class Camera;
-}
+#define INPUT GetSubsystem<Input>()
+#define ENGINE GetSubsystem<Engine>()
 
 using namespace Urho3D;
 namespace LucKey {
@@ -97,6 +90,7 @@ enum class SixaxisButton {  SELECT, LEFTSTICK, RIGHTSTICK, START,
                             PS
                          };
 
+//Doesn't work for both ints and floats
 template <class T>
 T Cycle(T x, T min, T max){
     T range{max - min + 1};
@@ -107,8 +101,6 @@ T Cycle(T x, T min, T max){
     else if (x > max) {
         res -= (range) * abs(floor((x - min) / (range)));
     }
-    assert(res <= max);
-    assert(res >= min);
     return res;
 }
 
@@ -117,9 +109,13 @@ unsigned IntVector2ToHash(IntVector2 vec);
 Vector3 Scale(const Vector3 lhs, const Vector3 rhs);
 IntVector2 Scale(const IntVector2 lhs, const IntVector2 rhs);
 Vector2 Rotate(const Vector2 vec2, const float angle);
+float RandomSign();
 Color RandomColor();
 Color RandomSkinColor();
 Color RandomHairColor();
+
+float Sine(float x);
+float Cosine(float x);
 }
 
 #endif // LUCKEY_H

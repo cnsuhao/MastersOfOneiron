@@ -34,9 +34,10 @@ OneiroCam::OneiroCam(Context *context, MasterControl *masterControl):
     translationNode_ = masterControl_->world.scene->CreateChild("CamTrans");
     rotationNode_ = translationNode_->CreateChild("CamRot");
     camera_ = rotationNode_->CreateComponent<Camera>();
-    camera_->SetFarClip(1024.0f);
+    camera_->SetFarClip(128.0f);
+    camera_->SetFov(80.0f);
     //Set an initial position for the camera scene node above the origin
-    translationNode_->SetPosition(Vector3(0.0f, 3.0f, 0.0f));
+    translationNode_->SetPosition(Vector3(0.0f, 3.0f, -64.0f));
     rotationNode_->SetRotation(Quaternion(0.0f, 90.0f, 0.0f));
     rigidBody_ = translationNode_->CreateComponent<RigidBody>();
     rigidBody_->SetAngularFactor(Vector3::ZERO);
@@ -44,9 +45,9 @@ OneiroCam::OneiroCam(Context *context, MasterControl *masterControl):
     collisionShape->SetSphere(0.1f);
     rigidBody_->SetMass(1.0f);
 
-    Light* light{rotationNode_->CreateComponent<Light>()};
-    light->SetLightType(LIGHT_DIRECTIONAL);
-    light->SetBrightness(0.23f);
+//    Light* light{rotationNode_->CreateComponent<Light>()};
+//    light->SetLightType(LIGHT_DIRECTIONAL);
+//    light->SetBrightness(0.23f);
 
     SetupViewport();
 }
@@ -95,18 +96,20 @@ Quaternion OneiroCam::GetRotation()
 
 void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
 {
+    camera_->SetFarClip(translationNode_->GetPosition().Length() + WORLDRADIUS);
+
     //Take the frame time step, which is stored as a float
-    float timeStep{eventData[Update::P_TIMESTEP].GetFloat()};
+    const float t{eventData[Update::P_TIMESTEP].GetFloat()};
     //Movement speed as world units per second
-    const float MOVE_SPEED{2000.0f};
+    const float moveSpeed{2000.0f};
     //Mouse sensitivity as degrees per pixel
-    const float MOUSE_SENSITIVITY{0.1f};
+    const float mouseSensitivity{0.1f};
 
     //Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch between -90 and 90 degrees. Only move the camera when the cursor is hidden.
     Input* input{GetSubsystem<Input>()};
     IntVector2 mouseMove{input->GetMouseMove()};
-    yawDelta_ = 0.5f * (yawDelta_ + MOUSE_SENSITIVITY * mouseMove.x_);
-    pitchDelta_ = 0.5f * (pitchDelta_ + MOUSE_SENSITIVITY * mouseMove.y_);
+    yawDelta_ = 0.5f * (yawDelta_ + mouseSensitivity * mouseMove.x_);
+    pitchDelta_ = 0.5f * (pitchDelta_ + mouseSensitivity * mouseMove.y_);
     yaw_ += yawDelta_;
     pitch_ += pitchDelta_;
     pitch_ = Clamp(pitch_, -89.0f, 89.0f);
@@ -116,13 +119,18 @@ void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
 
     //Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
     Vector3 camForce{Vector3::ZERO};
-    if (input->GetKeyDown('W')) camForce += LucKey::Scale( rotationNode_->GetDirection(), Vector3{1.0f,0.0f,1.0f} ).Normalized();
+//    if (input->GetKeyDown('W')) camForce += LucKey::Scale( rotationNode_->GetDirection(), Vector3{1.0f,0.0f,1.0f} ).Normalized();
+    if (input->GetKeyDown('W'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * 23.0f, rotationNode_->GetRight()), TS_WORLD);
+    if (input->GetKeyDown('S'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * -23.0f, rotationNode_->GetRight()), TS_WORLD);
+    if (input->GetKeyDown('D'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * 23.0f, rotationNode_->GetDirection()), TS_WORLD);
+    if (input->GetKeyDown('A'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * -23.0f, rotationNode_->GetDirection()), TS_WORLD);
+
     if (input->GetKeyDown('S')) camForce += LucKey::Scale( rotationNode_->GetDirection(), Vector3{-1.0f,0.0f,-1.0f} ).Normalized();
     if (input->GetKeyDown('D')) camForce += LucKey::Scale( rotationNode_->GetRight(), Vector3{1.0f,0.0f,1.0f} ).Normalized();
     if (input->GetKeyDown('A')) camForce += LucKey::Scale( rotationNode_->GetRight(), Vector3{-1.0f,0.0f,-1.0f} ).Normalized();
     if (input->GetKeyDown('E')) camForce += Vector3::UP;
     if (input->GetKeyDown('Q')) camForce += Vector3::DOWN;
-    camForce = camForce.Normalized() * MOVE_SPEED * timeStep;
+    camForce = camForce.Normalized() * moveSpeed * t;
 
     if ( forceMultiplier_ < 8.0f && (input->GetKeyDown(KEY_LSHIFT)||input->GetKeyDown(KEY_RSHIFT)) ){
         forceMultiplier_ += 0.23f;

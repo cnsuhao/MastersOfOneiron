@@ -55,18 +55,22 @@ public:
     Quaternion GetRotation();
 private:
     MasterControl* masterControl_;
-    void HandleSceneUpdate(StringHash eventType, VariantMap &eventData);
-    SharedPtr<Node> translationNode_;
-    SharedPtr<Node> rotationNode_;
 
+//    SharedPtr<Node> rootNode_;
+    SharedPtr<Node> rotationNode_;
+    SharedPtr<Node> translationNode_;
     SharedPtr<RigidBody> rigidBody_;
+
     float yaw_;
     float pitch_;
     float roll_;
     float yawDelta_;
     float pitchDelta_;
     float forceMultiplier_;
+
     void SetupViewport();
+    void HandleSceneUpdate(StringHash eventType, VariantMap &eventData);
+
     void Lock(SharedPtr<Platform> platform);
 };
 

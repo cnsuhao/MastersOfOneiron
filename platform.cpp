@@ -1,5 +1,5 @@
 /* Masters of Oneiron
-// Copyright (C) 2015 LucKey Productions (luckeyproductions.nl)
+// Copyright (C) 2016 LucKey Productions (luckeyproductions.nl)
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,37 +31,43 @@ Platform::Platform(Context *context, Vector3 position, MasterControl* masterCont
     Object(context),
     masterControl_{masterControl}
 {
+    ++platformCount_;
+
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Platform, HandleUpdate));
     rootNode_ = masterControl_->world.scene->CreateChild("Platform");
     masterControl_->platformMap_[rootNode_->GetID()] = WeakPtr<Platform>(this);
 
-    rootNode_->SetPosition(position);
-    SetMoveTarget(position);
+    rootNode_->SetPosition(Quaternion(platformCount_ * 5.0f, platformCount_ * 10.0f, platformCount_* 23.0f) * Vector3::UP * WORLDRADIUS);
+    rootNode_->LookAt(Vector3::ZERO, Vector3::DOWN);
+//    SetMoveTarget(position);
     //rootNode_->SetRotation(Quaternion(0.0f, Random(360.0f), 0.0f));
     rigidBody_ = rootNode_->CreateComponent<RigidBody>();
+    rigidBody_->SetRotation(Quaternion(180.0f, Vector3::RIGHT));
     //rigidBody_->SetRotation(rootNode_->GetRotation());
-    rigidBody_->SetMass(1.0);
-    rigidBody_->SetLinearDamping(0.369);
-    rigidBody_->SetAngularDamping(0.1);
+    rigidBody_->SetMass(1.0f);
+    rigidBody_->SetFriction(0.0f);
+    rigidBody_->SetLinearDamping(0.369f);
+    rigidBody_->SetAngularDamping(0.1f);
     rigidBody_->SetLinearRestThreshold(0.1f);
     rigidBody_->SetAngularRestThreshold(0.01f);
 //    rigidBody_->SetLinearFactor(Vector3(1.0f, 0.0f, 1.0f));
-    rigidBody_->SetAngularFactor(Vector3(0.0f, 1.0f, 0.0f));
+//    rigidBody_->SetAngularFactor(Vector3(0.0f, 1.0f, 0.0f));
 
     Constraint* worldConstraint{rootNode_->CreateComponent<Constraint>()};
+    worldConstraint->SetPosition(Vector3::UP * WORLDRADIUS);
     worldConstraint->SetConstraintType(CONSTRAINT_POINT);
-    worldConstraint->SetOtherBody(MC->);
+    worldConstraint->SetOtherBody(masterControl_->world.sunNode->GetComponent<RigidBody>());
 
     // Add base tile
     IntVector2 firstCoordPair{IntVector2(0,0)};
     tileMap_[firstCoordPair] = new Tile(context_, firstCoordPair, this);
     // Add random tiles
-    if (random){
+//    if (random){
         rootNode_->Rotate(Quaternion(Random(360.0f), Vector3::UP));
 
         bool symmetrical{static_cast<bool>(Random(2))};
         int addedTiles{1};
-        int platformSize{Random(5, 88)};
+        int platformSize{Random(1, 42)};
 
         while (addedTiles < platformSize) {
             //Pick a random exsisting tile
@@ -85,7 +91,7 @@ Platform::Platform(Context *context, Vector3 position, MasterControl* masterCont
                 }
             }
         }
-    }
+//    }
 
     //Add slots
     AddMissingSlots();
@@ -157,7 +163,7 @@ bool Platform::IsSelected() const
 void Platform::HandleUpdate(StringHash eventType, VariantMap &eventData)
 {
     double timeStep{eventData[Update::P_TIMESTEP].GetFloat()};
-    if (moveTarget_ != rootNode_->GetPosition()) Move(100.0f * timeStep);
+//    if (moveTarget_ != rootNode_->GetPosition()) Move(100.0f * timeStep);
 }
 
 void Platform::Move(double timeStep)

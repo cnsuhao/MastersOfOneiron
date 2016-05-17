@@ -42,8 +42,7 @@ typedef struct GameWorld
     SharedPtr<Scene> scene;
     SharedPtr<Node> backgroundNode;
     SharedPtr<Node> voidNode;
-    SharedPtr<Node> sunLightNode;
-    Light* sunLight;
+    SharedPtr<Node> sunNode;
     struct {
         SharedPtr<Node> sceneCursor;
         SharedPtr<Cursor> uiCursor;
@@ -66,59 +65,53 @@ StringHash const N_TILEPART = StringHash("TilePart");
 StringHash const N_SLOT = StringHash("Slot");
 }
 
+#define MC MasterControl::GetInstance()
+#define WORLDRADIUS 235.0f
+
 class MasterControl : public Application
 {
-    /// Enable type information.
     URHO3D_OBJECT(MasterControl, Application);
     friend class InputMaster;
 public:
-    /// Constructor.
     MasterControl(Context* context);
+    static MasterControl* GetInstance();
+
     GameWorld world;
     SharedPtr<ResourceCache> cache_;
     SharedPtr<Graphics> graphics_;
 
     HashMap<unsigned, SharedPtr<Platform> > platformMap_;
 
-    /// Setup before engine initialization. Modifies the engine paramaters.
     virtual void Setup();
-    /// Setup after engine initialization.
     virtual void Start();
-    /// Cleanup after the main loop. Called by Application.
     virtual void Stop();
     void Exit();
 private:
+    static MasterControl* instance_;
+
+    bool paused_;
+
     SharedPtr<UI> ui_;
     SharedPtr<Renderer> renderer_;
     SharedPtr<XMLFile> defaultStyle_;
 
-    /// Set custom window title and icon
     void SetWindowTitleAndIcon();
-    /// Create console and debug HUD
     void CreateConsoleAndDebugHud();
 
-    /// Construct the scene content.
     void CreateScene();
-    /// Construct user interface elements.
     void CreateUI();
-    /// Subscribe to application-wide logic update and post-render update events.
     void SubscribeToEvents();
 
-    /// Handle scene update event to control camera's pitch and yaw.
     void HandleSceneUpdate(StringHash eventType, VariantMap& eventData);
-    /// Handle the logic update event.
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
-    /// Handle the post-render update event.
     void HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData);
 
-    /// Create a mushroom object at position.
     void CreatePlatform(const Vector3 pos);
     void UpdateCursor(float timeStep);
-    /// Utility function to raycast to the cursor position. Return true if hit.
     bool CursorRayCast(double maxDistance, PODVector<RayQueryResult> &hitResults);
 
-    /// Pause flag
-    bool paused_;
+    float Sine(const float freq, const float min, const float max, const float shift = 0.0f);
+    float Cosine(const float freq, const float min, const float max, const float shift = 0.0f);
 };
 
 #endif // MASTERCONTROL_H

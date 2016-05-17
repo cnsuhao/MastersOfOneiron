@@ -1,5 +1,5 @@
 /*
-// Copyright (C) 2015 LucKey Productions (luckeyproductions.nl)
+// Copyright (C) 2016 LucKey Productions (luckeyproductions.nl)
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -39,9 +39,14 @@ Vector2 LucKey::Rotate(const Vector2 vec2, const float angle){
     float theta{M_DEGTORAD * angle};
 
     float cs{cos(theta)};
-    float sn{sin(theta)};
+    float sn{Sine(theta)};
 
     return Vector2{x * cs - y * sn, x * sn + y * cs};
+}
+
+float LucKey::RandomSign()
+{
+    return static_cast<float>(Random(2) * 2 - 1);
 }
 
 Color LucKey::RandomHairColor()
@@ -62,4 +67,30 @@ Color LucKey::RandomColor()
     Color color{};
     color.FromHSV(Random(), Random(), Random());
     return color;
+}
+
+float LucKey::Sine(float x)
+{
+    if (x < -M_PI)
+        while (x < -M_PI) {
+            x += 2.0f * M_PI;
+        }
+    else
+        if (x > M_PI)
+            while (x > M_PI) {
+                x -= 2.0f * M_PI;
+            }
+
+    float sin{};
+
+    if (x < 0.0f)
+        sin = 1.27323954f * x + 0.405284735f * x * x;
+    else
+        sin = 1.27323954f * x - 0.405284735f * x * x;
+
+    return sin;
+}
+float LucKey::Cosine(float x)
+{
+    return Sine(x + M_PI * 0.5f);
 }

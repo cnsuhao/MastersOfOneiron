@@ -1,5 +1,5 @@
 /* Masters of Oneiron
-// Copyright (C) 2015 LucKey Productions (luckeyproductions.nl)
+// Copyright (C) 2016 LucKey Productions (luckeyproductions.nl)
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,12 +25,19 @@
 
 URHO3D_DEFINE_APPLICATION_MAIN(MasterControl);
 
+MasterControl* MasterControl::instance_ = NULL;
+
+MasterControl* MasterControl::GetInstance()
+{
+    return MasterControl::instance_;
+}
+
 MasterControl::MasterControl(Context *context):
     Application(context),
     paused_{false}
 {
+    instance_ = this;
 }
-
 
 void MasterControl::Setup()
 {
@@ -144,7 +151,7 @@ void MasterControl::CreateScene()
 
     PhysicsWorld* physicsWorld{world.scene->CreateComponent<PhysicsWorld>()};
     physicsWorld->SetGravity(Vector3::ZERO);
-    world.scene->CreateComponent<RigidBody>();
+
 
     world.scene->CreateComponent<DebugRenderer>();
 
@@ -164,7 +171,7 @@ void MasterControl::CreateScene()
     planeObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/Invisible.xml"));
 
     //Create background
-    for (int i{-2}; i <= 2; ++i){
+    /*for (int i{-2}; i <= 2; ++i){
         for (int j{-2}; j <= 2; ++j){
             world.backgroundNode = world.scene->CreateChild("BackPlane");
             world.backgroundNode->SetScale(Vector3(512.0f, 1.0f, 512.0f));
@@ -173,35 +180,43 @@ void MasterControl::CreateScene()
             backgroundObject->SetModel(cache_->GetResource<Model>("Models/Plane.mdl"));
             backgroundObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/DreamSky.xml"));
         }
-    }
+    }*/
 
-    world.sunLightNode = world.scene->CreateChild("DirectionalLight");
-    world.sunLightNode->SetDirection(Vector3(0.0f, -1.0f, 0.0f));
-    world.sunLight = world.sunLightNode->CreateComponent<Light>();
-    world.sunLight->SetLightType(LIGHT_DIRECTIONAL);
-    world.sunLight->SetBrightness(1.0f);
-    world.sunLight->SetColor(Color(1.0f, 0.8f, 0.7f));
-    world.sunLight->SetCastShadows(true);
-    world.sunLight->SetShadowBias(BiasParameters(0.0000023f, 0.23f));
-    world.sunLight->SetShadowResolution(1.0f);
-    world.sunLight->SetShadowCascade(CascadeParameters(4.0f, 16.0f, 64.0f, 0.5f, 1.0f));
+    world.sunNode = world.scene->CreateChild("Sun");
+    world.sunNode->SetScale(WORLDRADIUS * 0.1f);
+    StaticModel* sunModel{world.sunNode->CreateComponent<StaticModel>()};
+    sunModel->SetModel(cache_->GetResource<Model>("Models/Sun.mdl"));
+    sunModel->SetModel(cache_->GetResource<Model>("Models/Sun.mdl"));
+    sunModel->SetMaterial(cache_->GetResource<Material>("Materials/Sun.xml"));
 
-    Node* lightNode2{world.scene->CreateChild("DirectionalLight")};
-    lightNode2->SetDirection(Vector3(0.0f, 1.0f, 0.0f));
-    Light* light2{lightNode2->CreateComponent<Light>()};
-    light2->SetLightType(LIGHT_DIRECTIONAL);
-    light2->SetBrightness(0.23f);
-    light2->SetColor(Color(1.0f, 1.0f, 0.9f));
-    light2->SetCastShadows(true);
-    light2->SetShadowBias(BiasParameters(0.00025f, 0.5f));
-    light2->SetShadowResolution(0.666f);
+    Light* sunLight{world.sunNode->CreateComponent<Light>()};
+    sunLight->SetLightType(LIGHT_POINT);
+    sunLight->SetBrightness(1.23f);
+    sunLight->SetRange(WORLDRADIUS * 1.5f);
+    sunLight->SetColor(Color(1.0f, 0.8f, 0.7f));
+//    sunLight->SetCastShadows(true);
+//    sunLight->SetShadowBias(BiasParameters(0.0000023f, 0.23f));
+//    sunLight->SetShadowResolution(1.0f);
+//    sunLight->SetShadowCascade(CascadeParameters(4.0f, 16.0f, 64.0f, 0.5f, 1.0f));
+
+    world.sunNode->CreateComponent<RigidBody>();
+
+//    Node* lightNode2{world.scene->CreateChild("AmbientLight")};
+//    lightNode2->SetDirection(Vector3(0.0f, 1.0f, 0.0f));
+//    Light* light2{lightNode2->CreateComponent<Light>()};
+//    light2->SetLightType(LIGHT_DIRECTIONAL);
+//    light2->SetBrightness(0.23f);
+//    light2->SetColor(Color(1.0f, 1.0f, 0.9f));
+//    light2->SetCastShadows(true);
+//    light2->SetShadowBias(BiasParameters(0.00025f, 0.5f));
+//    light2->SetShadowResolution(0.666f);
 
 
     //Create camera
     world.camera = new OneiroCam(context_, this);
 
     //Add some random platforms
-    for (int p{5}; p <= 23; ++p){
+    for (int p{0}; p <= 123; ++p){
         new Platform(context_, Quaternion(Random(60.0f) + 72.0f * (p%5), Vector3::UP) * Vector3::FORWARD * p * 5.0f, this, true);
     }
 }
@@ -213,9 +228,15 @@ void MasterControl::HandleUpdate(StringHash eventType, VariantMap &eventData)
 
 void MasterControl::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
 {
-    float timeStep{eventData[Update::P_TIMESTEP].GetFloat()};
+    float t{eventData[Update::P_TIMESTEP].GetFloat()};
     world.voidNode->SetPosition((2.0f*Vector3::DOWN) + (world.camera->GetWorldPosition()*Vector3(1.0f,0.0f,1.0f)));
-    UpdateCursor(timeStep);
+    UpdateCursor(t);
+
+    world.sunNode->Rotate(Quaternion(5.0f * t, LucKey::Sine(23.0f * t), 2.0f * t), TS_WORLD);
+    world.sunNode->Translate(t * Vector3(
+                                 Sine(0.22f, -0.23f, 0.23f),
+                                 Sine(0.23f, -0.23f, 0.23f),
+                                 Sine(0.24f, -0.23f, 0.23f)));
 
 //    world.sunLightNode->SetDirection(Vector3(sin(world.scene->GetElapsedTime() * 0.23f),
 //                                             -5.0f,
@@ -257,39 +278,15 @@ void MasterControl::HandlePostRenderUpdate(StringHash eventType, VariantMap &eve
     //world.scene->GetComponent<PhysicsWorld>()->DrawDebugGeometry(true);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+float MasterControl::Sine(const float freq, const float min, const float max, const float shift)
+{
+    float phase{freq * world.scene->GetElapsedTime() + shift};
+    float add{0.5f * (min + max)};
+    return LucKey::Sine(phase) * 0.5f * (max - min) + add;
+}
+float MasterControl::Cosine(const float freq, const float min, const float max, const float shift)
+{
+    float phase{freq * world.scene->GetElapsedTime() + shift};
+    float add{0.5f * (min + max)};
+    return LucKey::Cosine(phase) * 0.5f * (max - min) + add;
+}

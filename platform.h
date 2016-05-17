@@ -39,12 +39,15 @@ enum TileElement {TE_CENTER = 0, TE_NORTH, TE_EAST, TE_SOUTH, TE_WEST, TE_NORTHW
 enum CornerType {CT_NONE, CT_IN, CT_OUT, CT_TWEEN, CT_DOUBLE, CT_FILL};
 enum BuildingType {B_SPACE, B_EMPTY, B_ENGINE};
 
+static int platformCount_{0};
+
 class Platform : public Object
 {
     URHO3D_OBJECT(Platform, Object);
     friend class InputMaster;
 public:
     Platform(Context *context, Vector3 position, MasterControl* masterControl, bool random = false);
+
 
     MasterControl* masterControl_;
     Node* rootNode_;
