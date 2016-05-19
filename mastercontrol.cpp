@@ -41,6 +41,7 @@ MasterControl::MasterControl(Context *context):
 
 void MasterControl::Setup()
 {
+    SetRandomSeed(GetSubsystem<Time>()->GetSystemTime());
     // Modify engine startup parameters.
     //Set custom window title and icon.
     engineParameters_["WindowTitle"] = "Masters of Oneiron";
@@ -191,7 +192,7 @@ void MasterControl::CreateScene()
 
     Light* sunLight{world.sunNode->CreateComponent<Light>()};
     sunLight->SetLightType(LIGHT_POINT);
-    sunLight->SetBrightness(1.23f);
+    sunLight->SetBrightness(1.666f);
     sunLight->SetRange(WORLDRADIUS * 1.5f);
     sunLight->SetColor(Color(1.0f, 0.8f, 0.7f));
 //    sunLight->SetCastShadows(true);
@@ -200,6 +201,12 @@ void MasterControl::CreateScene()
 //    sunLight->SetShadowCascade(CascadeParameters(4.0f, 16.0f, 64.0f, 0.5f, 1.0f));
 
     world.sunNode->CreateComponent<RigidBody>();
+
+    Node* bubbleNode{world.scene->CreateChild("Bubble")};
+    bubbleNode->SetScale(WORLDRADIUS * 1.0023f);
+    StaticModel* bubble{bubbleNode->CreateComponent<StaticModel>()};
+    bubble->SetModel(MC->cache_->GetResource<Model>("Models/Bubble.mdl"));
+    bubble->SetMaterial(MC->cache_->GetResource<Material>("Materials/Bubble.xml"));
 
 //    Node* lightNode2{world.scene->CreateChild("AmbientLight")};
 //    lightNode2->SetDirection(Vector3(0.0f, 1.0f, 0.0f));
@@ -233,14 +240,6 @@ void MasterControl::HandleSceneUpdate(StringHash eventType, VariantMap &eventDat
     UpdateCursor(t);
 
     world.sunNode->Rotate(Quaternion(5.0f * t, LucKey::Sine(23.0f * t), 2.0f * t), TS_WORLD);
-    world.sunNode->Translate(t * Vector3(
-                                 Sine(0.22f, -0.23f, 0.23f),
-                                 Sine(0.23f, -0.23f, 0.23f),
-                                 Sine(0.24f, -0.23f, 0.23f)));
-
-//    world.sunLightNode->SetDirection(Vector3(sin(world.scene->GetElapsedTime() * 0.23f),
-//                                             -5.0f,
-//                                             sin(world.scene->GetElapsedTime() * 0.42f)));
 }
 
 void MasterControl::UpdateCursor(float timeStep)

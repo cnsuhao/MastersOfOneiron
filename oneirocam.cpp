@@ -37,7 +37,7 @@ OneiroCam::OneiroCam(Context *context, MasterControl *masterControl):
     camera_->SetFarClip(128.0f);
     camera_->SetFov(80.0f);
     //Set an initial position for the camera scene node above the origin
-    translationNode_->SetPosition(Vector3(0.0f, 3.0f, -64.0f));
+    translationNode_->SetPosition(Vector3(0.0f, 0.0f, -WORLDRADIUS - 5.0f));
     rotationNode_->SetRotation(Quaternion(0.0f, 90.0f, 0.0f));
     rigidBody_ = translationNode_->CreateComponent<RigidBody>();
     rigidBody_->SetAngularFactor(Vector3::ZERO);
@@ -75,7 +75,12 @@ void OneiroCam::SetupViewport()
     //Add anti-asliasing
     effectRenderPath = viewport_->GetRenderPath()->Clone();
     effectRenderPath->Append(masterControl_->cache_->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
-    effectRenderPath->SetEnabled("FXAA3", true);
+    /*
+    effectRenderPath->Append(masterControl_->cache_->GetResource<XMLFile>("PostProcess/AutoExposure.xml"));
+    effectRenderPath->SetShaderParameter("AutoExposureLumRange", Vector2(0.42f, 2.0f));
+    effectRenderPath->SetShaderParameter("AutoExposureAdaptRate", 5.0f);
+    effectRenderPath->SetShaderParameter("AutoExposureMiddleGrey", 0.42f);
+    */
     effectRenderPath->Append(masterControl_->cache_->GetResource<XMLFile>("PostProcess/Bloom.xml"));
     effectRenderPath->SetShaderParameter("BloomThreshold", 0.5f);
     effectRenderPath->SetShaderParameter("BloomMix", Vector2(0.75f, 1.0f));
@@ -96,7 +101,7 @@ Quaternion OneiroCam::GetRotation()
 
 void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
 {
-    camera_->SetFarClip(translationNode_->GetPosition().Length() + WORLDRADIUS);
+    camera_->SetFarClip(translationNode_->GetPosition().Length() + WORLDRADIUS * 1.5f);
 
     //Take the frame time step, which is stored as a float
     const float t{eventData[Update::P_TIMESTEP].GetFloat()};
@@ -114,20 +119,20 @@ void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
     pitch_ += pitchDelta_;
     pitch_ = Clamp(pitch_, -89.0f, 89.0f);
     //Construct new orientation for the camera scene node from yaw and pitch. Roll is fixed to zero
-    translationNode_->SetRotation(Quaternion(0.0f, 0.0f, 0.0f));
+    translationNode_->SetRotation(Quaternion::IDENTITY);
     rotationNode_->SetRotation(Quaternion(pitch_, yaw_, 0.0f));
 
     //Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
     Vector3 camForce{Vector3::ZERO};
-//    if (input->GetKeyDown('W')) camForce += LucKey::Scale( rotationNode_->GetDirection(), Vector3{1.0f,0.0f,1.0f} ).Normalized();
-    if (input->GetKeyDown('W'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * 23.0f, rotationNode_->GetRight()), TS_WORLD);
-    if (input->GetKeyDown('S'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * -23.0f, rotationNode_->GetRight()), TS_WORLD);
-    if (input->GetKeyDown('D'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * 23.0f, rotationNode_->GetDirection()), TS_WORLD);
-    if (input->GetKeyDown('A'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * -23.0f, rotationNode_->GetDirection()), TS_WORLD);
+//    if (input->GetKeyDown('W'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * 23.0f, rotationNode_->GetRight()), TS_WORLD);
+//    if (input->GetKeyDown('S'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * -23.0f, rotationNode_->GetRight()), TS_WORLD);
+//    if (input->GetKeyDown('D'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * 23.0f, rotationNode_->GetDirection()), TS_WORLD);
+//    if (input->GetKeyDown('A'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * -23.0f, rotationNode_->GetDirection()), TS_WORLD);
 
-    if (input->GetKeyDown('S')) camForce += LucKey::Scale( rotationNode_->GetDirection(), Vector3{-1.0f,0.0f,-1.0f} ).Normalized();
-    if (input->GetKeyDown('D')) camForce += LucKey::Scale( rotationNode_->GetRight(), Vector3{1.0f,0.0f,1.0f} ).Normalized();
-    if (input->GetKeyDown('A')) camForce += LucKey::Scale( rotationNode_->GetRight(), Vector3{-1.0f,0.0f,-1.0f} ).Normalized();
+    if (input->GetKeyDown('W')) camForce += LucKey::Scale( rotationNode_->GetDirection(), Vector3{1.0f,0.0f,1.0f} ).Normalized();
+    if (input->GetKeyDown('S')) camForce += LucKey::Scale(rotationNode_->GetDirection(), Vector3{-1.0f,0.0f,-1.0f}).Normalized();
+    if (input->GetKeyDown('D')) camForce += LucKey::Scale(rotationNode_->GetRight(), Vector3{1.0f,0.0f,1.0f}).Normalized();
+    if (input->GetKeyDown('A')) camForce += LucKey::Scale(rotationNode_->GetRight(), Vector3{-1.0f,0.0f,-1.0f}).Normalized();
     if (input->GetKeyDown('E')) camForce += Vector3::UP;
     if (input->GetKeyDown('Q')) camForce += Vector3::DOWN;
     camForce = camForce.Normalized() * moveSpeed * t;
