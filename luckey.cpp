@@ -88,6 +88,11 @@ float LucKey::Sine(float x)
     else
         sin = 1.27323954f * x - 0.405284735f * x * x;
 
+    if (sin < 0)
+        sin = 0.225f * (sin *-sin - sin) + sin;
+    else
+        sin = 0.225f * (sin * sin - sin) + sin;
+
     return sin;
 }
 float LucKey::Cosine(float x)

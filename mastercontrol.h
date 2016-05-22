@@ -86,6 +86,9 @@ public:
     virtual void Start();
     virtual void Stop();
     void Exit();
+
+    float Sine(const float freq, const float min, const float max, const float shift = 0.0f);
+    float Cosine(const float freq, const float min, const float max, const float shift = 0.0f);
 private:
     static MasterControl* instance_;
 
@@ -109,9 +112,6 @@ private:
     void CreatePlatform(const Vector3 pos);
     void UpdateCursor(float timeStep);
     bool CursorRayCast(double maxDistance, PODVector<RayQueryResult> &hitResults);
-
-    float Sine(const float freq, const float min, const float max, const float shift = 0.0f);
-    float Cosine(const float freq, const float min, const float max, const float shift = 0.0f);
 };
 
 #endif // MASTERCONTROL_H
