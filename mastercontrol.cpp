@@ -47,6 +47,8 @@ void MasterControl::Setup()
     engineParameters_["WindowTitle"] = "Masters of Oneiron";
     engineParameters_["LogName"] = GetSubsystem<FileSystem>()->GetAppPreferencesDir("urho3d", "logs")+"Oneiron.log";
     engineParameters_["ResourcePaths"] = "Data;CoreData;Resources";
+    engineParameters_["WindowIcon"] = "icon.png";
+
 //    engineParameters_["FullScreen"] = true;
 //    engineParameters_["Headless"] = false;
 //    engineParameters_["WindowWidth"] = 960;
