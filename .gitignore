@@ -39,3 +39,7 @@ Makefile*
 /Data
 /CoreData
 Oneiron
+
+# Blender
+
+*.blend*
