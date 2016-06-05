@@ -38,7 +38,7 @@ Vector2 LucKey::Rotate(const Vector2 vec2, const float angle){
 
     float theta{M_DEGTORAD * angle};
 
-    float cs{cos(theta)};
+    float cs{static_cast<float>(cos(theta))};
     float sn{Sine(theta)};
 
     return Vector2{x * cs - y * sn, x * sn + y * cs};
@@ -98,4 +98,16 @@ float LucKey::Sine(float x)
 float LucKey::Cosine(float x)
 {
     return Sine(x + M_PI * 0.5f);
+}
+
+float LucKey::Cycle(float x, float min, float max){
+    float range{max - min + 1.0f};
+    float res{x};
+    if (x < min) {
+        res += (range) * abs(ceil((max - x) / (range)));
+    }
+    else if (x > max) {
+        res -= (range) * abs(floor((x - min) / (range)));
+    }
+    return res;
 }

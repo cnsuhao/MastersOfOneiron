@@ -90,19 +90,7 @@ enum class SixaxisButton {  SELECT, LEFTSTICK, RIGHTSTICK, START,
                             PS
                          };
 
-//Doesn't work for both ints and floats
-template <class T>
-T Cycle(T x, T min, T max){
-    T range{max - min + 1};
-    T res{x};
-    if (x < min) {
-        res += (range) * abs(ceil((max - x) / (range)));
-    }
-    else if (x > max) {
-        res -= (range) * abs(floor((x - min) / (range)));
-    }
-    return res;
-}
+float Cycle(float x, float min, float max);
 
 float Distance(const Vector3 from, const Vector3 to);
 unsigned IntVector2ToHash(IntVector2 vec);
