@@ -112,7 +112,7 @@ YO     	| special / scarce
 Ô	      | and / plus
 TI	      | am / is / are
 
-### Assembled words
+## Assembled words
 
 Word  | Meaning
 ---------|---------
@@ -191,7 +191,7 @@ RI-NE		| biting
 BREK-RINE	| chewing / munching
 BO-GA		| speed
 
-### Sentences
+## Sentences
 
 **Mi gane**  
 I'm moving
