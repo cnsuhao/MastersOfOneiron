@@ -152,7 +152,7 @@ BREK-SER-RI 	| war dog
 UF-HU 		| fearless / bravery
 UF-HU-YI	| hero / fool / dare devil
 OT-TA-WA 	| specialist / craftsman
-UR-HO 		| unity
+UR-HO 		| unity / peace
 BA-WA		| mouth
 LO-TO		| path
 LO-TO-GA	| journey
