@@ -74,10 +74,10 @@ Platform::Platform(Context *context, Vector3 position, MasterControl* masterCont
             Vector<IntVector2> coordsVector{tileMap_.Keys()};
             IntVector2 randomTileCoords{coordsVector[Random((int)coordsVector.Size())]};
 
-            char startDir{static_cast<char>(Random(0,4))};
+            char startDir{static_cast<char>(Random(1,5))};
             for (int direction{startDir}; direction < startDir+3; ++direction) {
                 int cycledDir{LucKey::Cycle(direction, 1, 4)};
-                assert(cycledDir > 0 && cycledDir < 5);
+                assert((cycledDir > 0) && (cycledDir < 5));
                 TileElement tileElement{static_cast<TileElement>(cycledDir)};
                 if (CheckEmptyNeighbour(randomTileCoords, tileElement, true)) {
                     IntVector2 newTileCoords{GetNeighbourCoords(randomTileCoords, tileElement)};

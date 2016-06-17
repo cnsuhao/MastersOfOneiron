@@ -56,6 +56,7 @@
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/IO/FileSystem.h>
 #include <Urho3D/IO/Log.h>
+#include <Urho3D/IO/MemoryBuffer.h>
 #include <Urho3D/Math/MathDefs.h>
 #include <Urho3D/Math/Plane.h>
 #include <Urho3D/Math/Sphere.h>
@@ -69,41 +70,69 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Resource/XMLFile.h>
 #include <Urho3D/Scene/LogicComponent.h>
+#include <Urho3D/Scene/Component.h>
 #include <Urho3D/Scene/Node.h>
 #include <Urho3D/Scene/SceneEvents.h>
 #include <Urho3D/Scene/Scene.h>
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/UI/Text.h>
 #include <Urho3D/UI/UI.h>
+#include <Urho3D/Urho2D/TileMap2D.h>
+#include <Urho3D/Urho2D/TmxFile2D.h>
+#include <Urho3D/Scene/ValueAnimation.h>
 
 #include <Urho3D/DebugNew.h>
 
-#define INPUT GetSubsystem<Input>()
+#include <initializer_list>
+#include "mastercontrol.h"
+
+#define FILES GetSubsystem<FileSystem>()
 #define ENGINE GetSubsystem<Engine>()
+#define TIME GetSubsystem<Time>()
+#define CACHE GetSubsystem<ResourceCache>()
+#define INPUT GetSubsystem<Input>()
+#define GRAPHICS GetSubsystem<Graphics>()
+#define RENDERER GetSubsystem<Renderer>()
+#define AUDIO GetSubsystem<Audio>()
+
+#define MC GetSubsystem<MasterControl>()
+
+namespace Urho3D {
+class Drawable;
+class Node;
+class Scene;
+class Sprite;
+class Viewport;
+class RenderPath;
+class Camera;
+}
 
 using namespace Urho3D;
 namespace LucKey {
 
-enum class SixaxisButton {  SELECT, LEFTSTICK, RIGHTSTICK, START,
-                            DPAD_UP, DPAD_RIGHT, DPAD_DOWN, DPAD_LEFT,
-                            L2, R2, L1, R1, TRIANGLE, CIRCLE, CROSS, SQUARE,
-                            PS
-                         };
+enum SixaxisButton {  SB_SELECT, SB_LEFTSTICK, SB_RIGHTSTICK, SB_START,
+                      SB_DPAD_UP, SB_DPAD_RIGHT, SB_DPAD_DOWN, SB_DPAD_LEFT,
+                      SB_L2, SB_R2, SB_L1, SB_R1,
+                      SB_TRIANGLE, SB_CIRCLE, SB_CROSS, SB_SQUARE,
+                      SB_PS };
 
-float Cycle(float x, float min, float max);
-
-float Distance(const Vector3 from, const Vector3 to);
 unsigned IntVector2ToHash(IntVector2 vec);
+
+float Delta(float lhs, float rhs, bool angle = false);
+float Distance(const Vector3 from, const Vector3 to);
 Vector3 Scale(const Vector3 lhs, const Vector3 rhs);
 IntVector2 Scale(const IntVector2 lhs, const IntVector2 rhs);
 Vector2 Rotate(const Vector2 vec2, const float angle);
 float RandomSign();
 Color RandomColor();
 Color RandomSkinColor();
-Color RandomHairColor();
+Color RandomHairColor(bool onlyNatural = false);
 
 float Sine(float x);
 float Cosine(float x);
+
+int Cycle(int x, int min, int max);
+float Cycle(float x, float min, float max);
 }
 
 #endif // LUCKEY_H

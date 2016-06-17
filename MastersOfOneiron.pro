@@ -1,3 +1,5 @@
+TARGET = moo
+
 LIBS += ../MastersOfOneiron/Urho3D/lib/libUrho3D.a \
     -lpthread \
     -ldl \

@@ -110,7 +110,7 @@ void InputMaster::HandleKeyDown(StringHash eventType, VariantMap &eventData)
     int key = eventData[P_KEY].GetInt();
 
     //Exit when ESC is pressed
-    if (key == KEY_ESC) DeselectAll();//masterControl_->Exit();
+    if (key == KEY_ESCAPE) DeselectAll();//masterControl_->Exit();
 
     //Take screenshot
     else if (key == KEY_9)
