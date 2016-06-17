@@ -38,6 +38,8 @@ The Brekkelēga dance utilizes the Kekelplithfs' finblades as weapons.
 
 ## Syllables
 
+### Numbers
+
 Syllable | Meaning
 ---------|---------
 UF	| zero / none / nothing / air
@@ -58,6 +60,27 @@ Word | Octal | Decimal
  ĒK-OZ	| 52 | 42
  ART-UR  | 34 | 28
 
+### Postfixes
+
+Postfix | Meaning
+---------|---------
+-N	      | plural
+-KI      | the (unique)
+-KIN     | the (unique plural)
+-NE	      | verbial / doing
+
+### Personal pronouns
+
+Word 	| Nominative  | Reflexive | Possessive
+------|-------------|-----------|------------
+MI    | I           | me 		  | mine
+MIN 	| we          | us		     | our
+YU    	| you 		     | you 		  | your
+YUN 	| you 		     | you       | your
+DE    	| he/she	     | him/her	  | his/hers
+DEN 	| they 		  | them 		  | their
+
+### Roots
 
 Syllable | Meaning
 ---------|---------
@@ -89,21 +112,7 @@ YO     	| special / scarce
 Ô	      | and / plus
 TI	      | am / is / are
 
-Postfix | Meaning
----------|---------
--N	      | plural
--KI      | the (unique)
--KIN     | the (unique plural)
--NE	      | verbial / doing
-
-Word 	| Nominative  | Reflexive | Possessive
-------|-------------|-----------|------------
-MI    | I           | me 		  | mine
-MIN 	| we          | us		     | our
-YU    	| you 		     | you 		  | your
-YUN 	| you 		     | you       | your
-DE    	| he/she	     | him/her	  | his/hers
-DEN 	| they 		  | them 		  | their
+### Assembled words
 
 Word  | Meaning
 ---------|---------
@@ -182,6 +191,8 @@ RI-NE		| biting
 BREK-RINE	| chewing / munching
 BO-GA		| speed
 
+### Sentences
+
 **Mi gane**  
 I'm moving
 
@@ -189,5 +200,7 @@ I'm moving
 We are wolves!!!
 
 **Dan Ēgaham**  
-Thanks for this cooperation / It was a pleasure working together
-Literally: Thanks for this dance
+Thanks for your cooperation / It was a pleasure working together / _Thanks for this dance_
+
+**Ti bo**  
+Take care
