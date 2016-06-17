@@ -1,3 +1,5 @@
+##### [**Ufdu bodune ô Gro ti yo; Gawaki bogane ô YiduKin lotogane groduplithf**](https://raw.githubusercontent.com/LucKeyProductions/MastersOfOneiron/master/Resources/Samples/Voice/UfduBodune.ogg)
+
 #### Baduki
 
 Syllable | Meaning
@@ -179,8 +181,6 @@ ONEMI(N)-YI	| guest / newcomer
 RI-NE		| biting
 BREK-RINE	| chewing / munching
 BO-GA		| speed
-
-**Ufdu bodune ô Gro ti yo; Gawaki bogane ô YiduKin lotogane groduplithf**
 
 **Mi gane**  
 I'm moving
