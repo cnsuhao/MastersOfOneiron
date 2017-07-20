@@ -20,51 +20,83 @@
 #include "kekelplithf.h"
 #include "frop.h"
 #include "grass.h"
+#include "platform.h"
 
-Tile::Tile(Context *context, const IntVector2 coords, Platform *platform):
-Object(context),
-  platform_{platform},
-  masterControl_{platform->masterControl_},
-  coords_{coords}
+void Tile::RegisterObject(Context *context)
 {
-    rootNode_ = platform_->rootNode_->CreateChild("Tile");
-    rootNode_->SetPosition(Vector3(static_cast<double>(coords_.x_),
-                                   0.0f,
-                                   -static_cast<double>(coords_.y_)));
-    //Increase platform mass
-    platform_->rigidBody_->SetMass(platform_->rigidBody_->GetMass()+1.0f);
+    context->RegisterFactory<Tile>();
+}
+
+Tile::Tile(Context *context):
+SceneObject(context),
+  health_{1.0f}
+{
+
+}
+
+void Tile::OnNodeSet(Node *node)
+{ if (!node) return;
+
+    //Set up compound nodes.
+    for (int i{0}; i < TE_LENGTH; ++i){
+        elements_[i] = node_->CreateChild("TilePart");
+        elements_[i]->SetPosition(0.25f * Platform::CoordsToPosition(platform_->GetNeighbourCoords(IntVector2::ZERO, static_cast<Neighbour>(i))));
+        if (i < 3) elements_[i]->Rotate(Quaternion(0.0f, 180.0f, 0.0f));
+        //Add the right model to the node
+        StaticModel* model{elements_[i]->CreateComponent<StaticModel>()};
+
+        model->SetCastShadows(true);
+    }
+
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Tile, HandleUpdate));
+}
+
+void Tile::Set(const IntVector2 coords, Platform *platform)
+{
+    coords_ = coords;
+    platform_ = platform;
+
+    node_->SetParent(platform_->GetNode());
+    node_->SetRotation(Quaternion::IDENTITY);
+
+    SceneObject::Set(Platform::CoordsToPosition(coords));
+
     //Add collision shape to platform
-    collisionShape_ = platform->rootNode_->CreateComponent<CollisionShape>();
-    collisionShape_->SetBox(Vector3::ONE);
-    collisionShape_->SetPosition(Vector3(coords_.x_, 0.0f, -coords_.y_));
-    //platform_->rigidBody_->EnableMassUpdate();
+    collisionShape_ = platform->GetNode()->CreateComponent<CollisionShape>();
+    collisionShape_->SetBox(Vector3::ONE, Vector3::ZERO, Quaternion(45.0f, Vector3::UP));
+    collisionShape_->SetPosition(Platform::CoordsToPosition(coords_));
+    collisionShape_->SetEnabled(true);
+
+    //Increase platform mass
+    platform_->rigidBody_->SetMass(platform_->rigidBody_->GetMass() + 1.0f);
 
     //Create random tile addons
-    int extraRandomizer{Random(23)};
+    int extraRandomizer{ Random(23) };
 
     //Create a dreamspire
     if (extraRandomizer == 7) {
-        Node* spireNode{rootNode_->CreateChild("Spire")};
-        if (coords_.x_%2) spireNode->Rotate(Quaternion(180.0f, Vector3::UP));
-        StaticModel* model{spireNode->CreateComponent<StaticModel>()};
-        model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Abode.mdl"));
-        model->SetMaterial(0, masterControl_->cache_->GetResource<Material>("Resources/Materials/Abode.xml"));
+        Node* spireNode{ node_->CreateChild("Spire") };
+        spireNode->Translate(Vector3::UP * PLATFORM_HALF_THICKNESS);
+        if (coords_.x_ % 2) spireNode->Rotate(Quaternion(180.0f, Vector3::UP));
+        StaticModel* model{ spireNode->CreateComponent<StaticModel>() };
+        model->SetModel(RESOURCE->GetModel("Abode"));
+        model->SetMaterial(0, RESOURCE->GetMaterial("Abode"));
         model->SetCastShadows(true);
     }
-    //Create random kekelplithfs
+    //Create Ekelplitfs
     else if (extraRandomizer < 7){
-        int totalImps{Random(1, 5)};
-        for (int i{0}; i < totalImps; i++){
-            Vector3 position = Vector3(-0.075f * totalImps + 0.15f * i, 0.0f, Random(-0.5f, 0.5f));
-            new Kekelplithf(context_, masterControl_, rootNode_, position);
+        int totalImps{Random(0, 2)};
+        for (int i{0}; i < totalImps; ++i){
+            Vector3 position{ Vector3(-0.075f * totalImps + 0.15f * i, PLATFORM_HALF_THICKNESS, Random(-0.5f, 0.5f)) };
+            SPAWN->Create<Kekelplithf>()->Set(position, node_);
         }
     }
     //Create fire
     else if (extraRandomizer == 8){
-        Node* fireNode{rootNode_->CreateChild("Fire")};
-        fireNode->Translate(Vector3::DOWN);
-        ParticleEmitter* particleEmitter{fireNode->CreateComponent<ParticleEmitter>()};
-        ParticleEffect* particleEffect{masterControl_->cache_->GetResource<ParticleEffect>("Resources/Particles/Fire.xml")};
+        Node* fireNode{ node_->CreateChild("Fire") };
+        fireNode->Translate(Vector3::DOWN * PLATFORM_HALF_THICKNESS * 2.0f);
+        ParticleEmitter* particleEmitter{ fireNode->CreateComponent<ParticleEmitter>() };
+        ParticleEffect* particleEffect{ CACHE->GetResource<ParticleEffect>("Resources/Particles/Fire.xml") };
         particleEmitter->SetEffect(particleEffect);
         Light* fireLight{fireNode->CreateComponent<Light>()};
         fireLight->SetRange(2.3f);
@@ -72,51 +104,24 @@ Object(context),
         fireLight->SetCastShadows(true);
     }
     //Create frop crops
-    else if (extraRandomizer > 8 && coords.y_%2 == 0){
+    else if (extraRandomizer > 8 && coords.y_ % 2 == 0){
         for (int i{0}; i < 4; ++i){
             for (int j{0}; j < 3; ++j){
-                    Vector3 position = Vector3(-0.375f + i * 0.25f, 0.0f, -0.3f + j * 0.3f);
-                    new Frop(context_, masterControl_, rootNode_, position);
+                    Vector3 position{ Vector3(-0.375f + i * 0.25f, PLATFORM_HALF_THICKNESS, -0.3f + j * 0.3f) };
+                    SPAWN->Create<Frop>()->Set(position, node_);
             }
         }
-        /*for (int i = 0; i < extraRandomizer - 8; i++){
-            Vector3 randomPosition = Vector3(Random(-0.4f, 0.4f), 0.0f, Random(-0.4f, 0.4f));
-            new Frop(context_, masterControl_, rootNode_, randomPosition);
-        }*/
-    }
-
-    /*for (int i = 0; i < (23-extraRandomizer)+16; i++){
-        Vector3 randomPosition = Vector3(Random(-0.4f, 0.4f), 0.0f, Random(-0.4f, 0.4f));
-        new Grass(context_, masterControl_, rootNode_, randomPosition);
-    }*/
-
-    //Set up center and edge nodes.
-    for (int i{0}; i <= 8; i++){
-        elements_[i] = rootNode_->CreateChild("TilePart");
-        int nthOfType{(i-1)%4};
-        if (i > 0) elements_[i]->Rotate(Quaternion(0.0f, 90.0f-nthOfType*90.0f, 0.0f));
-        //Add the right model to the node
-        StaticModel* model{elements_[i]->CreateComponent<StaticModel>()};
-        switch (i){
-        case TE_CENTER:    model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_center.mdl"));
-            model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
-            break;
-        case TE_NORTH:case TE_EAST:case TE_SOUTH:case TE_WEST:
-            model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_side.mdl"));
-            model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/RockSide.xml"));
-            break;
-        case TE_NORTHEAST:case TE_SOUTHEAST:case TE_SOUTHWEST:case TE_NORTHWEST:
-            model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_outcorner.mdl"));
-            model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
-            break;
-                default:break;
+        for (int i = 0; i < extraRandomizer - 8; i++){
+            Vector3 randomPosition{ Vector3(Random(-0.4f, 0.4f), PLATFORM_HALF_THICKNESS, Random(-0.4f, 0.4f)) };
+            SPAWN->Create<Frop>()->Set(randomPosition, node_);
         }
-
-
-        model->SetCastShadows(true);
     }
+}
 
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Tile, HandleUpdate));
+void Tile::Disable()
+{
+    collisionShape_->SetEnabled(false);
+    platform_->rigidBody_->SetMass(platform_->rigidBody_->GetMass() - 1.0f);
 }
 
 void Tile::Start()
@@ -131,16 +136,16 @@ void Tile::HandleUpdate(StringHash eventType, VariantMap &eventData)
     Input* input{GetSubsystem<Input>()};
     using namespace Update; double timeStep = eventData[P_TIMESTEP].GetFloat();
     if (buildingType_ == B_ENGINE && input->GetKeyDown(KEY_UP)){
-        platform_->rigidBody_->ApplyForce(platform_->rootNode_->GetRotation() * rootNode_->GetDirection() * 500.0f*timeStep, platform_->rootNode_->GetRotation() * rootNode_->GetPosition());
+        platform_->rigidBody_->ApplyForce(platform_->GetNode()->GetDirection() * Clamp(5000.0f - 42.0f * Sign(node_->GetPosition().x_) * platform_->GetNode()->WorldToLocal(platform_->rigidBody_->GetAngularVelocity()).y_, 0.0f, 9000.0f) * timeStep, -platform_->GetNode()->GetRotation() * node_->GetPosition());
     }
     else if (buildingType_ == B_ENGINE && input->GetKeyDown(KEY_DOWN)){
-        platform_->rigidBody_->ApplyForce(platform_->rootNode_->GetRotation() * rootNode_->GetDirection() * -500.0f*timeStep, platform_->rootNode_->GetRotation() * rootNode_->GetPosition());
+        platform_->rigidBody_->ApplyForce(platform_->GetNode()->GetRotation() * node_->GetDirection() * -5000.0f*timeStep, platform_->GetNode()->GetRotation() * node_->GetPosition());
     }
 }
 
 void Tile::SetBuilding(BuildingType type)
 {
-    Vector<SharedPtr<Node> > children{rootNode_->GetChildren()};
+    Vector<SharedPtr<Node> > children{node_->GetChildren()};
     for (unsigned i{0}; i < children.Size(); i++)
         if (children[i]->GetNameHash() != N_TILEPART)
             children[i]->SetEnabledRecursive(false);
@@ -151,11 +156,11 @@ void Tile::SetBuilding(BuildingType type)
     switch (buildingType_)
     {
     case B_ENGINE: {
-        model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Engine_center.mdl"));
-        model->SetMaterial(0, masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
-        model->SetMaterial(1, masterControl_->cache_->GetResource<Material>("Resources/Materials/Structure.xml"));
-        model->SetMaterial(2, masterControl_->cache_->GetResource<Material>("Resources/Materials/Glow.xml"));
-        model->SetMaterial(3, masterControl_->cache_->GetResource<Material>("Resources/Materials/Glass.xml"));
+        model->SetModel(MC->CACHE->GetResource<Model>("Resources/Models/Engine_center.mdl"));
+        model->SetMaterial(0, MC->CACHE->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
+        model->SetMaterial(1, MC->CACHE->GetResource<Material>("Resources/Materials/Structure.xml"));
+        model->SetMaterial(2, MC->CACHE->GetResource<Material>("Resources/Materials/Glow.xml"));
+        model->SetMaterial(3, MC->CACHE->GetResource<Material>("Resources/Materials/Glass.xml"));
     } break;
     default: break;
     }
@@ -166,83 +171,68 @@ BuildingType Tile::GetBuilding()
     return buildingType_;
 }
 
-//Fix this tile's element models and materials according to
 void Tile::FixFringe()
 {
-    for (int element{1}; element < TE_LENGTH; element++)
-    {
-        StaticModel* model{elements_[element]->GetComponent<StaticModel>()};
-        //Fix sides
-        if (element <= 4){
-            //If corresponding neighbour is empty
-            if (platform_->CheckEmptyNeighbour(coords_, (TileElement)element, true))
-            {
-                if (element == 1)
-                {
-                    switch (buildingType_)
-                    {
-                    case B_ENGINE :
-                        model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Engine_end.mdl"));
-                        model->SetMaterial(0,masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
-                        model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/Structure.xml"));
-                        model->SetMaterial(2,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glow.xml"));
-                        model->SetMaterial(3,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glass.xml"));
-                    break;
-                    default: model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_side.mdl"));
-                    break;
-                    }
-                }
-                else if (element == 3)
-                {
-                    switch (buildingType_)
-                    {
-                    case B_ENGINE :
-                        model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Engine_start.mdl"));
-                        model->SetMaterial(2,masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
-                        model->SetMaterial(0,masterControl_->cache_->GetResource<Material>("Resources/Materials/Structure.xml"));
-                        model->SetMaterial(1,masterControl_->cache_->GetResource<Material>("Resources/Materials/Glow.xml"));
-                    break;
-                    default: model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_side.mdl"));
-                    break;
-                    }
-                }
-                else model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_side.mdl"));
+    for (int e{0}; e < TE_LENGTH; ++e) {
+
+        Node* element{ elements_[e] };
+        StaticModel* model{ element->GetComponent<StaticModel>() };
+        bool cornerA{ e == TE_NORTH || e == TE_SOUTH };
+
+        CornerType cornerType{ platform_->PickCornerType(coords_, static_cast<TileElement>(e)) };
+
+        switch (cornerType) {
+        case CT_NONE:
+            model->SetModel(nullptr);
+            break;
+        case CT_IN:
+            if (cornerA)
+                model->SetModel(RESOURCE->GetModel("CornerInA"));
+            else
+                model->SetModel(RESOURCE->GetModel("CornerInB"));
+
+            if (e == TE_NORTH || e == TE_WEST)
+                element->SetRotation(Quaternion(0.0f, Vector3::UP));
+            else
+                element->SetRotation(Quaternion(180.0f, Vector3::UP));
+
+            break;
+        case CT_OUT:
+            if (cornerA) {
+                model->SetModel(RESOURCE->GetModel("CornerOutA"));
+
+                if (e == TE_NORTH || e == TE_WEST)
+                    element->SetRotation(Quaternion(0.0f, Vector3::UP));
+                else
+                    element->SetRotation(Quaternion(180.0f, Vector3::UP));
+
             }
-            //If neighbour is not empty
-            else {
-                if (element == 1) {
-                    switch (GetBuilding())
-                    {
-                    case B_ENGINE : if (platform_->GetNeighbourType(coords_, (TileElement)element) == B_ENGINE) model->SetModel(SharedPtr<Model>()); break;
-                    default :
-                        model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_tween.mdl"));
-                        model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
-                        break;
-                    }
-                }
-                else if (element == 4) {
-                    model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_tween.mdl"));
-                    model->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
-                }
-                else model->SetModel(SharedPtr<Model>());
-            }
+            else
+                model->SetModel(RESOURCE->GetModel("CornerOutB"));
+
+            break;
+        case CT_EDGE_A: {
+            model->SetModel(RESOURCE->GetModel("EdgeA"));
+
+            if (e == TE_NORTH || e == TE_WEST)
+                element->SetRotation(Quaternion(0.0f, Vector3::UP));
+            else
+                element->SetRotation(Quaternion(180.0f, Vector3::UP));
+        } break;
+        case CT_EDGE_B:
+            model->SetModel(RESOURCE->GetModel("EdgeB"));
+
+            if (e == TE_NORTH || e == TE_EAST)
+                element->SetRotation(Quaternion(0.0f, Vector3::UP));
+            else
+                element->SetRotation(Quaternion(180.0f, Vector3::UP));
+            break;
+        case CT_FILL:
+            model->SetModel(RESOURCE->GetModel("Fill"));
+            break;
+        default: break;
         }
-        //Fix corners
-        else {
-            bool fill{false};
-            switch (platform_->PickCornerType(coords_, static_cast<TileElement>(element) )) {
-            case CT_NONE:   model->SetModel(SharedPtr<Model>()); break;
-            case CT_IN:     model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_incorner.mdl")); break;
-            case CT_OUT:    model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_outcorner.mdl")); break;
-            case CT_TWEEN:  model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_tweencorner.mdl")); break;
-            case CT_DOUBLE: model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Rock_doublecorner.mdl")); break;
-            case CT_FILL:   model->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Block_fillcorner.mdl")); fill = true; break;
-            default: break;
-            }
-            model->SetMaterial(!fill ?
-masterControl_->cache_->GetResource<Material>("Resources/Materials/RockSide.xml") :
-masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
-        }
+        model->SetMaterial(RESOURCE->GetMaterial("VCol"));
     }
 }
 

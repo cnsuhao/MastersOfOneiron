@@ -21,7 +21,7 @@
 
 #include <Urho3D/Urho3D.h>
 
-#include "mastercontrol.h"
+#include "sceneobject.h"
 
 namespace Urho3D {
 class Drawable;
@@ -32,18 +32,18 @@ class Sprite;
 
 using namespace Urho3D;
 
-class Grass : public Object
+class Grass : public SceneObject
 {
-    URHO3D_OBJECT(Grass, Object);
+    URHO3D_OBJECT(Grass, SceneObject);
 public:
-    Grass(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
-    Grass(Context* context, MasterControl* masterControl): Grass(context, masterControl, masterControl->world.scene, Vector3::ZERO){}
+    Grass(Context *context);
+    static void RegisterObject(Context* context);
     virtual void Start();
     virtual void Stop();
+    void OnNodeSet(Node* node);
+    void Set(Vector3 position, Node* parent);
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
-    MasterControl* masterControl_;
-    Node* rootNode_;
     StaticModel* grassModel_;
     double randomizer_;
 };

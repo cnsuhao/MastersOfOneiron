@@ -16,10 +16,17 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "kekelplithf.h"
-#include "platform.h"
 #include "oneirocam.h"
+#include "platform.h"
+#include "tile.h"
+#include "slot.h"
+#include "frop.h"
+#include "grass.h"
+#include "kekelplithf.h"
+
 #include "inputmaster.h"
+#include "resourcemaster.h"
+#include "spawnmaster.h"
 
 #include "mastercontrol.h"
 
@@ -34,6 +41,7 @@ MasterControl* MasterControl::GetInstance()
 
 MasterControl::MasterControl(Context *context):
     Application(context),
+    platformMap_{},
     paused_{false}
 {
     instance_ = this;
@@ -44,10 +52,10 @@ void MasterControl::Setup()
     SetRandomSeed(GetSubsystem<Time>()->GetSystemTime());
     // Modify engine startup parameters.
     //Set custom window title and icon.
-    engineParameters_["WindowTitle"] = "Masters of Oneiron";
-    engineParameters_["LogName"] = GetSubsystem<FileSystem>()->GetAppPreferencesDir("urho3d", "logs")+"Oneiron.log";
-    engineParameters_["ResourcePaths"] = "Data;CoreData;Resources";
-    engineParameters_["WindowIcon"] = "icon.png";
+    engineParameters_[EP_WINDOW_TITLE] = "Masters of Oneiron";
+    engineParameters_[EP_WINDOW_ICON] = "icon.png";
+    engineParameters_[EP_LOG_NAME] = GetSubsystem<FileSystem>()->GetAppPreferencesDir("urho3d", "logs")+"Oneiron.log";
+    engineParameters_[EP_RESOURCE_PATHS] = "Data;CoreData;Resources";
 
 //    engineParameters_["FullScreen"] = true;
 //    engineParameters_["Headless"] = false;
@@ -56,13 +64,21 @@ void MasterControl::Setup()
 }
 void MasterControl::Start()
 {
-    new InputMaster(context_, this);
-    cache_ = GetSubsystem<ResourceCache>();
-    graphics_ = GetSubsystem<Graphics>();
-    renderer_ = GetSubsystem<Renderer>();
+    OneiroCam::RegisterObject(context_);
+    Kekelplithf::RegisterObject(context_);
+    Tile::RegisterObject(context_);
+    Slot::RegisterObject(context_);
+    Frop::RegisterObject(context_);
+    Grass::RegisterObject(context_);
+    Platform::RegisterObject(context_);
+
+    context_->RegisterSubsystem(this);
+    context_->RegisterSubsystem(new InputMaster(context_));
+    context_->RegisterSubsystem(new SpawnMaster(context_));
+    context_->RegisterSubsystem(new ResourceMaster(context_));
 
     // Get default style
-    defaultStyle_ = cache_->GetResource<XMLFile>("UI/DefaultStyle.xml");
+    defaultStyle_ = CACHE->GetResource<XMLFile>("UI/DefaultStyle.xml");
     SetWindowTitleAndIcon();
     //Create console and debug HUD.
     CreateConsoleAndDebugHud();
@@ -75,7 +91,7 @@ void MasterControl::Start()
 
     //Sound* music = cache_->GetResource<Sound>("Resources/Music/Macroform_-_Compassion.ogg"); //Main menu
     //Sound* music = cache_->GetResource<Sound>("Resources/Music/Macroform_-_Dreaming.ogg");
-    Sound* music{cache_->GetResource<Sound>("Resources/Music/Macroform_-_Root.ogg")};
+    Sound* music{ CACHE->GetResource<Sound>("Resources/Music/Macroform_-_Root.ogg") };
     music->SetLooped(true);
     Node* musicNode{world.scene->CreateChild("Music")};
     SoundSource* musicSource{musicNode->CreateComponent<SoundSource>()};
@@ -132,7 +148,7 @@ void MasterControl::CreateUI()
     ui->SetCursor(world.cursor.uiCursor);
 
     //Set starting position of the cursor at the rendering window center
-    world.cursor.uiCursor->SetPosition(graphics_->GetWidth()/2, graphics_->GetHeight()/2);
+    world.cursor.uiCursor->SetPosition(GRAPHICS->GetWidth() / 2, GRAPHICS->GetHeight() / 2);
 
     //Construct new Text object, set string to display and font to use
     Text* instructionText{ui->GetRoot()->CreateChild<Text>()};
@@ -162,16 +178,16 @@ void MasterControl::CreateScene()
     world.cursor.sceneCursor = world.scene->CreateChild("Cursor");
     world.cursor.sceneCursor->SetPosition(Vector3(0.0f,0.0f,0.0f));
     StaticModel* cursorObject{world.cursor.sceneCursor->CreateComponent<StaticModel>()};
-    cursorObject->SetModel(cache_->GetResource<Model>("Resources/Models/Kekelplithf.mdl"));
-    cursorObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/Glow.xml"));
+    cursorObject->SetModel(CACHE->GetResource<Model>("Resources/Models/Kekelplithf.mdl"));
+    cursorObject->SetMaterial(CACHE->GetResource<Material>("Resources/Materials/Glow.xml"));
 
     //Create an Invisible plane for mouse raycasting
     world.voidNode = world.scene->CreateChild("Void");
     //Location is set in update since the plane moves with the camera.
     world.voidNode->SetScale(Vector3(1000.0f, 1.0f, 1000.0f));
     StaticModel* planeObject{world.voidNode->CreateComponent<StaticModel>()};
-    planeObject->SetModel(cache_->GetResource<Model>("Models/Plane.mdl"));
-    planeObject->SetMaterial(cache_->GetResource<Material>("Resources/Materials/Invisible.xml"));
+    planeObject->SetModel(RESOURCE->GetModel("Plane"));
+    planeObject->SetMaterial(RESOURCE->GetMaterial("Invisible"));
 
     //Create background
     /*for (int i{-2}; i <= 2; ++i){
@@ -186,17 +202,17 @@ void MasterControl::CreateScene()
     }*/
 
     world.sunNode = world.scene->CreateChild("Sun");
-    world.sunNode->SetScale(WORLDRADIUS * 0.1f);
+    world.sunNode->SetScale(WORLD_RADIUS * 0.1f);
     StaticModel* sunModel{world.sunNode->CreateComponent<StaticModel>()};
-    sunModel->SetModel(cache_->GetResource<Model>("Models/Sun.mdl"));
-    sunModel->SetModel(cache_->GetResource<Model>("Models/Sun.mdl"));
-    sunModel->SetMaterial(cache_->GetResource<Material>("Materials/Sun.xml"));
+    sunModel->SetModel(RESOURCE->GetModel("Sun"));
+    sunModel->SetModel(RESOURCE->GetModel("Sun"));
+    sunModel->SetMaterial(RESOURCE->GetMaterial("Sun"));
 
     Light* sunLight{world.sunNode->CreateComponent<Light>()};
     sunLight->SetLightType(LIGHT_POINT);
     sunLight->SetBrightness(1.666f);
-    sunLight->SetRange(WORLDRADIUS * 1.5f);
-    sunLight->SetColor(Color(1.0f, 0.8f, 0.7f));
+    sunLight->SetRange(WORLD_RADIUS * 1.5f);
+    sunLight->SetColor(Color(0.7f, 0.9f, 1.0f));
 //    sunLight->SetCastShadows(true);
 //    sunLight->SetShadowBias(BiasParameters(0.0000023f, 0.23f));
 //    sunLight->SetShadowResolution(1.0f);
@@ -205,10 +221,10 @@ void MasterControl::CreateScene()
     world.sunNode->CreateComponent<RigidBody>();
 
     Node* bubbleNode{world.scene->CreateChild("Bubble")};
-    bubbleNode->SetScale(WORLDRADIUS * 1.0023f);
+    bubbleNode->SetScale(WORLD_RADIUS);
     StaticModel* bubble{bubbleNode->CreateComponent<StaticModel>()};
-    bubble->SetModel(MC->cache_->GetResource<Model>("Models/Bubble.mdl"));
-    bubble->SetMaterial(MC->cache_->GetResource<Material>("Materials/Bubble.xml"));
+    bubble->SetModel(RESOURCE->GetModel("Bubble"));
+    bubble->SetMaterial(RESOURCE->GetMaterial("Bubble"));
 
 //    Node* lightNode2{world.scene->CreateChild("AmbientLight")};
 //    lightNode2->SetDirection(Vector3(0.0f, 1.0f, 0.0f));
@@ -222,11 +238,11 @@ void MasterControl::CreateScene()
 
 
     //Create camera
-    world.camera = new OneiroCam(context_, this);
+    world.camera = world.scene->CreateChild()->CreateComponent<OneiroCam>();
 
     //Add some random platforms
-    for (int p{0}; p <= 123; ++p){
-        new Platform(context_, Quaternion(Random(60.0f) + 72.0f * (p%5), Vector3::UP) * Vector3::FORWARD * p * 5.0f, this, true);
+    for (int p{0}; p <= 23; ++p){
+        SPAWN->Create<Platform>()->Set(Quaternion(Platform::platformCount_ * 5.0f, Platform::platformCount_ * 10.0f, Platform::platformCount_* 23.0f) * Vector3::UP * WORLD_RADIUS);
     }
 }
 
@@ -246,24 +262,24 @@ void MasterControl::HandleSceneUpdate(StringHash eventType, VariantMap &eventDat
 
 void MasterControl::UpdateCursor(float timeStep)
 {
-    world.cursor.sceneCursor->Rotate(Quaternion(0.0f,100.0f*timeStep,0.0f));
-    world.cursor.sceneCursor->SetScale((world.cursor.sceneCursor->GetWorldPosition() - world.camera->GetWorldPosition()).Length()*0.0023f);
+    world.cursor.sceneCursor->Rotate(Quaternion(0.0f, 100.0f * timeStep, 0.0f));
+    world.cursor.sceneCursor->SetScale((world.cursor.sceneCursor->GetWorldPosition() - world.camera->GetWorldPosition()).Length() * 0.0023f);
     if (CursorRayCast(250.0f, world.cursor.hitResults)) {
-        for (int i{0}; i < world.cursor.hitResults.Size(); i++) {
-            if (world.cursor.hitResults[i].node_->GetNameHash() == N_VOID) {
-                Vector3 camHitDifference = world.camera->translationNode_->GetWorldPosition() - world.cursor.hitResults[i].position_;
-                camHitDifference /= world.camera->translationNode_->GetWorldPosition().y_ - world.voidNode->GetPosition().y_;
-                camHitDifference *= world.camera->translationNode_->GetWorldPosition().y_;
-                world.cursor.sceneCursor->SetWorldPosition(world.camera->translationNode_->GetWorldPosition()-camHitDifference);
-            }
+        for (int i{0}; i < world.cursor.hitResults.Size(); ++i) {
+//            if (world.cursor.hitResults[i].node_->GetNameHash() == N_VOID) {
+//                Vector3 camHitDifference = world.camera->altitudeNode_->GetWorldPosition() - world.cursor.hitResults[i].position_;
+//                camHitDifference /= world.camera->altitudeNode_->GetWorldPosition().y_ - world.voidNode->GetPosition().y_;
+//                camHitDifference *= world.camera->altitudeNode_->GetWorldPosition().y_;
+                world.cursor.sceneCursor->SetWorldPosition(world.cursor.hitResults[0].position_);
+//            }
         }
     }
 }
 
-bool MasterControl::CursorRayCast(double maxDistance, PODVector<RayQueryResult> &hitResults)
+bool MasterControl::CursorRayCast(float maxDistance, PODVector<RayQueryResult> &hitResults)
 {
-    Ray cameraRay{world.camera->camera_->GetScreenRay(0.5f,0.5f)};
-    RayOctreeQuery query{hitResults, cameraRay, RAY_TRIANGLE, maxDistance, DRAWABLE_GEOMETRY};
+    Ray cameraRay{ world.camera->camera_->GetScreenRay(0.5f,0.5f) };
+    RayOctreeQuery query{ hitResults, cameraRay, RAY_TRIANGLE, maxDistance, DRAWABLE_GEOMETRY };
     world.scene->GetComponent<Octree>()->Raycast(query);
     if (hitResults.Size()) return true;
     else return false;
@@ -281,13 +297,13 @@ void MasterControl::HandlePostRenderUpdate(StringHash eventType, VariantMap &eve
 
 float MasterControl::Sine(const float freq, const float min, const float max, const float shift)
 {
-    float phase{freq * world.scene->GetElapsedTime() + shift};
-    float add{0.5f * (min + max)};
+    float phase{ freq * world.scene->GetElapsedTime() + shift };
+    float add{ 0.5f * (min + max) };
     return LucKey::Sine(phase) * 0.5f * (max - min) + add;
 }
 float MasterControl::Cosine(const float freq, const float min, const float max, const float shift)
 {
-    float phase{freq * world.scene->GetElapsedTime() + shift};
-    float add{0.5f * (min + max)};
+    float phase{ freq * world.scene->GetElapsedTime() + shift };
+    float add{ 0.5f * (min + max) };
     return LucKey::Cosine(phase) * 0.5f * (max - min) + add;
 }

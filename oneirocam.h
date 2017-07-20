@@ -21,8 +21,7 @@
 
 #include <Urho3D/Urho3D.h>
 
-#include "mastercontrol.h"
-#include "platform.h"
+#include "sceneobject.h"
 
 namespace Urho3D {
 class Drawable;
@@ -34,15 +33,13 @@ class RenderPath;
 class Camera;
 }
 
-using namespace Urho3D;
-
-class OneiroCam : public Object
+class OneiroCam : public SceneObject
 {
-    URHO3D_OBJECT(OneiroCam, Object);
-    friend class MasterControl;
-    friend class InputMaster;
+    URHO3D_OBJECT(OneiroCam, SceneObject);
 public:
-    OneiroCam(Context *context, MasterControl* masterControl);
+    OneiroCam(Context *context);
+    static void RegisterObject(Context* context);
+    void OnNodeSet(Node* node);
 
     virtual void Start();
     virtual void Stop();
@@ -53,25 +50,24 @@ public:
 
     Vector3 GetWorldPosition();
     Quaternion GetRotation();
+    void Update(float timeStep);
+    void Lock(Platform* platform);
 private:
-    MasterControl* masterControl_;
 
-//    SharedPtr<Node> rootNode_;
-    SharedPtr<Node> rotationNode_;
-    SharedPtr<Node> translationNode_;
-    SharedPtr<RigidBody> rigidBody_;
+    Node* pitchNode_;
+    Node* altitudeNode_;
 
     float yaw_;
     float pitch_;
     float roll_;
     float yawDelta_;
     float pitchDelta_;
-    float forceMultiplier_;
+    float speedMultiplier_;
+
+    Vector3 camTrans_;
 
     void SetupViewport();
-    void HandleSceneUpdate(StringHash eventType, VariantMap &eventData);
 
-    void Lock(SharedPtr<Platform> platform);
 };
 
 #endif // ONEIROCAM_H

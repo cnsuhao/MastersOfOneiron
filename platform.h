@@ -21,7 +21,9 @@
 
 #include <Urho3D/Urho3D.h>
 
-#include "mastercontrol.h"
+#include "sceneobject.h"
+
+#define PLATFORM_HALF_THICKNESS 0.23f
 
 namespace Urho3D {
 class Drawable;
@@ -35,31 +37,32 @@ using namespace Urho3D;
 class Tile;
 class Slot;
 
-enum TileElement {TE_CENTER = 0, TE_NORTH, TE_EAST, TE_SOUTH, TE_WEST, TE_NORTHWEST, TE_NORTHEAST, TE_SOUTHEAST, TE_SOUTHWEST, TE_LENGTH};
-enum CornerType {CT_NONE, CT_IN, CT_OUT, CT_TWEEN, CT_DOUBLE, CT_FILL};
+enum TileElement {TE_NORTH = 0, TE_EAST, TE_SOUTH, TE_WEST, TE_LENGTH};
+enum Neighbour{ NB_NORTH = 0, NB_EAST, NB_SOUTH, NB_WEST, NB_NORTHWEST, NB_NORTHEAST, NB_SOUTHEAST, NB_SOUTHWEST, NB_LENGTH };
+enum CornerType {CT_NONE, CT_EDGE_A, CT_EDGE_B, CT_IN, CT_OUT, CT_FILL};
 enum BuildingType {B_SPACE, B_EMPTY, B_ENGINE};
 
-static int platformCount_{0};
 
-class Platform : public Object
+class Platform : public SceneObject
 {
-    URHO3D_OBJECT(Platform, Object);
+    URHO3D_OBJECT(Platform, SceneObject);
     friend class InputMaster;
 public:
-    Platform(Context *context, Vector3 position, MasterControl* masterControl, bool random = false);
+    Platform(Context *context);
+    static void RegisterObject(Context* context);
+    virtual void OnNodeSet(Node* node);
+    virtual void Set(Vector3 position);
 
-
-    MasterControl* masterControl_;
-    Node* rootNode_;
+    static int platformCount_;
     RigidBody* rigidBody_;
 
-    bool CheckEmpty(Vector3 coords, bool checkTiles) const { CheckEmpty(IntVector2(round(coords.x_), round(coords.z_)), checkTiles); }
-    bool CheckEmpty(IntVector2 coords, bool checkTiles) const;
-    bool CheckEmptyNeighbour(IntVector2 coords, TileElement element, bool tileMap) const;
-    IntVector2 GetNeighbourCoords(IntVector2 coords, TileElement element) const;
+    bool CheckEmpty(Vector3 coords, bool checkTiles = true) const { return CheckEmpty(IntVector2(round(coords.x_), round(coords.z_)), checkTiles); }
+    bool CheckEmpty(IntVector2 coords, bool checkTiles = true) const;
+    bool CheckEmptyNeighbour(IntVector2 coords, Neighbour neighbour, bool checkTiles = true) const;
+    IntVector2 GetNeighbourCoords(IntVector2 coords, Neighbour element) const;
     CornerType PickCornerType(IntVector2 tileCoords, TileElement element) const;
     BuildingType GetBuildingType(IntVector2 coords);
-    BuildingType GetNeighbourType(IntVector2 coords, TileElement element);
+    BuildingType GetNeighbourType(IntVector2 coords, Neighbour neighbour);
 
 
     virtual void Start();
@@ -74,21 +77,28 @@ public:
     void SetMoveTarget(Vector3 moveTarget) {moveTarget_ = moveTarget;}
     void EnableSlots();
     void DisableSlots();
+
+    static Vector3 CoordsToPosition(IntVector2 coords, float y = 0.0f) { return Vector3(-coords.x_ * 0.5f + coords.y_ * 0.5f,
+                                                                        y,
+                                                                        coords.x_ * 0.8f + coords.y_ * 0.8f);
+                                                                       }
+    char GetNeighbourMask(IntVector2 tileCoords, TileElement element) const;
+
 private:
-    HashMap<IntVector2, SharedPtr<Tile> > tileMap_;
-    HashMap<IntVector2, SharedPtr<Slot> > slotMap_;
+    HashMap<IntVector2, Tile*> tileMap_;
+    HashMap<IntVector2, Slot*> slotMap_;
     HashMap<IntVector2, BuildingType> buildingMap_;
 
-    bool selected_ = false;
+    bool selected_;
     Vector3 moveTarget_;
 
-    void HandleUpdate(StringHash eventType, VariantMap& eventData);
+    void Update(float timeStep);
 
 
 
     void Select();
     void Deselect();
-    void SetSelected(bool selected);
+    void SetSelected(bool select);
     bool IsSelected() const;
 
     void SetBuilding(IntVector2 coords, BuildingType type = B_ENGINE);

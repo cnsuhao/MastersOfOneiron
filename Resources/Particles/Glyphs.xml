@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<particleeffect>
+	<material name="Materials/Glyphs.xml" />
+	<numparticles value="125" />
+	<updateinvisible enable="false" />
+	<relative enable="false" />
+	<scaled enable="true" />
+	<sorted enable="false" />
+	<fixedscreensize enable="false" />
+	<animlodbias value="0" />
+	<emittertype value="Sphere" />
+	<emittersize value="0 0 0" />
+	<direction min="0.42 0.8 0" max="0.42 0.8 0" />
+	<constantforce value="0 0 0" />
+	<dampingforce value="0" />
+	<activetime value="0" />
+	<inactivetime value="0" />
+	<emissionrate min="0.5" max="0.5" />
+	<particlesize min="0.5 0.5" max="0.5 0.5" />
+	<timetolive min="25" max="25" />
+	<velocity min="0.46" max="0.46" />
+	<rotation min="0" max="0" />
+	<rotationspeed min="-1" max="1" />
+	<sizedelta add="0" mul="1" />
+	<faceCameraMode value="Rotate XYZ" />
+	<colorfade color="0 0 0 0" time="0" />
+	<colorfade color="1 1 1 1" time="0.1" />
+	<colorfade color="1 1 1 1" time="0.9" />
+	<colorfade color="0 0 0 0" time="1" />
+	<colorfade color="1 1 1 1" time="1.1" />
+	<colorfade color="1 1 1 1" time="1.9" />
+	<colorfade color="0 0 0 0" time="2" />
+	<colorfade color="1 1 1 1" time="2.1" />
+	<texanim uv="0 0 0.2 0.2" time="0" />
+	<texanim uv="0.2 0 0.4 0.2" time="1" />
+	<texanim uv="0.4 0 0.6 0.2" time="2" />
+	<texanim uv="0.6 0 0.8 0.2" time="3" />
+	<texanim uv="0.8 0 1 0.2" time="4" />
+</particleeffect>

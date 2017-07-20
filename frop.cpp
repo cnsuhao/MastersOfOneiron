@@ -18,22 +18,36 @@
 
 #include "frop.h"
 
-Frop::Frop(Context *context, MasterControl *masterControl, Node *parent, Vector3 pos) : Object(context)
+void Frop::RegisterObject(Context *context)
 {
+    context->RegisterFactory<Frop>();
+}
+
+Frop::Frop(Context *context):
+    SceneObject(context)
+{
+}
+
+void Frop::OnNodeSet(Node *node)
+{ if (!node) return;
+
     growthStart_ = Random(0.0f, 23.0f);
-    masterControl_ = masterControl;
-    rootNode_ = parent->CreateChild("Frop");
-    rootNode_->SetPosition(pos);
-    rootNode_->Rotate(Quaternion(Random(-10.0f, 10.0f),Random(360.0f),Random(-10.0f, 10.0f)));
-    rootNode_->SetScale(0.0f);
-    float randomWidth{Random(0.5f,1.0f)};
-    scale_ = Vector3{randomWidth, Random(0.5f,0.5f+randomWidth), randomWidth};
-    fropModel_ = rootNode_->CreateComponent<StaticModel>();
-    fropModel_->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Frop.mdl"));
-    fropModel_->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/Frop.xml"));
+    node_->Rotate(Quaternion(Random(-10.0f, 10.0f), Random(360.0f), Random(-10.0f, 10.0f)));
+    node_->SetScale(0.0f);
+    float randomWidth{ Random(0.5f, 1.0f) };
+    scale_ = Vector3{randomWidth, Random(0.5f, 0.5f + randomWidth), randomWidth};
+    fropModel_ = node_->CreateComponent<StaticModel>();
+    fropModel_->SetModel(MC->CACHE->GetResource<Model>("Resources/Models/Frop.mdl"));
+    fropModel_->SetMaterial(MC->CACHE->GetResource<Material>("Resources/Materials/Frop.xml"));
     fropModel_->SetCastShadows(true);
 
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Frop, HandleUpdate));
+}
+
+void Frop::Set(Vector3 position, Node *parent)
+{
+    node_->SetParent(parent);
+    SceneObject::Set(position);
 }
 
 void Frop::Start()
@@ -48,6 +62,6 @@ void Frop::HandleUpdate(StringHash eventType, VariantMap &eventData)
 {
     float timeStep{eventData[Update::P_TIMESTEP].GetFloat()};
     age_ += timeStep;
-    if (age_ > growthStart_ && rootNode_->GetScale().Length() < scale_.Length())
-        rootNode_->SetScale(rootNode_->GetScale()+(5.0f * timeStep * (scale_ - rootNode_->GetScale())));
+    if (age_ > growthStart_ && node_->GetScale().Length() < scale_.Length())
+        node_->SetScale(node_->GetScale() + (5.0f * timeStep * (scale_ - node_->GetScale())));
 }

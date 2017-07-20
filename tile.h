@@ -21,7 +21,7 @@
 
 #include <Urho3D/Urho3D.h>
 
-#include "mastercontrol.h"
+#include "sceneobject.h"
 #include "platform.h"
 
 namespace Urho3D {
@@ -34,37 +34,37 @@ class Sprite;
 using namespace Urho3D;
 
 class Platform;
+//class BuildingType;
 
-class Tile : public Object
+class Tile : public SceneObject
 {
     friend class Platform;
-    URHO3D_OBJECT(Tile, Object);
+    URHO3D_OBJECT(Tile, SceneObject);
 public:
-    Tile(Context *context, const IntVector2 coords, Platform *platform);
+    Tile(Context *context);
+    static void RegisterObject(Context* context);
+    virtual void Set(const IntVector2 coords, Platform *platform);
 
     virtual void Start();
     virtual void Stop();
 
 
     IntVector2 coords_;
-    BuildingType buildingType_ = B_EMPTY;
-    float GetHealth(){return health_;}
-    float ApplyDamage(float damage){health_ = Max(health_ - damage, 0.0f);}
+    BuildingType buildingType_;
+    float GetHealth() const { return health_; }
+    void ApplyDamage(float damage) { health_ = Max(health_ - damage, 0.0f); }
+    void OnNodeSet(Node* node);
+    void Disable();
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
-    MasterControl* masterControl_;
     Platform* platform_;
-    Node* rootNode_;
     CollisionShape* collisionShape_;
     Node* elements_[TE_LENGTH];
-    float health_ = 1.0f;
-    //A node pointer for each element:
-    // 516 ^
-    // 402 N
-    // 837 |
+    float health_;
     void SetBuilding(BuildingType type);
     BuildingType GetBuilding();
     void FixFringe();
+
 };
 
 #endif // TILE_H

@@ -5,8 +5,6 @@ LIBS += ../MastersOfOneiron/Urho3D/lib/libUrho3D.a \
     -ldl \
     -lGL
 
-DEFINES += URHO3D_COMPILE_QT
-
 QMAKE_CXXFLAGS += -std=c++14
 
 INCLUDEPATH += \
@@ -25,6 +23,10 @@ SOURCES += \
     platform.cpp \
     oneirocam.cpp \
     inputmaster.cpp \
+    controllable.cpp \
+    spawnmaster.cpp \
+    sceneobject.cpp \
+    resourcemaster.cpp \
     grass.cpp \
     frop.cpp \
     luckey.cpp \
@@ -37,6 +39,10 @@ HEADERS += \
     platform.h \
     oneirocam.h \
     inputmaster.h \
+    controllable.h \
+    spawnmaster.h \
+    sceneobject.h \
+    resourcemaster.h \
     grass.h \
     frop.h \
     luckey.h \

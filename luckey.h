@@ -23,6 +23,7 @@
 #include <Urho3D/Audio/Audio.h>
 #include <Urho3D/Audio/Sound.h>
 #include <Urho3D/Audio/SoundSource.h>
+#include <Urho3D/Audio/SoundSource3D.h>
 #include <Urho3D/Container/HashBase.h>
 #include <Urho3D/Container/HashMap.h>
 #include <Urho3D/Container/Vector.h>
@@ -31,6 +32,7 @@
 #include <Urho3D/Engine/Console.h>
 #include <Urho3D/Engine/DebugHud.h>
 #include <Urho3D/Engine/Engine.h>
+#include <Urho3D/Engine/EngineDefs.h>
 #include <Urho3D/Graphics/AnimatedModel.h>
 #include <Urho3D/Graphics/AnimationController.h>
 #include <Urho3D/Graphics/Animation.h>
@@ -84,7 +86,6 @@
 #include <Urho3D/DebugNew.h>
 
 #include <initializer_list>
-#include "mastercontrol.h"
 
 #define FILES GetSubsystem<FileSystem>()
 #define ENGINE GetSubsystem<Engine>()
@@ -96,6 +97,8 @@
 #define AUDIO GetSubsystem<Audio>()
 
 #define MC GetSubsystem<MasterControl>()
+#define RESOURCE GetSubsystem<ResourceMaster>()
+#define SPAWN GetSubsystem<SpawnMaster>()
 
 namespace Urho3D {
 class Drawable;

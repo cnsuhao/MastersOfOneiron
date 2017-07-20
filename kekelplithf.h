@@ -21,7 +21,7 @@
 
 #include <Urho3D/Urho3D.h>
 
-#include "mastercontrol.h"
+#include "sceneobject.h"
 
 namespace Urho3D {
 class Drawable;
@@ -32,21 +32,21 @@ class Sprite;
 
 using namespace Urho3D;
 
-class Kekelplithf : public Object
+class Kekelplithf : public SceneObject
 {
-    URHO3D_OBJECT(Kekelplithf, Object);
+    URHO3D_OBJECT(Kekelplithf, SceneObject);
 public:
-    Kekelplithf(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
-    Kekelplithf(Context *context, MasterControl *masterControl) : Kekelplithf(context, masterControl, masterControl->world.scene, Vector3::ZERO){}
+    Kekelplithf(Context *context);
+    static void RegisterObject(Context* context);
+    virtual void OnNodeSet(Node* node);
+    virtual void Set(Vector3 position, Node* parent);
 
     virtual void Start();
     virtual void Stop();
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
-    MasterControl* masterControl_;
-    Node* rootNode_;
-    Node* spinNode_;
-    AnimatedModel* impModel_;
+    AnimatedModel* bodyModel_;
+    Vector<AnimatedModel*> equipment_;
     float randomizer_;
 };
 

@@ -22,7 +22,6 @@
 #include <Urho3D/Urho3D.h>
 
 #include "mastercontrol.h"
-#include "platform.h"
 
 namespace Urho3D {
 class Drawable;
@@ -37,20 +36,18 @@ class InputMaster : public Object
 {
     URHO3D_OBJECT(InputMaster, Object);
 public:
-    InputMaster(Context* context, MasterControl* masterControl);
+    InputMaster(Context* context);
     WeakPtr<Node> firstHit_;
 
     void DeselectAll();
 private:
-    MasterControl* masterControl_;
-
     Input* input_;
     void HandleMouseDown(StringHash eventType, VariantMap &eventData);
     void HandleKeyDown(StringHash eventType, VariantMap &eventData);
     void HandleMouseUp(StringHash eventType, VariantMap &eventData);
 
-    Vector<SharedPtr<Platform> > selectedPlatforms_;
-    void SetSelection(SharedPtr<Platform> platform);
+    Vector<Platform*> selectedPlatforms_;
+    void SetSelection(Platform* platform);
 };
 
 #endif // INPUTMASTER_H

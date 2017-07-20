@@ -18,21 +18,34 @@
 
 #include "grass.h"
 
-Grass::Grass(Context *context, MasterControl *masterControl, Node *parent, Vector3 pos) : Object(context)
+void Grass::RegisterObject(Context *context)
 {
-    masterControl_ = masterControl;
-    rootNode_ = parent->CreateChild("Grass");
-    rootNode_->SetPosition(pos);
-    rootNode_->Rotate(Quaternion(Random(-10.0f, 10.0f),Random(360.0f),Random(-10.0f, 10.0f)));
+    context->RegisterFactory<Grass>();
+}
+
+Grass::Grass(Context *context) : SceneObject(context)
+{
+}
+
+void Grass::OnNodeSet(Node *node)
+{ if (!node) return;
+
+    node_->Rotate(Quaternion(Random(-10.0f, 10.0f),Random(360.0f),Random(-10.0f, 10.0f)));
     float randomWidth{Random(0.5f,1.5f)};
-    rootNode_->SetScale(Vector3(randomWidth, Random(0.25f,randomWidth), randomWidth));
-    grassModel_ = rootNode_->CreateComponent<StaticModel>();
-    grassModel_->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Grass.mdl"));
-    grassModel_->SetMaterial(0, masterControl_->cache_->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
-    grassModel_->SetMaterial(1, masterControl_->cache_->GetResource<Material>("Resources/Materials/Shadow.xml"));
+    node_->SetScale(Vector3(randomWidth, Random(0.25f,randomWidth), randomWidth));
+    grassModel_ = node_->CreateComponent<StaticModel>();
+    grassModel_->SetModel(MC->CACHE->GetResource<Model>("Resources/Models/Grass.mdl"));
+    grassModel_->SetMaterial(0, MC->CACHE->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
+    grassModel_->SetMaterial(1, MC->CACHE->GetResource<Material>("Resources/Materials/Shadow.xml"));
     grassModel_->SetCastShadows(false);
 
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Grass, HandleUpdate));
+}
+
+void Grass::Set(Vector3 position, Node *parent)
+{
+    node_->SetParent(parent);
+    SceneObject::Set(position);
 }
 
 void Grass::Start()

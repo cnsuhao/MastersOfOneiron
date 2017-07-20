@@ -38,14 +38,14 @@ class Platform;
 
 typedef struct GameWorld
 {
-    SharedPtr<OneiroCam> camera;
-    SharedPtr<Scene> scene;
-    SharedPtr<Node> backgroundNode;
-    SharedPtr<Node> voidNode;
-    SharedPtr<Node> sunNode;
+    OneiroCam* camera;
+    Scene* scene;
+    Node* backgroundNode;
+    Node* voidNode;
+    Node* sunNode;
     struct {
-        SharedPtr<Node> sceneCursor;
-        SharedPtr<Cursor> uiCursor;
+        Node* sceneCursor;
+        Cursor* uiCursor;
         PODVector<RayQueryResult> hitResults;
     } cursor;
 } GameWorld;
@@ -65,8 +65,7 @@ StringHash const N_TILEPART = StringHash("TilePart");
 StringHash const N_SLOT = StringHash("Slot");
 }
 
-#define MC MasterControl::GetInstance()
-#define WORLDRADIUS 235.0f
+#define WORLD_RADIUS 235.0f
 
 class MasterControl : public Application
 {
@@ -75,12 +74,11 @@ class MasterControl : public Application
 public:
     MasterControl(Context* context);
     static MasterControl* GetInstance();
+    Scene* GetScene() const { return world.scene; }
 
     GameWorld world;
-    SharedPtr<ResourceCache> cache_;
-    SharedPtr<Graphics> graphics_;
 
-    HashMap<unsigned, SharedPtr<Platform> > platformMap_;
+    HashMap<unsigned, Platform*> platformMap_;
 
     virtual void Setup();
     virtual void Start();
@@ -95,7 +93,6 @@ private:
     bool paused_;
 
     SharedPtr<UI> ui_;
-    SharedPtr<Renderer> renderer_;
     SharedPtr<XMLFile> defaultStyle_;
 
     void SetWindowTitleAndIcon();
@@ -111,7 +108,7 @@ private:
 
     void CreatePlatform(const Vector3 pos);
     void UpdateCursor(float timeStep);
-    bool CursorRayCast(double maxDistance, PODVector<RayQueryResult> &hitResults);
+    bool CursorRayCast(float maxDistance, PODVector<RayQueryResult> &hitResults);
 };
 
 #endif // MASTERCONTROL_H

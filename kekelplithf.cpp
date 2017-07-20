@@ -18,28 +18,60 @@
 
 #include "kekelplithf.h"
 
-Kekelplithf::Kekelplithf(Context* context, MasterControl* masterControl, Node* parent, Vector3 pos):
-Object(context)
+void Kekelplithf::RegisterObject(Context *context)
 {
-    masterControl_ = masterControl;
-    randomizer_ = Random(0.5f,0.75f);
+    context->RegisterFactory<Kekelplithf>();
+}
 
-    rootNode_ = parent->CreateChild("Imp");
-    rootNode_->SetPosition(pos);
-    rootNode_->Rotate(Quaternion(0.0f,Random(360.0f),0.0f));
-    rootNode_->SetScale(Random(0.015f,0.016f));
-    spinNode_= rootNode_->CreateChild("ImpModelNode");
-    impModel_ = spinNode_->CreateComponent<AnimatedModel>();
-    impModel_->SetModel(masterControl_->cache_->GetResource<Model>("Resources/Models/Kekelplithf.mdl"));
-    impModel_->SetMaterial(masterControl_->cache_->GetResource<Material>("Resources/Materials/Kekelplithf.xml"));
-    impModel_->SetCastShadows(true);
-    impModel_->SetAnimationEnabled(true);
+Kekelplithf::Kekelplithf(Context* context):
+    SceneObject(context)
+{
+}
 
-    AnimationController* animCtrl{rootNode_->CreateComponent<AnimationController>()};
-    animCtrl->PlayExclusive("Resources/Animations/Smoke.ani", 0, true);
-    animCtrl->SetSpeed("Resources/Animations/Smoke.ani", 0.5f+randomizer_);
+void Kekelplithf::OnNodeSet(Node *node)
+{ if (!node) return;
+
+    node_ = node_->CreateChild("ImpModelNode");
+    bodyModel_ = node_->CreateComponent<AnimatedModel>();
+//    bodyModel_->SetModel(RESOURCE->GetModel("Ekelplithf_LOD023"));
+//    impModel_->SetMaterial(RESOURCE->GetMaterial("Kekelplithf"));
+    bodyModel_->SetCastShadows(true);
+/*
+    for (int e{0}; e < 3; ++e) {
+
+        AnimatedModel* equipment{ node_->CreateComponent<AnimatedModel>() };
+        switch (e) {
+        case 0:
+            equipment->SetModel(RESOURCE->GetModel("Kilt_LOD023"));
+            break;
+        case 1:
+            equipment->SetModel(RESOURCE->GetModel("Armour_LOD023"));
+            break;
+        case 2:
+            equipment->SetModel(RESOURCE->GetModel("ShieldBlade_LOD023"));
+            break;
+        }
+        equipment_.Push(equipment);
+    }
+*/
+    AnimationController* animCtrl{node_->CreateComponent<AnimationController>()};
+    animCtrl->PlayExclusive("Resources/Animations/StandUp.ani", 0, true);
+    animCtrl->SetSpeed("Resources/Animations/StandUp.ani", 0.5f + randomizer_);
 
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Kekelplithf, HandleUpdate));
+}
+
+void Kekelplithf::Set(Vector3 position, Node *parent)
+{
+    node_->SetParent(parent);
+    node_->SetRotation(Quaternion::IDENTITY);
+
+    SceneObject::Set(position);
+
+    randomizer_ = Random(0.5f,0.75f);
+    node_->Rotate(Quaternion(0.0f,Random(360.0f),0.0f));
+    node_->SetScale(Random(0.015f,0.016f));
+
 }
 
 void Kekelplithf::Start()

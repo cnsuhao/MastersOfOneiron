@@ -21,7 +21,7 @@
 
 #include <Urho3D/Urho3D.h>
 
-#include "platform.h"
+#include "sceneobject.h"
 
 namespace Urho3D {
 class Drawable;
@@ -32,21 +32,23 @@ class Sprite;
 
 using namespace Urho3D;
 
-class Slot : public Object
+class Slot : public SceneObject
 {
-    URHO3D_OBJECT(Tile, Object);
+    URHO3D_OBJECT(Slot, SceneObject);
     friend class Platform;
 public:
-    IntVector2 coords_;
-    Slot(Context *context, Platform* platform, IntVector2 coords);
+    Slot(Context *context);
+    static void RegisterObject(Context* context);
 
+    IntVector2 coords_;
     virtual void Start();
     virtual void Stop();
 
+    virtual void OnNodeSet(Node* node);
+    virtual void Set(IntVector2 coords, Platform* platform);
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     Platform* platform_;
-    Node* rootNode_;
     //StaticModel* model_;
     Node* cursor_;
 };

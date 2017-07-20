@@ -19,10 +19,10 @@
 #include "inputmaster.h"
 #include "platform.h"
 #include "oneirocam.h"
+#include "slot.h"
 
-InputMaster::InputMaster(Context* context, MasterControl* masterControl) : Object(context)
+InputMaster::InputMaster(Context* context) : Object(context)
 {
-    masterControl_ = masterControl;
     input_ = GetSubsystem<Input>();
     //Subscribe mouse down event
     SubscribeToEvent(E_MOUSEBUTTONDOWN, URHO3D_HANDLER(InputMaster, HandleMouseDown));
@@ -36,61 +36,64 @@ void InputMaster::HandleMouseDown(StringHash eventType, VariantMap &eventData)
     if (button == MOUSEB_LEFT) {
         //See through cursor
         int first{0};
-        if (masterControl_->world.cursor.hitResults[first].node_->GetNameHash() == N_CURSOR) first = 1;
-        firstHit_ = SharedPtr<Node>(masterControl_->world.cursor.hitResults[first].node_);
-        //Void interaction (create new platform)
-        if (firstHit_->GetNameHash() == N_VOID) {
-            new Platform(context_, masterControl_->world.cursor.sceneCursor->GetPosition(), masterControl_);
-        }
-        //Platform selection
-        else if (firstHit_->GetNameHash() == N_TILEPART) {
-            //Select single platform
-            if (!(input_->GetKeyDown(KEY_LSHIFT)||input_->GetKeyDown(KEY_RSHIFT))) {
-                SharedPtr<Platform> platform{masterControl_->platformMap_[firstHit_->GetParent()->GetParent()->GetID()]};
-                SetSelection(platform);
-            } else {
-            //Add platform to selection when either of the shift keys is held down
-                SharedPtr<Platform> platform{masterControl_->platformMap_[firstHit_->GetParent()->GetParent()->GetID()]};
-                if (platform->IsSelected()) {
-                    platform->SetSelected(false);
-                    selectedPlatforms_.Remove(platform);
+        if (MC->world.cursor.hitResults[first].node_->GetNameHash() == N_CURSOR) first = 1;
+        if (firstHit_ = SharedPtr<Node>(MC->world.cursor.hitResults[first].node_)) {
+
+            //Platform selection
+            if (firstHit_->GetNameHash() == N_TILEPART) {
+                //Select single platform
+                if (!(input_->GetKeyDown(KEY_LSHIFT)||input_->GetKeyDown(KEY_RSHIFT))) {
+                    SharedPtr<Platform> platform{MC->platformMap_[firstHit_->GetParent()->GetParent()->GetID()]};
+                    SetSelection(platform);
                 } else {
-                    platform->SetSelected(true);
-                    selectedPlatforms_ += platform;
+                    //Add platform to selection when either of the shift keys is held down
+                    SharedPtr<Platform> platform{MC->platformMap_[firstHit_->GetParent()->GetParent()->GetID()]};
+                    if (platform->IsSelected()) {
+                        platform->SetSelected(false);
+                        selectedPlatforms_.Remove(platform);
+                    } else {
+                        platform->SetSelected(true);
+                        selectedPlatforms_ += platform;
+                    }
                 }
+
             }
-        }
-        //Building interaction, if platform was already selected
-        //Slot interaction, if Former was selected
-        else if (firstHit_->GetNameHash() == N_SLOT)
-        {
-            SharedPtr<Platform> platform{masterControl_->platformMap_[firstHit_->GetParent()->GetID()]};
-            IntVector2 coords = IntVector2(firstHit_->GetPosition().x_, -firstHit_->GetPosition().z_);
-            if (platform->CheckEmpty(coords, true))
+            //Building interaction, if platform was already selected
+            //Slot interaction, if Former was selected
+            else if (firstHit_->GetNameHash() == N_SLOT)
             {
-                //Add tile
-                platform->AddTile(coords);
-                platform->FixFringe(coords);
-                platform->AddMissingSlots();
-            }
-            else {
-                //Add engine row
-                while (!platform->CheckEmpty(coords, true)){
-                    platform->SetBuilding(coords, B_ENGINE);
-                    coords += IntVector2(0,1);
+                SharedPtr<Platform> platform{MC->platformMap_[firstHit_->GetParent()->GetID()]};
+                IntVector2 coords = IntVector2(firstHit_->GetComponent<Slot>()->coords_);
+                if (platform->CheckEmpty(coords, true))
+                {
+                    //Add tile
+                    platform->AddTile(coords);
+                    platform->FixFringe(coords);
+                    platform->AddMissingSlots();
                 }
+                else {
+                    //Add engine row
+                    while (!platform->CheckEmpty(coords, true)){
+                        platform->SetBuilding(coords, B_ENGINE);
+                        coords += IntVector2(0,1);
+                    }
+                }
+            }
+            //Void interaction (create new platform)
+            else {
+                SPAWN->Create<Platform>()->Set(MC->world.cursor.sceneCursor->GetPosition().Normalized() * WORLD_RADIUS);
             }
         }
     }
     else if (button == MOUSEB_RIGHT){
         //Platform move command for each selected platform
         for (unsigned i = 0; i < selectedPlatforms_.Size(); i++){
-            selectedPlatforms_[i]->SetMoveTarget(masterControl_->world.cursor.sceneCursor->GetPosition());
+            selectedPlatforms_[i]->SetMoveTarget(MC->world.cursor.sceneCursor->GetPosition());
         }
     }
 }
 
-void InputMaster::SetSelection(SharedPtr<Platform> platform)
+void InputMaster::SetSelection(Platform* platform)
 {
     DeselectAll();
     selectedPlatforms_ += platform;
@@ -110,7 +113,7 @@ void InputMaster::HandleKeyDown(StringHash eventType, VariantMap &eventData)
     int key = eventData[P_KEY].GetInt();
 
     //Exit when ESC is pressed
-    if (key == KEY_ESCAPE) DeselectAll();//masterControl_->Exit();
+    if (key == KEY_ESCAPE) DeselectAll();
 
     //Take screenshot
     else if (key == KEY_9)
@@ -126,16 +129,16 @@ void InputMaster::HandleKeyDown(StringHash eventType, VariantMap &eventData)
     }
     else if (key == KEY_L)
     {
-        SharedPtr<Platform> platform = SharedPtr<Platform>();
-        if (firstHit_->GetNameHash() == N_TILEPART) platform = masterControl_->platformMap_[firstHit_->GetParent()->GetParent()->GetID()];
-        else if (firstHit_->GetNameHash() == N_SLOT) platform = masterControl_->platformMap_[firstHit_->GetParent()->GetID()];
-        if (platform) masterControl_->world.camera->Lock(platform);
+        Platform* platform{};
+        if (firstHit_->GetNameHash() == N_TILEPART) platform = MC->platformMap_[firstHit_->GetParent()->GetParent()->GetID()];
+        else if (firstHit_->GetNameHash() == N_SLOT) platform = MC->platformMap_[firstHit_->GetParent()->GetID()];
+        if (platform) MC->world.camera->Lock(platform);
     }
 }
 
 void InputMaster::DeselectAll()
 {
-    for (unsigned i = 0; i < selectedPlatforms_.Size(); i++)
+    for (unsigned i{ 0 }; i < selectedPlatforms_.Size(); i++)
     {
         selectedPlatforms_[i]->Deselect();
     }

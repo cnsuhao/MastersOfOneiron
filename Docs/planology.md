@@ -1,22 +1,28 @@
-The world consists of four planes:
--One god-player, optional number of bots. Can be edited (strange fenomenon)
--One god-player, multiple bots (forces of nature and factions). Story mode.
--Infinite human god-players
--Infinite human kekel-players and kekel-bots
+Ж-universe consists of four planes:
+
+- One god-player, optional number of bots. Can be edited (strange fenomenon)
+- One god-player, multiple bots (forces of nature and factions). Story mode.
+- Infinite human god-players
+- Infinite human kekel-players and kekel-bots
 
 Planes can be imagined as concentric bubbles spotted with rocky flakes of varying size around the central star.
 Each plane thus has two sides, the inside facing the central star and the outside facing away from it.
 The inside:
-	- Light
-	- Frop
-	- Trees
+
+- Light
+- Frop
+- Trees
+	
 The outside:
-	- Darkness
-	- Mushrooms
-	- Nightmarish photophobic creatures
-	- Hostile
+
+- Darkness
+- Mushrooms
+- Nightmarish photophobic creatures
+- Hostile
+
 Both sides:
-	- Magnite
+
+- Magnite
 
 So you may think: "Why go to the outside at all?"
 Well there are several reasons:

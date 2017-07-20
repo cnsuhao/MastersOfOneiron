@@ -21,7 +21,7 @@
 
 #include <Urho3D/Urho3D.h>
 
-#include "mastercontrol.h"
+#include "sceneobject.h"
 
 namespace Urho3D {
 class Drawable;
@@ -32,18 +32,19 @@ class Sprite;
 
 using namespace Urho3D;
 
-class Frop : public Object
+class Frop : public SceneObject
 {
-    URHO3D_OBJECT(Frop, Object);
+    URHO3D_OBJECT(Frop, SceneObject);
 public:
-    Frop(Context *context, MasterControl* masterControl, Urho3D::Node *parent, Vector3 pos);
-    Frop(Context* context, MasterControl* masterControl): Frop(context, masterControl, masterControl->world.scene, Vector3::ZERO){}
+    Frop(Context *context);
+    static void RegisterObject(Context* context);
+
+    virtual void OnNodeSet(Node* node);
+    virtual void Set(Vector3 position, Node *parent);
     virtual void Start();
     virtual void Stop();
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
-    MasterControl* masterControl_;
-    Node* rootNode_;
     StaticModel* fropModel_;
     Vector3 scale_;
 

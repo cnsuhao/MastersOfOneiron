@@ -16,34 +16,40 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include "platform.h"
+
 #include "oneirocam.h"
 
-OneiroCam::OneiroCam(Context *context, MasterControl *masterControl):
-    Object(context),
+void OneiroCam::RegisterObject(Context *context)
+{
+    context->RegisterFactory<OneiroCam>();
+}
+
+OneiroCam::OneiroCam(Context *context):
+    SceneObject(context),
     yaw_{0.0f},
     pitch_{0.0f},
     roll_{0.0f},
     yawDelta_{0.0f},
     pitchDelta_{0.0f},
-    forceMultiplier_{1.0f}
+    speedMultiplier_{1.0f},
+    camTrans_{}
 {
-    masterControl_ = masterControl;
-    SubscribeToEvent(E_SCENEUPDATE, URHO3D_HANDLER(OneiroCam, HandleSceneUpdate));
+
+}
+
+void OneiroCam::OnNodeSet(Node *node)
+{ if (!node) return;
 
     //Create the camera. Limit far clip distance to match the fog
-    translationNode_ = masterControl_->world.scene->CreateChild("CamTrans");
-    rotationNode_ = translationNode_->CreateChild("CamRot");
-    camera_ = rotationNode_->CreateComponent<Camera>();
+    altitudeNode_ = node_->CreateChild("CamTrans");
+    pitchNode_ = altitudeNode_->CreateChild("CamRot");
+    camera_ = pitchNode_->CreateComponent<Camera>();
     camera_->SetFarClip(128.0f);
-    camera_->SetFov(80.0f);
+    camera_->SetFov(100.0f);
     //Set an initial position for the camera scene node above the origin
-    translationNode_->SetPosition(Vector3(0.0f, 0.0f, -WORLDRADIUS - 5.0f));
-    rotationNode_->SetRotation(Quaternion(0.0f, 90.0f, 0.0f));
-    rigidBody_ = translationNode_->CreateComponent<RigidBody>();
-    rigidBody_->SetAngularFactor(Vector3::ZERO);
-    CollisionShape* collisionShape{translationNode_->CreateComponent<CollisionShape>()};
-    collisionShape->SetSphere(0.1f);
-    rigidBody_->SetMass(1.0f);
+    altitudeNode_->SetPosition(Vector3(0.0f, -WORLD_RADIUS + 5.0f, 0.0f));
+    pitchNode_->SetRotation(Quaternion(0.0f, 90.0f, 0.0f));
 
 //    Light* light{rotationNode_->CreateComponent<Light>()};
 //    light->SetLightType(LIGHT_DIRECTIONAL);
@@ -51,8 +57,6 @@ OneiroCam::OneiroCam(Context *context, MasterControl *masterControl):
 
     SetupViewport();
 }
-
-
 
 void OneiroCam::Start()
 {
@@ -69,19 +73,19 @@ void OneiroCam::SetupViewport()
     renderer->SetShadowQuality(SHADOWQUALITY_PCF_24BIT);
 
     //Set up a viewport to the Renderer subsystem so that the 3D scene can be seen
-    SharedPtr<Viewport> viewport{new Viewport(context_, masterControl_->world.scene, camera_)};
+    SharedPtr<Viewport> viewport{new Viewport(context_, MC->world.scene, camera_)};
     viewport_ = viewport;
 
     //Add anti-asliasing
     effectRenderPath = viewport_->GetRenderPath()->Clone();
-    effectRenderPath->Append(masterControl_->cache_->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
+    effectRenderPath->Append(MC->CACHE->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
     /*
     effectRenderPath->Append(masterControl_->cache_->GetResource<XMLFile>("PostProcess/AutoExposure.xml"));
     effectRenderPath->SetShaderParameter("AutoExposureLumRange", Vector2(0.42f, 2.0f));
     effectRenderPath->SetShaderParameter("AutoExposureAdaptRate", 5.0f);
     effectRenderPath->SetShaderParameter("AutoExposureMiddleGrey", 0.42f);
     */
-    effectRenderPath->Append(masterControl_->cache_->GetResource<XMLFile>("PostProcess/Bloom.xml"));
+    effectRenderPath->Append(MC->CACHE->GetResource<XMLFile>("PostProcess/Bloom.xml"));
     effectRenderPath->SetShaderParameter("BloomThreshold", 0.5f);
     effectRenderPath->SetShaderParameter("BloomMix", Vector2(0.75f, 1.0f));
 
@@ -91,76 +95,67 @@ void OneiroCam::SetupViewport()
 
 Vector3 OneiroCam::GetWorldPosition()
 {
-    return translationNode_->GetWorldPosition();
+    return altitudeNode_->GetWorldPosition();
 }
 
 Quaternion OneiroCam::GetRotation()
 {
-    return rotationNode_->GetRotation();
+    return pitchNode_->GetRotation();
 }
 
-void OneiroCam::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
+void OneiroCam::Update(float timeStep)
 {
-    camera_->SetFarClip(translationNode_->GetPosition().Length() + WORLDRADIUS * 1.5f);
+    camera_->SetFarClip(WORLD_RADIUS * 2.5f);
 
-    //Take the frame time step, which is stored as a float
-    const float t{eventData[Update::P_TIMESTEP].GetFloat()};
+    speedMultiplier_ = 1.0f + INPUT->GetKeyDown(KEY_SHIFT);
     //Movement speed as world units per second
-    const float moveSpeed{2000.0f};
+    const float moveSpeed{ 42.0f * speedMultiplier_};
     //Mouse sensitivity as degrees per pixel
-    const float mouseSensitivity{0.1f};
+    const float mouseSensitivity{ 0.1f };
+    bool out{ altitudeNode_->GetPosition().Length() > WORLD_RADIUS };
 
     //Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch between -90 and 90 degrees. Only move the camera when the cursor is hidden.
-    Input* input{GetSubsystem<Input>()};
-    IntVector2 mouseMove{input->GetMouseMove()};
+    IntVector2 mouseMove{ INPUT->GetMouseMove() };
     yawDelta_ = 0.5f * (yawDelta_ + mouseSensitivity * mouseMove.x_);
     pitchDelta_ = 0.5f * (pitchDelta_ + mouseSensitivity * mouseMove.y_);
     yaw_ += yawDelta_;
     pitch_ += pitchDelta_;
     pitch_ = Clamp(pitch_, -89.0f, 89.0f);
-    //Construct new orientation for the camera scene node from yaw and pitch. Roll is fixed to zero
-    translationNode_->SetRotation(Quaternion::IDENTITY);
-    rotationNode_->SetRotation(Quaternion(pitch_, yaw_, 0.0f));
+
+    camTrans_ = camTrans_.Lerp(Vector3::ZERO, Min(timeStep * 5.0f, 1.0f));
+    camTrans_.y_ += 0.1f * INPUT->GetMouseMoveWheel();
 
     //Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
-    Vector3 camForce{Vector3::ZERO};
-//    if (input->GetKeyDown('W'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * 23.0f, rotationNode_->GetRight()), TS_WORLD);
-//    if (input->GetKeyDown('S'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * -23.0f, rotationNode_->GetRight()), TS_WORLD);
-//    if (input->GetKeyDown('D'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * 23.0f, rotationNode_->GetDirection()), TS_WORLD);
-//    if (input->GetKeyDown('A'))translationNode_->RotateAround(MC->world.sunNode->GetPosition(), Quaternion(t * -23.0f, rotationNode_->GetDirection()), TS_WORLD);
+    if (INPUT->GetKeyDown('D') || INPUT->GetKeyDown('A'))
+        camTrans_.x_ = Lerp(camTrans_.x_, 1.0f * INPUT->GetKeyDown('D') - INPUT->GetKeyDown('A'), timeStep);
+    if (INPUT->GetKeyDown('E') || INPUT->GetKeyDown('Q'))
+        camTrans_.y_ = Lerp(camTrans_.y_, 1.0f * INPUT->GetKeyDown('E') - INPUT->GetKeyDown('Q'), timeStep);
+    if (INPUT->GetKeyDown('W') || INPUT->GetKeyDown('S'))
+        camTrans_.z_ = Lerp(camTrans_.z_, 1.0f * INPUT->GetKeyDown('W') - INPUT->GetKeyDown('S'), timeStep);
 
-    if (input->GetKeyDown('W')) camForce += LucKey::Scale( rotationNode_->GetDirection(), Vector3{1.0f,0.0f,1.0f} ).Normalized();
-    if (input->GetKeyDown('S')) camForce += LucKey::Scale(rotationNode_->GetDirection(), Vector3{-1.0f,0.0f,-1.0f}).Normalized();
-    if (input->GetKeyDown('D')) camForce += LucKey::Scale(rotationNode_->GetRight(), Vector3{1.0f,0.0f,1.0f}).Normalized();
-    if (input->GetKeyDown('A')) camForce += LucKey::Scale(rotationNode_->GetRight(), Vector3{-1.0f,0.0f,-1.0f}).Normalized();
-    if (input->GetKeyDown('E')) camForce += Vector3::UP;
-    if (input->GetKeyDown('Q')) camForce += Vector3::DOWN;
-    camForce = camForce.Normalized() * moveSpeed * t;
+    node_->Rotate(Quaternion(-camTrans_.z_ * timeStep * moveSpeed,
+                             out ? -yawDelta_ : yawDelta_,
+                             out ? -camTrans_.x_ : camTrans_.x_ * timeStep * moveSpeed));
+    altitudeNode_->Translate(camTrans_.y_ * moveSpeed * timeStep * Vector3::UP, TS_PARENT);
+    pitchNode_->SetRotation(Quaternion(pitch_, 0.0f, 0.0f));
 
-    if ( forceMultiplier_ < 8.0f && (input->GetKeyDown(KEY_LSHIFT)||input->GetKeyDown(KEY_RSHIFT)) ){
-        forceMultiplier_ += 0.23f;
-    } else {
-        forceMultiplier_ = pow(forceMultiplier_, 0.75f);
-    }
-    rigidBody_->ApplyForce( (forceMultiplier_ * camForce) - (2.3f * rigidBody_->GetLinearVelocity()) );
+    camTrans_ = Quaternion(out ? -yawDelta_ : yawDelta_, Vector3::UP) * camTrans_;
 
-//    if (translationNode_->GetPosition().y_ < 1.0f)
-//    {
-//        translationNode_->SetPosition(Vector3(translationNode_->GetPosition().x_, 1.0f, translationNode_->GetPosition().z_));
-//        rigidBody_->SetLinearVelocity(Vector3(rigidBody_->GetLinearVelocity().x_, 0.0f, rigidBody_->GetLinearVelocity().z_));
-//    }
+    //Flip camera when leaving or entering the bubble
+    altitudeNode_->SetRotation(altitudeNode_->GetRotation().Slerp(Quaternion(out ? 180.0f : 0.0f, Vector3::FORWARD), timeStep * 5.0f));
+
 }
 
-void OneiroCam::Lock(SharedPtr<Platform> platform)
+void OneiroCam::Lock(Platform* platform)
 {
-    if (translationNode_->GetParent() == masterControl_->world.scene)
+    if (altitudeNode_->GetParent() == MC->world.scene)
     {
-        translationNode_->SetParent(platform->rootNode_);
-        rotationNode_->SetParent(translationNode_);
+        altitudeNode_->SetParent(platform->GetNode());
+        pitchNode_->SetParent(altitudeNode_);
     }
     else {
-        Vector3 worldPos{GetWorldPosition()};
-        translationNode_->SetParent(masterControl_->world.scene);
-        translationNode_->SetPosition(worldPos);
+        Vector3 worldPos{ GetWorldPosition()};
+        altitudeNode_->SetParent(MC->world.scene);
+        altitudeNode_->SetPosition(worldPos);
     }
 }

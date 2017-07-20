@@ -6,12 +6,5 @@ When he finally spots her she turns to be a shy one. Right before she takes a bi
 
 On the dark outside of the mattershell hovers the Gogoltov among fungi. It feeds on the Soulshroom which allows it to manipulate other fungi. To create offspring it must eat Frop. Otherwise it is not able to form eggshells.
 
-Both the Kekelplith and the Gogoltov were created simultaneously when a discharge from the core hit two more primitive creature. Neither age.
-Their purpose is to undo the destruction of the planet, and although they do not know this yet, they are both looking to live more meaningful lives.
-
-
-Three possible outcomes:
-
-- Kekelpliths kill all Gogoltovs: 5 seconds of peace on restored planet
-- Gogoltovs kill all Kekelpliths: 5 seconds of peace on restored planet
-- Peace between Gogoltovs and Kekelplithfs:
+Both the Kekelplith and the Gogoltov were created simultaneously when a discharge from the core hit a more primitive creature. Neither age.
+Their purpose is to undo the destruction of the planet, and although they do not know this yet, they _are_ both looking to live more meaningful lives.
