@@ -112,7 +112,6 @@ void OneiroCam::Update(float timeStep)
     const float moveSpeed{ 42.0f * speedMultiplier_};
     //Mouse sensitivity as degrees per pixel
     const float mouseSensitivity{ 0.1f };
-    bool out{ altitudeNode_->GetPosition().Length() > WORLD_RADIUS };
 
     //Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch between -90 and 90 degrees. Only move the camera when the cursor is hidden.
     IntVector2 mouseMove{ INPUT->GetMouseMove() };
@@ -134,16 +133,20 @@ void OneiroCam::Update(float timeStep)
         camTrans_.z_ = Lerp(camTrans_.z_, 1.0f * INPUT->GetKeyDown('W') - INPUT->GetKeyDown('S'), timeStep);
 
     node_->Rotate(Quaternion(-camTrans_.z_ * timeStep * moveSpeed,
-                             out ? -yawDelta_ : yawDelta_,
-                             out ? -camTrans_.x_ : camTrans_.x_ * timeStep * moveSpeed));
+                             IsOut() ? -yawDelta_ : yawDelta_,
+                             IsOut() ? -camTrans_.x_ : camTrans_.x_ * timeStep * moveSpeed));
     altitudeNode_->Translate(camTrans_.y_ * moveSpeed * timeStep * Vector3::UP, TS_PARENT);
     pitchNode_->SetRotation(Quaternion(pitch_, 0.0f, 0.0f));
 
-    camTrans_ = Quaternion(out ? -yawDelta_ : yawDelta_, Vector3::UP) * camTrans_;
+    camTrans_ = Quaternion(IsOut() ? -yawDelta_ : yawDelta_, Vector3::UP) * camTrans_;
 
     //Flip camera when leaving or entering the bubble
-    altitudeNode_->SetRotation(altitudeNode_->GetRotation().Slerp(Quaternion(out ? 180.0f : 0.0f, Vector3::FORWARD), timeStep * 5.0f));
+    altitudeNode_->SetRotation(altitudeNode_->GetRotation().Slerp(Quaternion(IsOut() ? 180.0f : 0.0f, Vector3::FORWARD), timeStep * 5.0f));
 
+}
+bool OneiroCam::IsOut()
+{
+    return altitudeNode_->GetPosition().Length() > WORLD_RADIUS;
 }
 
 void OneiroCam::Lock(Platform* platform)

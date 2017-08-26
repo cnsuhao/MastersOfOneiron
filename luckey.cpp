@@ -20,9 +20,9 @@
 
 unsigned LucKey::IntVector2ToHash(IntVector2 vec) { return (MakeHash(vec.x_) & 0xffff) | (MakeHash(vec.y_) << 16); }
 
-float LucKey::Delta(float lhs, float rhs, bool angle)
+float LucKey::Delta(float lhs, float rhs, bool cyclical)
 {
-    if (!angle)
+    if (!cyclical)
         return (lhs > rhs) ? Abs(lhs - rhs) : Abs(rhs - lhs);
     else {
         lhs = Cycle(lhs, 0.0f, 360.0f);

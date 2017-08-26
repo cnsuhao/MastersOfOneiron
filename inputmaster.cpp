@@ -36,7 +36,9 @@ void InputMaster::HandleMouseDown(StringHash eventType, VariantMap &eventData)
     if (button == MOUSEB_LEFT) {
         //See through cursor
         int first{0};
-        if (MC->world.cursor.hitResults[first].node_->GetNameHash() == N_CURSOR) first = 1;
+        if (MC->world.cursor.hitResults[first].node_->GetNameHash() == N_CURSOR)
+            first = 1;
+
         if (firstHit_ = SharedPtr<Node>(MC->world.cursor.hitResults[first].node_)) {
 
             //Platform selection

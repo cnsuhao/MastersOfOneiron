@@ -37,19 +37,31 @@ SceneObject(context),
 void Tile::OnNodeSet(Node *node)
 { if (!node) return;
 
-    //Set up compound nodes.
-    for (int i{0}; i < TE_LENGTH; ++i){
-        elements_[i] = node_->CreateChild("TilePart");
-        elements_[i]->SetPosition(0.25f * Platform::CoordsToPosition(platform_->GetNeighbourCoords(IntVector2::ZERO, static_cast<Neighbour>(i))));
-        if (i < 3) elements_[i]->Rotate(Quaternion(0.0f, 180.0f, 0.0f));
-        //Add the right model to the node
-        StaticModel* model{elements_[i]->CreateComponent<StaticModel>()};
 
+    StaticModel* centerModel{ node_->CreateComponent<StaticModel>() };
+    centerModel->SetModel(RESOURCE->GetModel("Terrain/Center_1"));
+    centerModel->SetMaterial(RESOURCE->GetMaterial("VCol"));
+    centerModel->SetCastShadows(true);
+
+    //Set up compound nodes.
+    for (int i{0}; i < TE_LENGTH; ++i) {
+        elements_[i] = node_->CreateChild("TilePart");
+        elements_[i]->SetPosition(ElementPosition(static_cast<TileElement>(i)));
+//        if (i < 3) elements_[i]->Rotate(Quaternion(0.0f, 180.0f, 0.0f));
+
+        StaticModel* model{ elements_[i]->CreateComponent<StaticModel>() };
         model->SetCastShadows(true);
     }
 
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Tile, HandleUpdate));
 }
+Vector3 Tile::ElementPosition(TileElement element)
+{
+    return Vector3(0.5f - (element / 3),
+                   0.0f,
+                   1.0f - element % 3);
+}
+
 
 void Tile::Set(const IntVector2 coords, Platform *platform)
 {
@@ -61,11 +73,15 @@ void Tile::Set(const IntVector2 coords, Platform *platform)
 
     SceneObject::Set(Platform::CoordsToPosition(coords));
 
-    //Add collision shape to platform
-    collisionShape_ = platform->GetNode()->CreateComponent<CollisionShape>();
-    collisionShape_->SetBox(Vector3::ONE, Vector3::ZERO, Quaternion(45.0f, Vector3::UP));
-    collisionShape_->SetPosition(Platform::CoordsToPosition(coords_));
-    collisionShape_->SetEnabled(true);
+    //Set up compound nodes.
+    for (int i{0}; i < TE_LENGTH; ++i){
+        //Add collision shape to platform
+        colliders_[i] = platform_->GetNode()->CreateComponent<CollisionShape>();
+        colliders_[i]->SetBox(Vector3::ONE * 0.45f,
+                                platform_->CoordsToPosition(coords_) + ElementPosition(static_cast<TileElement>(i)),
+                                Quaternion(45.0f, Vector3::UP));
+        colliders_[i]->SetEnabled(true);
+    }
 
     //Increase platform mass
     platform_->rigidBody_->SetMass(platform_->rigidBody_->GetMass() + 1.0f);
@@ -120,7 +136,9 @@ void Tile::Set(const IntVector2 coords, Platform *platform)
 
 void Tile::Disable()
 {
-    collisionShape_->SetEnabled(false);
+    for (unsigned c{0}; c < TE_LENGTH; ++c)
+        colliders_[c]->SetEnabled(false);
+
     platform_->rigidBody_->SetMass(platform_->rigidBody_->GetMass() - 1.0f);
 }
 
@@ -132,9 +150,10 @@ void Tile::Stop()
 }
 
 void Tile::HandleUpdate(StringHash eventType, VariantMap &eventData)
-{
+{ (void)eventType;
+
     Input* input{GetSubsystem<Input>()};
-    using namespace Update; double timeStep = eventData[P_TIMESTEP].GetFloat();
+    double timeStep = eventData[Update::P_TIMESTEP].GetFloat();
     if (buildingType_ == B_ENGINE && input->GetKeyDown(KEY_UP)){
         platform_->rigidBody_->ApplyForce(platform_->GetNode()->GetDirection() * Clamp(5000.0f - 42.0f * Sign(node_->GetPosition().x_) * platform_->GetNode()->WorldToLocal(platform_->rigidBody_->GetAngularVelocity()).y_, 0.0f, 9000.0f) * timeStep, -platform_->GetNode()->GetRotation() * node_->GetPosition());
     }
@@ -177,7 +196,6 @@ void Tile::FixFringe()
 
         Node* element{ elements_[e] };
         StaticModel* model{ element->GetComponent<StaticModel>() };
-        bool cornerA{ e == TE_NORTH || e == TE_SOUTH };
 
         CornerType cornerType{ platform_->PickCornerType(coords_, static_cast<TileElement>(e)) };
 
@@ -185,75 +203,103 @@ void Tile::FixFringe()
         case CT_NONE:
             model->SetModel(nullptr);
             break;
-        case CT_IN:
-            if (cornerA)
-                model->SetModel(RESOURCE->GetModel("CornerInA"));
-            else
-                model->SetModel(RESOURCE->GetModel("CornerInB"));
+        case CT_OUT: {
+            model->SetModel(RESOURCE->GetModel("Terrain/BendOut_" + String(Random(1, 3))));
 
-            if (e == TE_NORTH || e == TE_WEST)
-                element->SetRotation(Quaternion(0.0f, Vector3::UP));
-            else
-                element->SetRotation(Quaternion(180.0f, Vector3::UP));
-
-            break;
-        case CT_OUT:
-            if (cornerA) {
-                model->SetModel(RESOURCE->GetModel("CornerOutA"));
-
-                if (e == TE_NORTH || e == TE_WEST)
-                    element->SetRotation(Quaternion(0.0f, Vector3::UP));
-                else
-                    element->SetRotation(Quaternion(180.0f, Vector3::UP));
-
+            switch (e) {
+            case TE_NORTHEAST:
+                elements_[e]->SetRotation(Quaternion(0.0f, 180.0f, 0.0f));
+                break;
+            case TE_SOUTHEAST:
+                elements_[e]->SetRotation(Quaternion(0.0f, -90.0f, 0.0f));
+                break;
+            case TE_SOUTHWEST:
+                elements_[e]->SetRotation(Quaternion(0.0f, 0.0f, 0.0f));
+                break;
+            case TE_NORTHWEST:
+                elements_[e]->SetRotation(Quaternion(0.0f, 90.0f, 0.0f));
+                break;
             }
-            else
-                model->SetModel(RESOURCE->GetModel("CornerOutB"));
 
-            break;
-        case CT_EDGE_A: {
-            model->SetModel(RESOURCE->GetModel("EdgeA"));
-
-            if (e == TE_NORTH || e == TE_WEST)
-                element->SetRotation(Quaternion(0.0f, Vector3::UP));
-            else
-                element->SetRotation(Quaternion(180.0f, Vector3::UP));
         } break;
-        case CT_EDGE_B:
-            model->SetModel(RESOURCE->GetModel("EdgeB"));
-
-            if (e == TE_NORTH || e == TE_EAST)
-                element->SetRotation(Quaternion(0.0f, Vector3::UP));
+        case CT_INA: {
+            if (e == TE_EAST || e == TE_WEST)
+                model->SetModel(RESOURCE->GetModel("Terrain/BendInA_1"));
             else
-                element->SetRotation(Quaternion(180.0f, Vector3::UP));
-            break;
-        case CT_FILL:
-            model->SetModel(RESOURCE->GetModel("Fill"));
-            break;
+                model->SetModel(nullptr);
+
+            switch (e) {
+            case TE_EAST:
+                elements_[e]->SetRotation(Quaternion(0.0f, 0.0f, 0.0f));
+                break;
+            case TE_WEST:
+                elements_[e]->SetRotation(Quaternion(0.0f, 180.0f, 0.0f));
+                break;
+            }
+
+        } break;
+        case CT_INB: {
+            if (e == TE_EAST || e == TE_WEST)
+                model->SetModel(RESOURCE->GetModel("Terrain/BendInB_1"));
+            else
+                model->SetModel(nullptr);
+
+                switch (e) {
+                case TE_EAST:
+                    elements_[e]->SetRotation(Quaternion(0.0f, 180.0f, 0.0f));
+                    break;
+                case TE_WEST:
+                    elements_[e]->SetRotation(Quaternion(0.0f, 0.0f, 0.0f));
+                    break;
+                }
+        } break;
+        case CT_STRAIGHTA: {
+            if (e == TE_NORTHEAST || e == TE_NORTHWEST)
+                model->SetModel(RESOURCE->GetModel("Terrain/StraightA_1"));
+            else
+                model->SetModel(nullptr);
+
+            switch (e) {
+            case TE_NORTHEAST:
+                elements_[e]->SetRotation(Quaternion(0.0f, 180.0f, 0.0f));
+                break;
+            case TE_NORTHWEST:
+                elements_[e]->SetRotation(Quaternion(0.0f, 0.0f, 0.0f));
+                break;
+            }
+
+        } break;
+        case CT_STRAIGHTB: {
+            model->SetModel(RESOURCE->GetModel("Terrain/StraightB_1"));
+
+            switch (e) {
+            case TE_EAST:
+                elements_[e]->SetRotation(Quaternion(0.0f, 180.0f, 0.0f));
+                break;
+            case TE_WEST:
+                elements_[e]->SetRotation(Quaternion(0.0f, 0.0f, 0.0f));
+                break;
+            }
+
+        } break;
+        case CT_FILL: {
+            if (e == TE_EAST || e == TE_WEST)
+                model->SetModel(RESOURCE->GetModel("Terrain/Fill_1"));
+            else
+                model->SetModel(nullptr);
+
+            switch (e) {
+            case TE_WEST:
+                elements_[e]->SetRotation(Quaternion(0.0f, 180.0f, 0.0f));
+                break;
+            case TE_EAST:
+                elements_[e]->SetRotation(Quaternion(0.0f, 0.0f, 0.0f));
+                break;
+            }
+
+        } break;
         default: break;
         }
         model->SetMaterial(RESOURCE->GetMaterial("VCol"));
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

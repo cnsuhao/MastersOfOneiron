@@ -52,6 +52,7 @@ public:
     Quaternion GetRotation();
     void Update(float timeStep);
     void Lock(Platform* platform);
+    bool IsOut();
 private:
 
     Node* pitchNode_;

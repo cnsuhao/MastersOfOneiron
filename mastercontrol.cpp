@@ -111,6 +111,9 @@ void MasterControl::SubscribeToEvents()
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(MasterControl, HandleUpdate));
     //Subscribe scene update event.
     SubscribeToEvent(E_SCENEUPDATE, URHO3D_HANDLER(MasterControl, HandleSceneUpdate));
+
+    //Render Debug Geometry
+//    SubscribeToEvent(E_POSTRENDERUPDATE, URHO3D_HANDLER(MasterControl, HandlePostRenderUpdate));
 }
 
 void MasterControl::SetWindowTitleAndIcon()
@@ -182,12 +185,12 @@ void MasterControl::CreateScene()
     cursorObject->SetMaterial(CACHE->GetResource<Material>("Resources/Materials/Glow.xml"));
 
     //Create an Invisible plane for mouse raycasting
-    world.voidNode = world.scene->CreateChild("Void");
+//    world.voidNode = world.scene->CreateChild("Void");
     //Location is set in update since the plane moves with the camera.
-    world.voidNode->SetScale(Vector3(1000.0f, 1.0f, 1000.0f));
-    StaticModel* planeObject{world.voidNode->CreateComponent<StaticModel>()};
-    planeObject->SetModel(RESOURCE->GetModel("Plane"));
-    planeObject->SetMaterial(RESOURCE->GetMaterial("Invisible"));
+//    world.voidNode->SetScale(Vector3(1000.0f, 1.0f, 1000.0f));
+//    StaticModel* planeObject{world.voidNode->CreateComponent<StaticModel>()};
+//    planeObject->SetModel(RESOURCE->GetModel("Plane"));
+//    planeObject->SetMaterial(RESOURCE->GetMaterial("Invisible"));
 
     //Create background
     /*for (int i{-2}; i <= 2; ++i){
@@ -201,12 +204,11 @@ void MasterControl::CreateScene()
         }
     }*/
 
-    world.sunNode = world.scene->CreateChild("Sun");
+    world.sunNode = world.scene->CreateChild("Core");
     world.sunNode->SetScale(WORLD_RADIUS * 0.1f);
-    StaticModel* sunModel{world.sunNode->CreateComponent<StaticModel>()};
-    sunModel->SetModel(RESOURCE->GetModel("Sun"));
-    sunModel->SetModel(RESOURCE->GetModel("Sun"));
-    sunModel->SetMaterial(RESOURCE->GetMaterial("Sun"));
+    StaticModel* sunModel{ world.sunNode->CreateComponent<StaticModel>() };
+    sunModel->SetModel(RESOURCE->GetModel("Core"));
+    sunModel->SetMaterial(RESOURCE->GetMaterial("Core"));
 
     Light* sunLight{world.sunNode->CreateComponent<Light>()};
     sunLight->SetLightType(LIGHT_POINT);
@@ -220,7 +222,7 @@ void MasterControl::CreateScene()
 
     world.sunNode->CreateComponent<RigidBody>();
 
-    Node* bubbleNode{world.scene->CreateChild("Bubble")};
+    Node* bubbleNode{ world.scene->CreateChild("Bubble") };
     bubbleNode->SetScale(WORLD_RADIUS);
     StaticModel* bubble{bubbleNode->CreateComponent<StaticModel>()};
     bubble->SetModel(RESOURCE->GetModel("Bubble"));
@@ -241,7 +243,7 @@ void MasterControl::CreateScene()
     world.camera = world.scene->CreateChild()->CreateComponent<OneiroCam>();
 
     //Add some random platforms
-    for (int p{0}; p <= 23; ++p){
+    for (int p{0}; p < 5; ++p){
         SPAWN->Create<Platform>()->Set(Quaternion(Platform::platformCount_ * 5.0f, Platform::platformCount_ * 10.0f, Platform::platformCount_* 23.0f) * Vector3::UP * WORLD_RADIUS);
     }
 }
@@ -254,7 +256,7 @@ void MasterControl::HandleUpdate(StringHash eventType, VariantMap &eventData)
 void MasterControl::HandleSceneUpdate(StringHash eventType, VariantMap &eventData)
 {
     float t{eventData[Update::P_TIMESTEP].GetFloat()};
-    world.voidNode->SetPosition((2.0f*Vector3::DOWN) + (world.camera->GetWorldPosition()*Vector3(1.0f,0.0f,1.0f)));
+//    world.voidNode->SetPosition((2.0f*Vector3::DOWN) + (world.camera->GetWorldPosition()*Vector3(1.0f,0.0f,1.0f)));
     UpdateCursor(t);
 
     world.sunNode->Rotate(Quaternion(5.0f * t, LucKey::Sine(23.0f * t), 2.0f * t), TS_WORLD);
@@ -264,14 +266,15 @@ void MasterControl::UpdateCursor(float timeStep)
 {
     world.cursor.sceneCursor->Rotate(Quaternion(0.0f, 100.0f * timeStep, 0.0f));
     world.cursor.sceneCursor->SetScale((world.cursor.sceneCursor->GetWorldPosition() - world.camera->GetWorldPosition()).Length() * 0.0023f);
-    if (CursorRayCast(250.0f, world.cursor.hitResults)) {
+    if (CursorRayCast(5.0f * WORLD_RADIUS, world.cursor.hitResults)) {
         for (int i{0}; i < world.cursor.hitResults.Size(); ++i) {
-//            if (world.cursor.hitResults[i].node_->GetNameHash() == N_VOID) {
+            if (world.cursor.hitResults[i].node_->GetName() == "Bubble") {
 //                Vector3 camHitDifference = world.camera->altitudeNode_->GetWorldPosition() - world.cursor.hitResults[i].position_;
 //                camHitDifference /= world.camera->altitudeNode_->GetWorldPosition().y_ - world.voidNode->GetPosition().y_;
 //                camHitDifference *= world.camera->altitudeNode_->GetWorldPosition().y_;
                 world.cursor.sceneCursor->SetWorldPosition(world.cursor.hitResults[0].position_);
-//            }
+                return;
+            }
         }
     }
 }
@@ -280,9 +283,33 @@ bool MasterControl::CursorRayCast(float maxDistance, PODVector<RayQueryResult> &
 {
     Ray cameraRay{ world.camera->camera_->GetScreenRay(0.5f,0.5f) };
     RayOctreeQuery query{ hitResults, cameraRay, RAY_TRIANGLE, maxDistance, DRAWABLE_GEOMETRY };
-    world.scene->GetComponent<Octree>()->Raycast(query);
-    if (hitResults.Size()) return true;
-    else return false;
+
+//    if (world.camera->IsOut()) {
+
+//        Ray reverseRay{ cameraRay.origin_ + cameraRay.direction_ * maxDistance, -cameraRay.direction_ };
+//        RayOctreeQuery reverseQuery{ hitResults, reverseRay, RAY_TRIANGLE, maxDistance, DRAWABLE_GEOMETRY };
+//        world.scene->GetComponent<Octree>()->Raycast(reverseQuery);
+
+//    } else {
+
+        world.scene->GetComponent<Octree>()->Raycast(query);
+//    }
+
+    if (world.camera->IsOut()) {
+
+        PODVector<RayQueryResult> reverseResults{};
+        for (int r{ hitResults.Size() - 1}; r >= 0 ; --r) {
+
+            reverseResults.Push(hitResults[r]);
+        }
+        hitResults = reverseResults;
+
+    }
+
+    if (hitResults.Size())
+        return true;
+    else
+        return false;
 }
 
 void MasterControl::Exit()
@@ -292,7 +319,7 @@ void MasterControl::Exit()
 
 void MasterControl::HandlePostRenderUpdate(StringHash eventType, VariantMap &eventData)
 {
-    //world.scene->GetComponent<PhysicsWorld>()->DrawDebugGeometry(true);
+    world.scene->GetComponent<PhysicsWorld>()->DrawDebugGeometry(true);
 }
 
 float MasterControl::Sine(const float freq, const float min, const float max, const float shift)

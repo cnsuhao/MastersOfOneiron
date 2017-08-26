@@ -55,11 +55,12 @@ public:
     void ApplyDamage(float damage) { health_ = Max(health_ - damage, 0.0f); }
     void OnNodeSet(Node* node);
     void Disable();
+    static Vector3 ElementPosition(TileElement element);
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     Platform* platform_;
-    CollisionShape* collisionShape_;
     Node* elements_[TE_LENGTH];
+    CollisionShape* colliders_[TE_LENGTH];
     float health_;
     void SetBuilding(BuildingType type);
     BuildingType GetBuilding();

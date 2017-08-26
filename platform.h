@@ -37,9 +37,9 @@ using namespace Urho3D;
 class Tile;
 class Slot;
 
-enum TileElement {TE_NORTH = 0, TE_EAST, TE_SOUTH, TE_WEST, TE_LENGTH};
-enum Neighbour{ NB_NORTH = 0, NB_EAST, NB_SOUTH, NB_WEST, NB_NORTHWEST, NB_NORTHEAST, NB_SOUTHEAST, NB_SOUTHWEST, NB_LENGTH };
-enum CornerType {CT_NONE, CT_EDGE_A, CT_EDGE_B, CT_IN, CT_OUT, CT_FILL};
+enum TileElement {TE_NORTHEAST = 0, TE_EAST, TE_SOUTHEAST, TE_NORTHWEST, TE_WEST, TE_SOUTHWEST, TE_LENGTH};
+enum Neighbour{ NB_NORTH = 0, NB_NORTHEAST, NB_SOUTHEAST, NB_SOUTH, NB_SOUTHWEST, NB_NORTHWEST, NB_LENGTH };
+enum CornerType {CT_NONE, CT_OUT, CT_INA, CT_INB, CT_STRAIGHTA, CT_STRAIGHTB, CT_FILL};
 enum BuildingType {B_SPACE, B_EMPTY, B_ENGINE};
 
 
@@ -59,7 +59,7 @@ public:
     bool CheckEmpty(Vector3 coords, bool checkTiles = true) const { return CheckEmpty(IntVector2(round(coords.x_), round(coords.z_)), checkTiles); }
     bool CheckEmpty(IntVector2 coords, bool checkTiles = true) const;
     bool CheckEmptyNeighbour(IntVector2 coords, Neighbour neighbour, bool checkTiles = true) const;
-    IntVector2 GetNeighbourCoords(IntVector2 coords, Neighbour element) const;
+    static IntVector2 GetNeighbourCoords(IntVector2 coords, Neighbour element);
     CornerType PickCornerType(IntVector2 tileCoords, TileElement element) const;
     BuildingType GetBuildingType(IntVector2 coords);
     BuildingType GetNeighbourType(IntVector2 coords, Neighbour neighbour);
@@ -78,9 +78,9 @@ public:
     void EnableSlots();
     void DisableSlots();
 
-    static Vector3 CoordsToPosition(IntVector2 coords, float y = 0.0f) { return Vector3(-coords.x_ * 0.5f + coords.y_ * 0.5f,
-                                                                        y,
-                                                                        coords.x_ * 0.8f + coords.y_ * 0.8f);
+    static Vector3 CoordsToPosition(IntVector2 coords, float y = 0.0f) { return Vector3(coords.x_,
+                                                                                        y,
+                                                                                       (Abs(coords.x_) % 2) + coords.y_ * 2.0f);
                                                                        }
     char GetNeighbourMask(IntVector2 tileCoords, TileElement element) const;
 

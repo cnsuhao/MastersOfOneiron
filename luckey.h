@@ -121,7 +121,7 @@ enum SixaxisButton {  SB_SELECT, SB_LEFTSTICK, SB_RIGHTSTICK, SB_START,
 
 unsigned IntVector2ToHash(IntVector2 vec);
 
-float Delta(float lhs, float rhs, bool angle = false);
+float Delta(float lhs, float rhs, bool cyclical = false);
 float Distance(const Vector3 from, const Vector3 to);
 Vector3 Scale(const Vector3 lhs, const Vector3 rhs);
 IntVector2 Scale(const IntVector2 lhs, const IntVector2 rhs);
