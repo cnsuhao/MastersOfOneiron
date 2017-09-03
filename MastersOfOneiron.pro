@@ -30,7 +30,8 @@ SOURCES += \
     grass.cpp \
     frop.cpp \
     luckey.cpp \
-    kekelplithf.cpp
+    world.cpp \
+    ekelplitf.cpp
 
 HEADERS += \
     mastercontrol.h \
@@ -46,4 +47,5 @@ HEADERS += \
     grass.h \
     frop.h \
     luckey.h \
-    kekelplithf.h
+    world.h \
+    ekelplitf.h

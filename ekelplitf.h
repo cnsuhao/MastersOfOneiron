@@ -32,11 +32,11 @@ class Sprite;
 
 using namespace Urho3D;
 
-class Kekelplithf : public SceneObject
+class Ekelplitf : public SceneObject
 {
-    URHO3D_OBJECT(Kekelplithf, SceneObject);
+    URHO3D_OBJECT(Ekelplitf, SceneObject);
 public:
-    Kekelplithf(Context *context);
+    Ekelplitf(Context *context);
     static void RegisterObject(Context* context);
     virtual void OnNodeSet(Node* node);
     virtual void Set(Vector3 position, Node* parent);

@@ -19,6 +19,7 @@
 #include "platform.h"
 #include "tile.h"
 #include "slot.h"
+#include "world.h"
 
 namespace Urho3D {
 template <> unsigned MakeHash(const IntVector2& value)
@@ -44,10 +45,12 @@ Platform::Platform(Context *context):
 void Platform::OnNodeSet(Node *node)
 { if (!node) return;
 
+    node_->AddTag("Platform");
+
     MC->platformMap_[node_->GetID()] = this;
 
-
-    node_->LookAt(Quaternion(Random(360.0f), node_->GetWorldPosition().Normalized()) * node_->GetWorldPosition(), Vector3::ZERO);
+    Realign(1.0f);
+//    node_->LookAt(Quaternion(Random(360.0f), node_->GetWorldPosition().Normalized()) * node_->GetWorldPosition(), Vector3::ZERO);
 
 //    SetMoveTarget(position);
     //rootNode_->SetRotation(Quaternion(0.0f, Random(360.0f), 0.0f));
@@ -62,55 +65,66 @@ void Platform::OnNodeSet(Node *node)
     rigidBody_->SetAngularRestThreshold(0.001f);
 //    rigidBody_->SetLinearFactor(Vector3(1.0f, 0.0f, 1.0f));
     rigidBody_->SetAngularFactor(Vector3(0.0f, 1.0f, 0.0f));
-    rigidBody_->SetUseGravity(false);
+//    rigidBody_->SetUseGravity(false);
 
 
     // Add base tile
     IntVector2 firstCoordPair{ IntVector2(0,0) };
     AddTile(firstCoordPair);
     // Add random tiles
-//    if (random){
 
-        bool symmetrical{ static_cast<bool>(Random(2))};
-        int addedTiles{ 1 };
-        int platformSize{Random(1, 32)};
+    bool symmetrical{ true };//static_cast<bool>(Random(2))};
+    int addedTiles{ 1 };
+    int platformSize{ Ceil(Random(1, 64) * Pow(Random(0.5, 1.5f), 2.0f)) };
 
-        while (addedTiles < platformSize) {
-            //Pick a random exsisting tile
-            Vector<IntVector2> coordsVector{ tileMap_.Keys() };
-            IntVector2 randomTileCoords{ coordsVector[Random((int)coordsVector.Size())] };
+    while (addedTiles < platformSize) {
+        //Pick a random exsisting tile
+        Vector<IntVector2> coordsVector{ tileMap_.Keys() };
+        IntVector2 randomTileCoords{ coordsVector[Random((int)coordsVector.Size())] };
 
-            char startDir{static_cast<char>(Random(NB_LENGTH))};
-            bool clockWise{ Random(2) };
+        if (randomTileCoords.x_ < 0 && symmetrical)
+            randomTileCoords.x_ = -randomTileCoords.x_;
 
-            for (int direction{startDir}; LucKey::Delta(direction, startDir) < NB_LENGTH; clockWise ? ++direction : --direction) {
+        char startDir{ NB_NORTH };//static_cast<char>(Random(NB_LENGTH))};
+        bool clockWise{ Random(2) };
+        if (clockWise)
+            startDir -= 3;
 
-                int cycledDir{ LucKey::Cycle(direction, NB_NORTH, NB_NORTHWEST) };
-                assert((cycledDir >= NB_NORTH) && (cycledDir < NB_LENGTH));
-                Neighbour neighbour{ static_cast<Neighbour>(cycledDir) };
-                if (CheckEmptyNeighbour(randomTileCoords, neighbour, true)) {
+        for (int direction{startDir}; LucKey::Delta(direction, startDir) < NB_LENGTH; clockWise ? direction += 2 : direction -= 2) {
 
-                    IntVector2 newTileCoords{ GetNeighbourCoords(randomTileCoords, neighbour) };
-                    AddTile(newTileCoords);
-                    ++addedTiles;
-                    if ((newTileCoords.x_ != 0) && symmetrical) {
+            int cycledDir{ LucKey::Cycle(direction, NB_NORTH, NB_NORTHWEST) };
+            assert((cycledDir >= NB_NORTH) && (cycledDir < NB_LENGTH));
+            Neighbour neighbour{ static_cast<Neighbour>(cycledDir) };
+            if (CheckEmptyNeighbour(randomTileCoords, neighbour, true)) {
+
+                IntVector2 newTileCoords{ GetNeighbourCoords(randomTileCoords, neighbour) };
+
+                Tile* newTile{ AddTile(newTileCoords) };
+                ++addedTiles;
+                if (symmetrical) {
+                    if (Abs(newTileCoords.x_) % 2 == 1 && newTileCoords.y_ <= 0){
+                        newTile->SetBuilding(B_ENGINE);
+                    }
+                    if (newTileCoords.x_ != 0) {
 
                         newTileCoords = IntVector2(-newTileCoords.x_, newTileCoords.y_);
-                        AddTile(newTileCoords);
+                        newTile = AddTile(newTileCoords);
                         ++addedTiles;
-                    } else break;
+
+                        if (Abs(newTileCoords.x_) % 2 == 1 && newTileCoords.y_ <= 0){
+                            newTile->SetBuilding(B_ENGINE);
+                        }
+                    }
                 }
             }
         }
-//    }
+    }
 
     //Add slots
     AddMissingSlots();
+    Deselect();
     DisableSlots();
     FixFringe();
-
-//    rigidBody_->ApplyForce(Vector3(Random(-100.0f,100.0f), 0.0f, Random(-100.0f,100.0f)));
-//    rigidBody_->ApplyTorque(Vector3(0.0f, Random(-16.0f, 16.0f), 0.0f));
 
 }
 
@@ -120,10 +134,10 @@ void Platform::Set(Vector3 position)
     SceneObject::Set(platformPos);
 //    node_->LookAt(Vector3::ZERO, Vector3::DOWN);
 
-    Constraint* worldConstraint{ node_->GetOrCreateComponent<Constraint>() };
-    worldConstraint->SetConstraintType(CONSTRAINT_POINT);
-    worldConstraint->SetOtherBody(MC->world.sunNode->GetComponent<RigidBody>());
-    worldConstraint->SetPosition(-platformPos);
+//    Constraint* worldConstraint{ node_->GetOrCreateComponent<Constraint>() };
+//    worldConstraint->SetConstraintType(CONSTRAINT_POINT);
+//    worldConstraint->SetOtherBody(MC->world.sunNode->GetComponent<RigidBody>());
+//    worldConstraint->SetPosition(-platformPos);
 //    worldConstraint->SetOtherPosition();
 
     node_->Rotate(Quaternion(Random(360.0f), Vector3::UP));
@@ -153,12 +167,14 @@ void Platform::EnableSlots()
 
 bool Platform::DisableSlot(IntVector2 coords)
 {
-    slotMap_[coords]->GetNode()->SetEnabled(false);
+    if (Slot* slot = slotMap_[coords])
+        slot->Disable();
 }
 void Platform::DisableSlots()
 {
-    for (unsigned i{0}; i < slotMap_.Values().Size(); ++i) {
-        DisableSlot(slotMap_.Values()[i]->coords_);
+    for (Slot* s : slotMap_.Values()) {
+        if (s)
+            DisableSlot(s->coords_);
     }
 }
 
@@ -191,15 +207,30 @@ bool Platform::IsSelected() const
     return selected_;
 }
 
+void Platform::Realign(float timeStep)
+{
+    Vector3 up{ -GetScene()->GetComponent<World>()->GetNearestRhombicCenter(node_->GetWorldPosition()).Normalized() };
+    Vector3 newDirection{ node_->GetDirection() - node_->GetDirection().DotProduct(up) * up };
+    newDirection = node_->GetDirection().Lerp(newDirection, Min(1.0f, 2.0f * timeStep));
 
+    node_->LookAt(node_->GetWorldPosition() + newDirection, up);
+}
 
 void Platform::Update(float timeStep)
 {
+    Vector3 rhombicCenter{ GetScene()->GetComponent<World>()->GetNearestRhombicCenter(node_->GetWorldPosition()) };
 
-    node_->GetComponent<Constraint>()->SetAxis(-node_->GetWorldPosition().Normalized());
-//    rigidBody_->SetGravityOverride(23.0f * node_->GetWorldPosition().Length() > WORLDRADIUS
-//                                   ? -node_->GetWorldPosition().Normalized()
-//                                   :  node_->GetWorldPosition().Normalized());
+//    node_->GetComponent<Constraint>()->SetAxis(-node_->GetWorldPosition().Normalized());
+
+    float out{ (node_->GetWorldPosition() - rhombicCenter).ProjectOntoAxis(rhombicCenter) };
+
+    Vector3 newG{ -5.0f * out * rhombicCenter.Normalized() };
+    rigidBody_->SetGravityOverride(newG);
+
+//    node_->SetWorldPosition(node_->GetWorldPosition().Normalized() * WORLD_RADIUS);
+//rig
+    if (rigidBody_->IsActive())
+        Realign(timeStep);
 }
 
 void Platform::Move(double timeStep)
@@ -211,11 +242,13 @@ void Platform::Move(double timeStep)
     }*/
 }
 
-void Platform::AddTile(IntVector2 newTileCoords)
+Tile* Platform::AddTile(IntVector2 newTileCoords)
 {
     Tile* newTile{ SPAWN->Create<Tile>() };
     newTile->Set(newTileCoords, this);
     tileMap_[newTileCoords] = newTile;
+
+    return newTile;
 }
 
 void Platform::AddMissingSlots()
@@ -243,9 +276,9 @@ void Platform::FixFringe()
 
 void Platform::FixFringe(IntVector2 coords)
 {
-    for (int coordsOffset{0}; coordsOffset < TE_LENGTH; ++coordsOffset) {
-        IntVector2 neighbourCoords{ GetNeighbourCoords(coords, static_cast<Neighbour>(coordsOffset)) };
-        if (!CheckEmpty(neighbourCoords, true))
+    for (int neighbour{0}; neighbour < NB_LENGTH; ++neighbour) {
+        IntVector2 neighbourCoords{ GetNeighbourCoords(coords, static_cast<Neighbour>(neighbour)) };
+        if (!CheckEmpty(neighbourCoords))
             tileMap_[neighbourCoords]->FixFringe();
     }
 }
@@ -283,12 +316,15 @@ IntVector2 Platform::GetNeighbourCoords(IntVector2 coords, Neighbour element)
         break;
     case NB_NORTHEAST:
         shift.x_ = 1;
-        if (oddColumn)
+//        if (oddColumn)
                 shift.y_ = 1;
+        break;
+    case NB_EAST:
+        shift.x_ = 1;
         break;
     case NB_SOUTHEAST:
         shift.x_ = 1;
-        if (!oddColumn)
+//        if (!oddColumn)
                 shift.y_ = -1;
         break;
     case NB_SOUTH:
@@ -296,12 +332,15 @@ IntVector2 Platform::GetNeighbourCoords(IntVector2 coords, Neighbour element)
         break;
     case NB_SOUTHWEST:
         shift.x_ = -1;
-        if (!oddColumn)
+//        if (!oddColumn)
                 shift.y_ = -1;
+        break;
+    case NB_WEST:
+        shift.x_ = -1;
         break;
     case NB_NORTHWEST:
         shift.x_ = -1;
-        if (oddColumn)
+//        if (oddColumn)
                 shift.y_ = 1;
         break;
     default: break;
@@ -330,27 +369,21 @@ CornerType Platform::PickCornerType(IntVector2 tileCoords, TileElement element) 
     switch (neighbourMask) {
 
     case 0:
-        return element != TE_EAST && element != TE_WEST ? CT_OUT : CT_STRAIGHTB;
+        return CT_IN;
 
     case 1:
-        if (element == TE_NORTHEAST || element == TE_SOUTHWEST)
-            return CT_STRAIGHTA;
+        return CT_STRAIGHT;
 
-        else if (element == TE_SOUTHEAST || element == TE_NORTHWEST)
-            return CT_INB;
-
-        else if (element == TE_EAST || element == TE_WEST)
-            return CT_INA;
     case 2:
-        if (element == TE_SOUTHEAST || element == TE_NORTHWEST)
-            return CT_STRAIGHTA;
+        if (element == TE_NORTHEAST || element == TE_SOUTHEAST)
+            return CT_BRIDGE;
 
-        else if (element == TE_NORTHEAST || element == TE_SOUTHWEST)
-            return CT_INA;
+        else return CT_NONE;
 
-        else if (element == TE_EAST || element == TE_WEST)
-            return CT_INB;
-    case 3:
+    case 5:
+        return CT_OUT;
+
+    case 7:
         return CT_FILL;
 
     default:
@@ -359,34 +392,34 @@ CornerType Platform::PickCornerType(IntVector2 tileCoords, TileElement element) 
 }
 char Platform::GetNeighbourMask(IntVector2 tileCoords, TileElement element) const
 {
-    int checkedNeighbours{ 2 };
-    bool emptyCheck[checkedNeighbours]{ true, true };
+    int checkedNeighbours{ 3 };
+    bool emptyCheck[checkedNeighbours]{ true, true, true };
 
     switch (element) {
     case TE_NORTHEAST: {
         emptyCheck[0] = CheckEmptyNeighbour(tileCoords, NB_NORTH);
         emptyCheck[1] = CheckEmptyNeighbour(tileCoords, NB_NORTHEAST);
+        emptyCheck[2] = CheckEmptyNeighbour(tileCoords, NB_EAST);
+
     }
     break;
-    case TE_EAST: {
-        emptyCheck[0] = CheckEmptyNeighbour(tileCoords, NB_NORTHEAST);
-        emptyCheck[1] = CheckEmptyNeighbour(tileCoords, NB_SOUTHEAST);
-    }break;
     case TE_SOUTHEAST: {
-        emptyCheck[0] = CheckEmptyNeighbour(tileCoords, NB_SOUTHEAST);
-        emptyCheck[1] = CheckEmptyNeighbour(tileCoords, NB_SOUTH);
+        emptyCheck[0] = CheckEmptyNeighbour(tileCoords, NB_EAST);
+        emptyCheck[1] = CheckEmptyNeighbour(tileCoords, NB_SOUTHEAST);
+        emptyCheck[2] = CheckEmptyNeighbour(tileCoords, NB_SOUTH);
+
     }break;
     case TE_SOUTHWEST: {
         emptyCheck[0] = CheckEmptyNeighbour(tileCoords, NB_SOUTH);
         emptyCheck[1] = CheckEmptyNeighbour(tileCoords, NB_SOUTHWEST);
-    }break;
-    case TE_WEST: {
-        emptyCheck[0] = CheckEmptyNeighbour(tileCoords, NB_SOUTHWEST);
-        emptyCheck[1] = CheckEmptyNeighbour(tileCoords, NB_NORTHWEST);
+        emptyCheck[2] = CheckEmptyNeighbour(tileCoords, NB_WEST);
+
     }break;
     case TE_NORTHWEST: {
-        emptyCheck[0] = CheckEmptyNeighbour(tileCoords, NB_NORTHWEST);
-        emptyCheck[1] = CheckEmptyNeighbour(tileCoords, NB_NORTH);
+        emptyCheck[0] = CheckEmptyNeighbour(tileCoords, NB_WEST);
+        emptyCheck[1] = CheckEmptyNeighbour(tileCoords, NB_NORTHWEST);
+        emptyCheck[2] = CheckEmptyNeighbour(tileCoords, NB_NORTH);
+
     }break;
     default: break;
     }

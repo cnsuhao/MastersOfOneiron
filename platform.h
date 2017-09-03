@@ -37,9 +37,9 @@ using namespace Urho3D;
 class Tile;
 class Slot;
 
-enum TileElement {TE_NORTHEAST = 0, TE_EAST, TE_SOUTHEAST, TE_NORTHWEST, TE_WEST, TE_SOUTHWEST, TE_LENGTH};
-enum Neighbour{ NB_NORTH = 0, NB_NORTHEAST, NB_SOUTHEAST, NB_SOUTH, NB_SOUTHWEST, NB_NORTHWEST, NB_LENGTH };
-enum CornerType {CT_NONE, CT_OUT, CT_INA, CT_INB, CT_STRAIGHTA, CT_STRAIGHTB, CT_FILL};
+enum TileElement {TE_NORTHEAST = 0, TE_SOUTHEAST, TE_NORTHWEST, TE_SOUTHWEST, TE_LENGTH};
+enum Neighbour{ NB_NORTH = 0, NB_NORTHEAST, NB_EAST, NB_SOUTHEAST, NB_SOUTH, NB_SOUTHWEST, NB_WEST, NB_NORTHWEST, NB_LENGTH };
+enum CornerType {CT_NONE, CT_IN, CT_OUT, CT_STRAIGHT, CT_BRIDGE, CT_FILL};
 enum BuildingType {B_SPACE, B_EMPTY, B_ENGINE};
 
 
@@ -71,30 +71,32 @@ public:
     void FixFringe();
     void FixFringe(IntVector2 coords);
 
-    void AddTile(IntVector2 newTileCoords);
+    Tile* AddTile(IntVector2 newTileCoords);
     bool DisableSlot(IntVector2 coords);
     bool EnableSlot(IntVector2 coords);
     void SetMoveTarget(Vector3 moveTarget) {moveTarget_ = moveTarget;}
     void EnableSlots();
     void DisableSlots();
 
-    static Vector3 CoordsToPosition(IntVector2 coords, float y = 0.0f) { return Vector3(coords.x_,
+    Vector3 CoordsToPosition(IntVector2 coords, float y = 0.0f) { return -offset_ + Vector3(coords.x_,
                                                                                         y,
-                                                                                       (Abs(coords.x_) % 2) + coords.y_ * 2.0f);
+                                                                                        coords.y_);
                                                                        }
     char GetNeighbourMask(IntVector2 tileCoords, TileElement element) const;
+
+    void Realign(float timeStep);
+
+    void Update(float timeStep) override;
+    Vector3 GetNearestRhombicCenter();
 
 private:
     HashMap<IntVector2, Tile*> tileMap_;
     HashMap<IntVector2, Slot*> slotMap_;
     HashMap<IntVector2, BuildingType> buildingMap_;
+    Vector3 offset_;
 
     bool selected_;
     Vector3 moveTarget_;
-
-    void Update(float timeStep);
-
-
 
     void Select();
     void Deselect();

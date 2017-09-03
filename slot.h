@@ -46,6 +46,8 @@ public:
 
     virtual void OnNodeSet(Node* node);
     virtual void Set(IntVector2 coords, Platform* platform);
+
+    Platform* GetPlatform() const { return platform_; }
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     Platform* platform_;

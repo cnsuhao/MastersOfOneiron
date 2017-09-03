@@ -16,25 +16,25 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "kekelplithf.h"
+#include "ekelplitf.h"
 
-void Kekelplithf::RegisterObject(Context *context)
+void Ekelplitf::RegisterObject(Context *context)
 {
-    context->RegisterFactory<Kekelplithf>();
+    context->RegisterFactory<Ekelplitf>();
 }
 
-Kekelplithf::Kekelplithf(Context* context):
+Ekelplitf::Ekelplitf(Context* context):
     SceneObject(context)
 {
 }
 
-void Kekelplithf::OnNodeSet(Node *node)
+void Ekelplitf::OnNodeSet(Node *node)
 { if (!node) return;
 
     node_ = node_->CreateChild("ImpModelNode");
     bodyModel_ = node_->CreateComponent<AnimatedModel>();
 //    bodyModel_->SetModel(RESOURCE->GetModel("Ekelplithf_LOD023"));
-//    impModel_->SetMaterial(RESOURCE->GetMaterial("Kekelplithf"));
+    bodyModel_->SetMaterial(RESOURCE->GetMaterial("Kekelplithf"));
     bodyModel_->SetCastShadows(true);
 /*
     for (int e{0}; e < 3; ++e) {
@@ -54,14 +54,14 @@ void Kekelplithf::OnNodeSet(Node *node)
         equipment_.Push(equipment);
     }
 */
-    AnimationController* animCtrl{node_->CreateComponent<AnimationController>()};
-    animCtrl->PlayExclusive("Resources/Animations/StandUp.ani", 0, true);
-    animCtrl->SetSpeed("Resources/Animations/StandUp.ani", 0.5f + randomizer_);
+//    AnimationController* animCtrl{node_->CreateComponent<AnimationController>()};
+//    animCtrl->PlayExclusive("Resources/Animations/StandUp.ani", 0, true);
+//    animCtrl->SetSpeed("Resources/Animations/StandUp.ani", 0.5f + randomizer_);
 
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Kekelplithf, HandleUpdate));
+//    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Ekelplitf, HandleUpdate));
 }
 
-void Kekelplithf::Set(Vector3 position, Node *parent)
+void Ekelplitf::Set(Vector3 position, Node *parent)
 {
     node_->SetParent(parent);
     node_->SetRotation(Quaternion::IDENTITY);
@@ -74,14 +74,14 @@ void Kekelplithf::Set(Vector3 position, Node *parent)
 
 }
 
-void Kekelplithf::Start()
+void Ekelplitf::Start()
 {
 }
-void Kekelplithf::Stop()
+void Ekelplitf::Stop()
 {
 }
 
-void Kekelplithf::HandleUpdate(StringHash eventType, VariantMap &eventData)
+void Ekelplitf::HandleUpdate(StringHash eventType, VariantMap &eventData)
 {
 //    double timeStep = eventData[Update::P_TIMESTEP].GetFloat();
 }

@@ -2,5 +2,5 @@
     <technique name="Techniques/NoTextureAlpha.xml" />
     <parameter name="MatDiffColor" value="0 1 2.5 0.42" />
     <parameter name="MatSpecColor" value="1 0 0 13" />
-    <parameter name="MatEmissiveColor" value="2 1 3" />
+    <parameter name="MatEmissiveColor" value="0.7 1 0.9" />
 </material>

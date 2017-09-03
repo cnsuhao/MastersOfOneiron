@@ -32,7 +32,7 @@ InputMaster::InputMaster(Context* context) : Object(context)
 
 void InputMaster::HandleMouseDown(StringHash eventType, VariantMap &eventData)
 {
-    int button{eventData[MouseButtonDown::P_BUTTON].GetInt()};
+    int button{ eventData[MouseButtonDown::P_BUTTON].GetInt() };
     if (button == MOUSEB_LEFT) {
         //See through cursor
         int first{0};
@@ -42,14 +42,33 @@ void InputMaster::HandleMouseDown(StringHash eventType, VariantMap &eventData)
         if (firstHit_ = SharedPtr<Node>(MC->world.cursor.hitResults[first].node_)) {
 
             //Platform selection
-            if (firstHit_->GetNameHash() == N_TILEPART) {
-                //Select single platform
-                if (!(input_->GetKeyDown(KEY_LSHIFT)||input_->GetKeyDown(KEY_RSHIFT))) {
-                    SharedPtr<Platform> platform{MC->platformMap_[firstHit_->GetParent()->GetParent()->GetID()]};
-                    SetSelection(platform);
-                } else {
-                    //Add platform to selection when either of the shift keys is held down
-                    SharedPtr<Platform> platform{MC->platformMap_[firstHit_->GetParent()->GetParent()->GetID()]};
+            if (firstHit_->HasTag("Platform")) {
+
+                Slot* slot{ firstHit_->GetComponent<Slot>() };
+                //Building interaction, if platform was already selected
+                //Slot interaction, if Former was selected
+                if (slot && selectedPlatforms_.Contains(slot->GetPlatform()))
+                {
+                    SharedPtr<Platform> platform{ firstHit_->GetParentComponent<Platform>(true) };
+                    IntVector2 coords{ IntVector2(firstHit_->GetComponent<Slot>()->coords_) };
+
+                    if (platform->CheckEmpty(coords, true)) {
+                        //Add tile
+                        platform->AddTile(coords);
+                        platform->FixFringe(/*coords*/);
+                        platform->AddMissingSlots();
+                    }
+                    else {
+                        //Add engine row
+                        while (!platform->CheckEmpty(coords, true)){
+                            platform->SetBuilding(coords, B_ENGINE);
+                            coords += IntVector2(0, -1);
+                        }
+                    }
+                } else if (input_->GetKeyDown(KEY_LSHIFT)||input_->GetKeyDown(KEY_RSHIFT)) {
+                    //Add or remove platform to selection when either of the shift keys is held down
+                    SharedPtr<Platform> platform{ firstHit_->GetParentComponent<Platform>(true) };
+
                     if (platform->IsSelected()) {
                         platform->SetSelected(false);
                         selectedPlatforms_.Remove(platform);
@@ -57,30 +76,15 @@ void InputMaster::HandleMouseDown(StringHash eventType, VariantMap &eventData)
                         platform->SetSelected(true);
                         selectedPlatforms_ += platform;
                     }
+
+                } else {
+                //Select single platform
+                    SharedPtr<Platform> platform{ firstHit_->GetParentComponent<Platform>(true) };
+                    SetSelection(platform);
                 }
 
             }
-            //Building interaction, if platform was already selected
-            //Slot interaction, if Former was selected
-            else if (firstHit_->GetNameHash() == N_SLOT)
-            {
-                SharedPtr<Platform> platform{MC->platformMap_[firstHit_->GetParent()->GetID()]};
-                IntVector2 coords = IntVector2(firstHit_->GetComponent<Slot>()->coords_);
-                if (platform->CheckEmpty(coords, true))
-                {
-                    //Add tile
-                    platform->AddTile(coords);
-                    platform->FixFringe(coords);
-                    platform->AddMissingSlots();
-                }
-                else {
-                    //Add engine row
-                    while (!platform->CheckEmpty(coords, true)){
-                        platform->SetBuilding(coords, B_ENGINE);
-                        coords += IntVector2(0,1);
-                    }
-                }
-            }
+
             //Void interaction (create new platform)
             else {
                 SPAWN->Create<Platform>()->Set(MC->world.cursor.sceneCursor->GetPosition().Normalized() * WORLD_RADIUS);

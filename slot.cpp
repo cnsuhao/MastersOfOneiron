@@ -33,6 +33,9 @@ SceneObject(context)
 void Slot::OnNodeSet(Node *node)
 { if (!node) return;
 
+    node_->AddTag("Platform");
+    node_->AddTag("Slot");
+
     SceneObject::OnNodeSet(node);
 
     AnimatedModel* model{ node_->CreateComponent<AnimatedModel>() };
@@ -57,7 +60,7 @@ void Slot::Set(IntVector2 coords, Platform* platform)
     node_->SetParent(platform_->GetNode());
     node_->SetRotation(Quaternion::IDENTITY);
 
-    SceneObject::Set(platform_->CoordsToPosition(coords, PLATFORM_HALF_THICKNESS + 0.05f));
+    SceneObject::Set(platform_->CoordsToPosition(coords));
 }
 
 void Slot::Start()

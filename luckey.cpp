@@ -44,25 +44,25 @@ Urho3D::IntVector2 LucKey::Scale(const Urho3D::IntVector2 lhs, const Urho3D::Int
     return Urho3D::IntVector2(lhs.x_ * rhs.x_, lhs.y_ * rhs.y_);
 }
 Vector2 LucKey::Rotate(const Vector2 vec2, const float angle){
-    float x{vec2.x_};
-    float y{vec2.y_};
+    float x{ vec2.x_ };
+    float y{ vec2.y_ };
 
     float theta{M_DEGTORAD * angle};
 
-    float cs{cos(theta)};
-    float sn{sin(theta)};
+    float cs{ cos(theta) };
+    float sn{ sin(theta) };
 
     return Vector2(x * cs - y * sn, x * sn + y * cs);
 }
 
 float LucKey::RandomSign()
 {
-    return Random(2)*2-1;
+    return Random(2) * 2 - 1;
 }
 Color LucKey::RandomHairColor(bool onlyNatural)
 {
-    bool grey{!Random(23)};
-    bool dyed{!Random(23)};
+    bool grey{ !Random(23) };
+    bool dyed{ !Random(23) };
     Color hairColor{};
     if (onlyNatural || (!dyed && !grey)){
         //Natural

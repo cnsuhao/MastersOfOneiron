@@ -17,6 +17,7 @@
 */
 
 #include "platform.h"
+#include "world.h"
 
 #include "oneirocam.h"
 
@@ -45,16 +46,17 @@ void OneiroCam::OnNodeSet(Node *node)
     altitudeNode_ = node_->CreateChild("CamTrans");
     pitchNode_ = altitudeNode_->CreateChild("CamRot");
     camera_ = pitchNode_->CreateComponent<Camera>();
-    camera_->SetFarClip(128.0f);
+    camera_->SetFarClip(3.4f * WORLD_RADIUS);
     camera_->SetFov(100.0f);
     //Set an initial position for the camera scene node above the origin
     altitudeNode_->SetPosition(Vector3(0.0f, -WORLD_RADIUS + 5.0f, 0.0f));
     pitchNode_->SetRotation(Quaternion(0.0f, 90.0f, 0.0f));
-
-//    Light* light{rotationNode_->CreateComponent<Light>()};
-//    light->SetLightType(LIGHT_DIRECTIONAL);
-//    light->SetBrightness(0.23f);
-
+/*
+    Light* light{altitudeNode_->CreateComponent<Light>()};
+    light->SetLightType(LIGHT_POINT);
+    light->SetBrightness(5.0f);
+    light->SetRadius(100.0f);
+*/
     SetupViewport();
 }
 
@@ -78,16 +80,18 @@ void OneiroCam::SetupViewport()
 
     //Add anti-asliasing
     effectRenderPath = viewport_->GetRenderPath()->Clone();
-    effectRenderPath->Append(MC->CACHE->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
-    /*
-    effectRenderPath->Append(masterControl_->cache_->GetResource<XMLFile>("PostProcess/AutoExposure.xml"));
-    effectRenderPath->SetShaderParameter("AutoExposureLumRange", Vector2(0.42f, 2.0f));
-    effectRenderPath->SetShaderParameter("AutoExposureAdaptRate", 5.0f);
-    effectRenderPath->SetShaderParameter("AutoExposureMiddleGrey", 0.42f);
-    */
-    effectRenderPath->Append(MC->CACHE->GetResource<XMLFile>("PostProcess/Bloom.xml"));
-    effectRenderPath->SetShaderParameter("BloomThreshold", 0.5f);
+    effectRenderPath->Append(CACHE->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
+
+    effectRenderPath->Append(CACHE->GetResource<XMLFile>("PostProcess/Bloom.xml"));
+    effectRenderPath->SetShaderParameter("BloomThreshold", 0.75f);
     effectRenderPath->SetShaderParameter("BloomMix", Vector2(0.75f, 1.0f));
+/*
+    effectRenderPath->Append(CACHE->GetResource<XMLFile>("PostProcess/AutoExposure.xml"));
+    effectRenderPath->SetShaderParameter("AutoExposureLumRange", Vector2(0.42f, 6.0f));
+    effectRenderPath->SetShaderParameter("AutoExposureAdaptRate", 2.3f);
+    effectRenderPath->SetShaderParameter("AutoExposureMiddleGrey", 0.4f);
+*/
+
 
     viewport_->SetRenderPath(effectRenderPath);
     renderer->SetViewport(0, viewport);
@@ -105,11 +109,11 @@ Quaternion OneiroCam::GetRotation()
 
 void OneiroCam::Update(float timeStep)
 {
-    camera_->SetFarClip(WORLD_RADIUS * 2.5f);
+//    camera_->SetFarClip(WORLD_RADIUS * 2.5f);
 
-    speedMultiplier_ = 1.0f + INPUT->GetKeyDown(KEY_SHIFT);
+    speedMultiplier_ = 1.0f + 3.0f * INPUT->GetKeyDown(KEY_SHIFT);
     //Movement speed as world units per second
-    const float moveSpeed{ 42.0f * speedMultiplier_};
+    const float moveSpeed{ 23.0f * speedMultiplier_};
     //Mouse sensitivity as degrees per pixel
     const float mouseSensitivity{ 0.1f };
 
@@ -134,7 +138,7 @@ void OneiroCam::Update(float timeStep)
 
     node_->Rotate(Quaternion(-camTrans_.z_ * timeStep * moveSpeed,
                              IsOut() ? -yawDelta_ : yawDelta_,
-                             IsOut() ? -camTrans_.x_ : camTrans_.x_ * timeStep * moveSpeed));
+                             (IsOut() ? -camTrans_.x_ : camTrans_.x_) * timeStep * moveSpeed));
     altitudeNode_->Translate(camTrans_.y_ * moveSpeed * timeStep * Vector3::UP, TS_PARENT);
     pitchNode_->SetRotation(Quaternion(pitch_, 0.0f, 0.0f));
 
@@ -146,7 +150,7 @@ void OneiroCam::Update(float timeStep)
 }
 bool OneiroCam::IsOut()
 {
-    return altitudeNode_->GetPosition().Length() > WORLD_RADIUS;
+    return altitudeNode_->GetWorldPosition().ProjectOntoAxis(GetScene()->GetComponent<World>()->GetNearestRhombicCenter(altitudeNode_->GetWorldPosition())) > WORLD_RADIUS;
 }
 
 void OneiroCam::Lock(Platform* platform)

@@ -57,10 +57,11 @@ public:
     void Disable();
     static Vector3 ElementPosition(TileElement element);
 private:
-    void HandleUpdate(StringHash eventType, VariantMap& eventData);
+    void FixedUpdate(float timeStep);
     Platform* platform_;
     Node* elements_[TE_LENGTH];
-    CollisionShape* colliders_[TE_LENGTH];
+    StaticModelGroup* modelGroups_[TE_LENGTH];
+    CollisionShape* collider_;
     float health_;
     void SetBuilding(BuildingType type);
     BuildingType GetBuilding();

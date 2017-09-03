@@ -16,13 +16,14 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include "world.h"
 #include "oneirocam.h"
 #include "platform.h"
 #include "tile.h"
 #include "slot.h"
 #include "frop.h"
 #include "grass.h"
-#include "kekelplithf.h"
+#include "ekelplitf.h"
 
 #include "inputmaster.h"
 #include "resourcemaster.h"
@@ -64,8 +65,9 @@ void MasterControl::Setup()
 }
 void MasterControl::Start()
 {
+    World::RegisterObject(context_);
     OneiroCam::RegisterObject(context_);
-    Kekelplithf::RegisterObject(context_);
+    Ekelplitf::RegisterObject(context_);
     Tile::RegisterObject(context_);
     Slot::RegisterObject(context_);
     Frop::RegisterObject(context_);
@@ -96,7 +98,7 @@ void MasterControl::Start()
     Node* musicNode{world.scene->CreateChild("Music")};
     SoundSource* musicSource{musicNode->CreateComponent<SoundSource>()};
     musicSource->SetSoundType(SOUND_MUSIC);
-    musicSource->Play(music);
+//    musicSource->Play(music);
 }
 void MasterControl::Stop()
 {
@@ -142,8 +144,8 @@ void MasterControl::CreateConsoleAndDebugHud()
 
 void MasterControl::CreateUI()
 {
-    ResourceCache* cache{GetSubsystem<ResourceCache>()};
-    UI* ui{GetSubsystem<UI>()};
+    ResourceCache* cache{ GetSubsystem<ResourceCache>() };
+    UI* ui{ GetSubsystem<UI>() };
 
     //Create a Cursor UI element because we want to be able to hide and show it at will. When hidden, the mouse cursor will control the camera
     world.cursor.uiCursor = new Cursor(context_);
@@ -168,10 +170,14 @@ void MasterControl::CreateScene()
 {
     world.scene = new Scene(context_);
 
+
     //Create octree, use default volume (-1000, -1000, -1000) to (1000,1000,1000)
     world.scene->CreateComponent<Octree>();
 
-    PhysicsWorld* physicsWorld{world.scene->CreateComponent<PhysicsWorld>()};
+    World* world2 = world.scene->CreateComponent<World>();
+//    World* world2{ SPAWN->Create<World>() };
+
+    PhysicsWorld* physicsWorld{ world.scene->CreateComponent<PhysicsWorld>()};
     physicsWorld->SetGravity(Vector3::ZERO);
 
 
@@ -214,7 +220,7 @@ void MasterControl::CreateScene()
     sunLight->SetLightType(LIGHT_POINT);
     sunLight->SetBrightness(1.666f);
     sunLight->SetRange(WORLD_RADIUS * 1.5f);
-    sunLight->SetColor(Color(0.7f, 0.9f, 1.0f));
+    sunLight->SetColor(Color(0.9f, 0.95f, 1.0f));
 //    sunLight->SetCastShadows(true);
 //    sunLight->SetShadowBias(BiasParameters(0.0000023f, 0.23f));
 //    sunLight->SetShadowResolution(1.0f);
@@ -222,11 +228,11 @@ void MasterControl::CreateScene()
 
     world.sunNode->CreateComponent<RigidBody>();
 
-    Node* bubbleNode{ world.scene->CreateChild("Bubble") };
-    bubbleNode->SetScale(WORLD_RADIUS);
-    StaticModel* bubble{bubbleNode->CreateComponent<StaticModel>()};
-    bubble->SetModel(RESOURCE->GetModel("Bubble"));
-    bubble->SetMaterial(RESOURCE->GetMaterial("Bubble"));
+//    Node* bubbleNode{ world.scene->CreateChild("Bubble") };
+//    bubbleNode->SetScale(WORLD_RADIUS);
+//    StaticModel* bubble{bubbleNode->CreateComponent<StaticModel>()};
+//    bubble->SetModel(RESOURCE->GetModel("Bubble"));
+//    bubble->SetMaterial(RESOURCE->GetMaterial("Bubble"));
 
 //    Node* lightNode2{world.scene->CreateChild("AmbientLight")};
 //    lightNode2->SetDirection(Vector3(0.0f, 1.0f, 0.0f));
@@ -243,8 +249,12 @@ void MasterControl::CreateScene()
     world.camera = world.scene->CreateChild()->CreateComponent<OneiroCam>();
 
     //Add some random platforms
-    for (int p{0}; p < 5; ++p){
-        SPAWN->Create<Platform>()->Set(Quaternion(Platform::platformCount_ * 5.0f, Platform::platformCount_ * 10.0f, Platform::platformCount_* 23.0f) * Vector3::UP * WORLD_RADIUS);
+//    for (int p{0}; p < 23; ++p){
+    for (Vector3 v : world2->GetRhombicTriacontahedricPoints()) {
+        SPAWN->Create<Platform>()->Set(v);
+    }
+    for (Vector3 v : world2->GetRhombicCenters()) {
+        SPAWN->Create<Platform>()->Set(v);
     }
 }
 
@@ -259,7 +269,6 @@ void MasterControl::HandleSceneUpdate(StringHash eventType, VariantMap &eventDat
 //    world.voidNode->SetPosition((2.0f*Vector3::DOWN) + (world.camera->GetWorldPosition()*Vector3(1.0f,0.0f,1.0f)));
     UpdateCursor(t);
 
-    world.sunNode->Rotate(Quaternion(5.0f * t, LucKey::Sine(23.0f * t), 2.0f * t), TS_WORLD);
 }
 
 void MasterControl::UpdateCursor(float timeStep)
@@ -269,10 +278,7 @@ void MasterControl::UpdateCursor(float timeStep)
     if (CursorRayCast(5.0f * WORLD_RADIUS, world.cursor.hitResults)) {
         for (int i{0}; i < world.cursor.hitResults.Size(); ++i) {
             if (world.cursor.hitResults[i].node_->GetName() == "Bubble") {
-//                Vector3 camHitDifference = world.camera->altitudeNode_->GetWorldPosition() - world.cursor.hitResults[i].position_;
-//                camHitDifference /= world.camera->altitudeNode_->GetWorldPosition().y_ - world.voidNode->GetPosition().y_;
-//                camHitDifference *= world.camera->altitudeNode_->GetWorldPosition().y_;
-                world.cursor.sceneCursor->SetWorldPosition(world.cursor.hitResults[0].position_);
+                world.cursor.sceneCursor->SetWorldPosition(world.cursor.hitResults[i].position_);
                 return;
             }
         }
@@ -284,27 +290,7 @@ bool MasterControl::CursorRayCast(float maxDistance, PODVector<RayQueryResult> &
     Ray cameraRay{ world.camera->camera_->GetScreenRay(0.5f,0.5f) };
     RayOctreeQuery query{ hitResults, cameraRay, RAY_TRIANGLE, maxDistance, DRAWABLE_GEOMETRY };
 
-//    if (world.camera->IsOut()) {
-
-//        Ray reverseRay{ cameraRay.origin_ + cameraRay.direction_ * maxDistance, -cameraRay.direction_ };
-//        RayOctreeQuery reverseQuery{ hitResults, reverseRay, RAY_TRIANGLE, maxDistance, DRAWABLE_GEOMETRY };
-//        world.scene->GetComponent<Octree>()->Raycast(reverseQuery);
-
-//    } else {
-
-        world.scene->GetComponent<Octree>()->Raycast(query);
-//    }
-
-    if (world.camera->IsOut()) {
-
-        PODVector<RayQueryResult> reverseResults{};
-        for (int r{ hitResults.Size() - 1}; r >= 0 ; --r) {
-
-            reverseResults.Push(hitResults[r]);
-        }
-        hitResults = reverseResults;
-
-    }
+    world.scene->GetComponent<Octree>()->Raycast(query);
 
     if (hitResults.Size())
         return true;
