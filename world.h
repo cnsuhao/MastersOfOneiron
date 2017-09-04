@@ -80,6 +80,9 @@ private:
     static Vector3 MirrorYZ(const Vector3& vec) { return Vector3( vec.x_,-vec.y_,-vec.z_); }
 
     Vector<Vector3> rhombicCenters;
+
+
+    float radius_;
   /*
 {( 2, 4, 6), ( 6, 8, 2)}, {( 2, 11, 4), ( 4, 11, 12)},
 {( 4, 12, 13), ( 4, 13, 6)}, {( 6, 16, 8), ( 8, 16, 17)},

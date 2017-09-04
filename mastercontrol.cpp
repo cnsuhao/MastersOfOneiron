@@ -17,6 +17,8 @@
 */
 
 #include "world.h"
+#include "volcano.h"
+#include "storm.h"
 #include "oneirocam.h"
 #include "platform.h"
 #include "tile.h"
@@ -66,6 +68,8 @@ void MasterControl::Setup()
 void MasterControl::Start()
 {
     World::RegisterObject(context_);
+    Volcano::RegisterObject(context_);
+    Storm::RegisterObject(context_);
     OneiroCam::RegisterObject(context_);
     Ekelplitf::RegisterObject(context_);
     Tile::RegisterObject(context_);

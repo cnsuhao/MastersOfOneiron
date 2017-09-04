@@ -19,6 +19,9 @@
 
 #include "mastercontrol.h"
 #include "resourcemaster.h"
+#include "spawnmaster.h"
+#include "volcano.h"
+#include "storm.h"
 #include "world.h"
 
 const Vector3 World::v0(M_PHI,	0.0f, M_PHI_P2);
@@ -62,18 +65,28 @@ void World::RegisterObject(Context* context)
 }
 
 World::World(Context* context) : LogicComponent(context),
-    rhombicCenters{}
+    rhombicCenters{},
+    radius_{235.0f}
 {
 }
 
 void World::OnNodeSet(Node* node)
 { if (!node) return;
 
+    //Create water surface
     Node* bubbleNode{ node_->CreateChild("Bubble") };
     bubbleNode->AddTag("Bubble");
     StaticModel* object{ bubbleNode->CreateComponent<StaticModel>() };
-    object->SetModel(CreateRhombicTriacontahedron(WORLD_RADIUS, 0.05f));
+    object->SetModel(CreateRhombicTriacontahedron(radius_, 0.05f));
     object->SetMaterial(RESOURCE->GetMaterial("Bubble"));
+
+    //Create volcanoes
+    for (Vector3 v : GetIcosahedricPoints())
+        SPAWN->Create<Volcano>()->Set(v * M_1_PHI_P2 * radius_);
+    //Create storms
+    for (Vector3 s : GetDodecahedricPoints())
+        SPAWN->Create<Storm>()->Set(s * M_1_PHI_P2 * radius_);
+
 }
 
 void World::Update(float timeStep)

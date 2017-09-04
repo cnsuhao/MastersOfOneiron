@@ -31,7 +31,9 @@ SOURCES += \
     frop.cpp \
     luckey.cpp \
     world.cpp \
-    ekelplitf.cpp
+    ekelplitf.cpp \
+    volcano.cpp \
+    storm.cpp
 
 HEADERS += \
     mastercontrol.h \
@@ -48,4 +50,6 @@ HEADERS += \
     frop.h \
     luckey.h \
     world.h \
-    ekelplitf.h
+    ekelplitf.h \
+    volcano.h \
+    storm.h
