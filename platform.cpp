@@ -130,8 +130,8 @@ void Platform::OnNodeSet(Node *node)
 
 void Platform::Set(Vector3 position)
 {
-    Vector3 platformPos{ position.Normalized() * WORLD_RADIUS };
-    SceneObject::Set(platformPos);
+//    Vector3 platformPos{ position.Normalized() * WORLD_RADIUS };
+    SceneObject::Set(position);
 //    node_->LookAt(Vector3::ZERO, Vector3::DOWN);
 
 //    Constraint* worldConstraint{ node_->GetOrCreateComponent<Constraint>() };
@@ -140,6 +140,7 @@ void Platform::Set(Vector3 position)
 //    worldConstraint->SetPosition(-platformPos);
 //    worldConstraint->SetOtherPosition();
 
+    Realign(1.0f);
     node_->Rotate(Quaternion(Random(360.0f), Vector3::UP));
 
 
@@ -211,7 +212,7 @@ void Platform::Realign(float timeStep)
 {
     Vector3 up{ -GetScene()->GetComponent<World>()->GetNearestRhombicCenter(node_->GetWorldPosition()).Normalized() };
     Vector3 newDirection{ node_->GetDirection() - node_->GetDirection().DotProduct(up) * up };
-    newDirection = node_->GetDirection().Lerp(newDirection, Min(1.0f, 2.0f * timeStep));
+    newDirection = node_->GetDirection().Lerp(newDirection, Min(1.0f, 5.0f * timeStep));
 
     node_->LookAt(node_->GetWorldPosition() + newDirection, up);
 }
@@ -224,7 +225,7 @@ void Platform::Update(float timeStep)
 
     float out{ (node_->GetWorldPosition() - rhombicCenter).ProjectOntoAxis(rhombicCenter) };
 
-    Vector3 newG{ -5.0f * out * rhombicCenter.Normalized() };
+    Vector3 newG{ -23.0f * out * rhombicCenter.Normalized() };
     rigidBody_->SetGravityOverride(newG);
 
 //    node_->SetWorldPosition(node_->GetWorldPosition().Normalized() * WORLD_RADIUS);

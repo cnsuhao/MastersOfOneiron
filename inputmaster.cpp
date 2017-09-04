@@ -87,7 +87,7 @@ void InputMaster::HandleMouseDown(StringHash eventType, VariantMap &eventData)
 
             //Void interaction (create new platform)
             else {
-                SPAWN->Create<Platform>()->Set(MC->world.cursor.sceneCursor->GetPosition().Normalized() * WORLD_RADIUS);
+                SPAWN->Create<Platform>()->Set(MC->world.cursor.sceneCursor->GetPosition());
             }
         }
     }
@@ -128,9 +128,9 @@ void InputMaster::HandleKeyDown(StringHash eventType, VariantMap &eventData)
         Image screenshot(context_);
         graphics->TakeScreenShot(screenshot);
         //Here we save in the Data folder with date and time appended
-        String fileName = GetSubsystem<FileSystem>()->GetProgramDir() + "Screenshots/Screenshot_" +
-                Time::GetTimeStamp().Replaced(':', '_').Replaced('.', '_').Replaced(' ', '_')+".png";
-        //Log::Write(1, fileName);
+        String fileName{ GetSubsystem<FileSystem>()->GetProgramDir() + "Screenshots/Screenshot_" +
+                Time::GetTimeStamp().Replaced(':', '_').Replaced('.', '_').Replaced(' ', '_')+".png" };
+        Log::Write(1, fileName);
         screenshot.SavePNG(fileName);
     }
     else if (key == KEY_L)

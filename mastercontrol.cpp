@@ -250,9 +250,9 @@ void MasterControl::CreateScene()
 
     //Add some random platforms
 //    for (int p{0}; p < 23; ++p){
-    for (Vector3 v : world2->GetRhombicTriacontahedricPoints()) {
-        SPAWN->Create<Platform>()->Set(v);
-    }
+//    for (Vector3 v : world2->GetRhombicTriacontahedricPoints()) {
+//        SPAWN->Create<Platform>()->Set(v);
+//    }
     for (Vector3 v : world2->GetRhombicCenters()) {
         SPAWN->Create<Platform>()->Set(v);
     }
@@ -277,7 +277,7 @@ void MasterControl::UpdateCursor(float timeStep)
     world.cursor.sceneCursor->SetScale((world.cursor.sceneCursor->GetWorldPosition() - world.camera->GetWorldPosition()).Length() * 0.0023f);
     if (CursorRayCast(5.0f * WORLD_RADIUS, world.cursor.hitResults)) {
         for (int i{0}; i < world.cursor.hitResults.Size(); ++i) {
-            if (world.cursor.hitResults[i].node_->GetName() == "Bubble") {
+            if (world.cursor.hitResults[i].node_->HasTag("Bubble")) {
                 world.cursor.sceneCursor->SetWorldPosition(world.cursor.hitResults[i].position_);
                 return;
             }

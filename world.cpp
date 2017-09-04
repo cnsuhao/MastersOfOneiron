@@ -69,7 +69,9 @@ World::World(Context* context) : LogicComponent(context),
 void World::OnNodeSet(Node* node)
 { if (!node) return;
 
-    StaticModel* object{ node_->CreateComponent<StaticModel>() };
+    Node* bubbleNode{ node_->CreateChild("Bubble") };
+    bubbleNode->AddTag("Bubble");
+    StaticModel* object{ bubbleNode->CreateComponent<StaticModel>() };
     object->SetModel(CreateRhombicTriacontahedron(WORLD_RADIUS, 0.05f));
     object->SetMaterial(RESOURCE->GetMaterial("Bubble"));
 }
