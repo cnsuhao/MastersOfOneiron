@@ -80,7 +80,8 @@ void InputMaster::HandleMouseDown(StringHash eventType, VariantMap &eventData)
                 } else {
                 //Select single platform
                     SharedPtr<Platform> platform{ firstHit_->GetParentComponent<Platform>(true) };
-                    SetSelection(platform);
+                    if (platform)
+                        SetSelection(platform);
                 }
 
             }

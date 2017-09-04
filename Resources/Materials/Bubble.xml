@@ -7,7 +7,7 @@
 	<parameter name="MatEmissiveColor" value="0 0.2 0.3" />
 	<parameter name="MatSpecColor" value="0.13 0.23 0.23 10" />
 	<cull value="ccw" />
-	<shadowcull value="ccw" />
+	<shadowcull value="none" />
 	<fill value="solid" />
-	<depthbias constant="0.00005" slopescaled="0" />
+	<depthbias constant="0.000005" slopescaled="0" />
 </material>

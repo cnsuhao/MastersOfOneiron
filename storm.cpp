@@ -43,8 +43,10 @@ void Storm::Set(Vector3 position)
     node_->LookAt(node_->GetWorldPosition() + (rhombicCenter - node_->GetWorldPosition().Normalized() * rhombicCenter.ProjectOntoAxis(node_->GetWorldPosition())),
                   node_->GetWorldPosition().Normalized());
 
-    node_->CreateComponent<StaticModel>()->SetModel(RESOURCE->GetModel("Sphere"));
-    node_->SetScale(Vector3(5.0f, 5.0f, 5.0f));
+    StaticModel* sphere{ node_->CreateComponent<StaticModel>() };
+    sphere->SetModel(RESOURCE->GetModel("Sphere"));
+
+    node_->SetScale(Vector3(10.0f, 42.0f, 10.0f));
 
     node_->CreateComponent<RigidBody>();
     node_->CreateComponent<CollisionShape>()->SetSphere(1.0f);

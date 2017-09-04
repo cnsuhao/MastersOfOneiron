@@ -46,7 +46,7 @@ void Volcano::Set(Vector3 position)
                   node_->GetWorldPosition().Normalized());
 
     node_->CreateComponent<StaticModel>()->SetModel(RESOURCE->GetModel("Box"));
-    node_->SetScale(Vector3(23.0f, 23.0f, 23.0f));
+    node_->SetScale(Vector3(42.0f, 42.0f, 42.0f));
 
     node_->CreateComponent<RigidBody>();
     node_->CreateComponent<CollisionShape>()->SetBox(Vector3::ONE);

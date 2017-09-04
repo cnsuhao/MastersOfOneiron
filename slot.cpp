@@ -38,14 +38,13 @@ void Slot::OnNodeSet(Node *node)
 
     SceneObject::OnNodeSet(node);
 
-    AnimatedModel* model{ node_->CreateComponent<AnimatedModel>() };
+    /*AnimatedModel* model{ node_->CreateComponent<AnimatedModel>() };
     model->SetModel(RESOURCE->GetModel("Slot"));
     model->SetMaterial(RESOURCE->GetMaterial("Glow"));
-    model->SetCastShadows(false);
+    model->SetCastShadows(false);*/
     StaticModel* hitModel{ node_->CreateComponent<StaticModel>() };
     hitModel->SetModel(RESOURCE->GetModel("SlotHitPlane"));
     hitModel->SetMaterial(RESOURCE->GetMaterial("Invisible"));
-    model->SetCastShadows(false);
 
     cursor_ = MC->world.cursor.sceneCursor;
 

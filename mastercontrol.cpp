@@ -230,7 +230,7 @@ void MasterControl::CreateScene()
 //    sunLight->SetShadowResolution(1.0f);
 //    sunLight->SetShadowCascade(CascadeParameters(4.0f, 16.0f, 64.0f, 0.5f, 1.0f));
 
-    world.sunNode->CreateComponent<RigidBody>();
+//    world.sunNode->CreateComponent<RigidBody>();
 
 //    Node* bubbleNode{ world.scene->CreateChild("Bubble") };
 //    bubbleNode->SetScale(WORLD_RADIUS);
@@ -257,6 +257,7 @@ void MasterControl::CreateScene()
 //    for (Vector3 v : world2->GetRhombicTriacontahedricPoints()) {
 //        SPAWN->Create<Platform>()->Set(v);
 //    }
+
     for (Vector3 v : world2->GetRhombicCenters()) {
         SPAWN->Create<Platform>()->Set(v);
     }

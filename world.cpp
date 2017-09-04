@@ -65,7 +65,7 @@ void World::RegisterObject(Context* context)
 }
 
 World::World(Context* context) : LogicComponent(context),
-    rhombicCenters{},
+    rhombicCenters_{},
     radius_{235.0f}
 {
 }
@@ -232,8 +232,8 @@ SharedPtr<Model> World::CreateRhombicTriacontahedron(float radius, float thickne
 
         n1 = n2 = n3 = n4 = normal;
 
-        if (rhombicCenters.Size() < 30)
-            rhombicCenters.Push(normal * radius);
+        if (rhombicCenters_.Size() < 30)
+            rhombicCenters_.Push(normal * radius);
     }
 
     SharedPtr<Model> fromScratchModel(new Model(context_));
@@ -292,4 +292,16 @@ Vector3 World::GetNearestRhombicCenter(Vector3 position)
     }
 
     return rhombicCenter;
+}
+
+Vector3 World::ToSurface(const Vector3& position)
+{
+    Vector3 rhombicCenter{ GetNearestRhombicCenter(position) };
+
+    if (position.ProjectOntoAxis(rhombicCenter) != radius_) {
+
+        return position + ((radius_ - position.ProjectOntoAxis(rhombicCenter)) * rhombicCenter.Normalized());
+    } else {
+        return position;
+    }
 }

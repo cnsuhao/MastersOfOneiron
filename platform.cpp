@@ -28,6 +28,8 @@ template <> unsigned MakeHash(const IntVector2& value)
   }
 }
 
+//HashMap<StringHash, StaticModelGroup*> Platform::modelGroups_{};
+
 void Platform::RegisterObject(Context *context)
 {
     context->RegisterFactory<Platform>();
@@ -37,7 +39,9 @@ int Platform::platformCount_{};
 
 Platform::Platform(Context *context):
     SceneObject(context),
-    selected_{false}
+    selected_{false},
+    modelGroups_{},
+    slotGroup_{}
 {
     ++platformCount_;
 }
@@ -49,7 +53,6 @@ void Platform::OnNodeSet(Node *node)
 
     MC->platformMap_[node_->GetID()] = this;
 
-    Realign(1.0f);
 //    node_->LookAt(Quaternion(Random(360.0f), node_->GetWorldPosition().Normalized()) * node_->GetWorldPosition(), Vector3::ZERO);
 
 //    SetMoveTarget(position);
@@ -67,6 +70,15 @@ void Platform::OnNodeSet(Node *node)
     rigidBody_->SetAngularFactor(Vector3(0.0f, 1.0f, 0.0f));
 //    rigidBody_->SetUseGravity(false);
 
+    Realign(1.0f);
+
+
+    if (!slotGroup_) {
+        slotGroup_ = node_->CreateComponent<StaticModelGroup>();
+        slotGroup_->SetModel(RESOURCE->GetModel("Slot"));
+        slotGroup_->SetMaterial(RESOURCE->GetMaterial("Glow"));
+        slotGroup_->SetCastShadows(true);
+    }
 
     // Add base tile
     IntVector2 firstCoordPair{ IntVector2(0,0) };
@@ -131,7 +143,7 @@ void Platform::OnNodeSet(Node *node)
 void Platform::Set(Vector3 position)
 {
 //    Vector3 platformPos{ position.Normalized() * WORLD_RADIUS };
-    SceneObject::Set(position);
+    SceneObject::Set(GetScene()->GetComponent<World>()->ToSurface(position));
 //    node_->LookAt(Vector3::ZERO, Vector3::DOWN);
 
 //    Constraint* worldConstraint{ node_->GetOrCreateComponent<Constraint>() };
@@ -156,7 +168,7 @@ void Platform::Stop()
 
 bool Platform::EnableSlot(IntVector2 coords)
 {
-    slotMap_[coords]->GetNode()->SetEnabled(true);
+    slotGroup_->AddInstanceNode(slotMap_[coords]->GetNode());
 }
 void Platform::EnableSlots()
 {
@@ -168,8 +180,8 @@ void Platform::EnableSlots()
 
 bool Platform::DisableSlot(IntVector2 coords)
 {
-    if (Slot* slot = slotMap_[coords])
-        slot->Disable();
+    if (slotMap_[coords])
+        slotGroup_->RemoveInstanceNode(slotMap_[coords]->GetNode());
 }
 void Platform::DisableSlots()
 {
@@ -210,11 +222,15 @@ bool Platform::IsSelected() const
 
 void Platform::Realign(float timeStep)
 {
-    Vector3 up{ -GetScene()->GetComponent<World>()->GetNearestRhombicCenter(node_->GetWorldPosition()).Normalized() };
+    World* world{ GetScene()->GetComponent<World>() };
+    Vector3 up{ -world->GetNearestRhombicCenter(node_->GetWorldPosition()).Normalized() };
+    up = node_->GetUp().Lerp(up, Min(1.0f, 5.0f * timeStep));
     Vector3 newDirection{ node_->GetDirection() - node_->GetDirection().DotProduct(up) * up };
-    newDirection = node_->GetDirection().Lerp(newDirection, Min(1.0f, 5.0f * timeStep));
+    newDirection = node_->GetDirection().Lerp(newDirection, Min(1.0f, 2.0f * timeStep));
 
-    node_->LookAt(node_->GetWorldPosition() + newDirection, up);
+    node_->LookAt(world->ToSurface(node_->GetWorldPosition() + newDirection * 3.0f), up);
+
+    rigidBody_->SetAngularVelocity(node_->GetWorldPosition().Normalized() * rigidBody_->GetAngularVelocity().ProjectOntoAxis(node_->GetWorldPosition()));
 }
 
 void Platform::Update(float timeStep)
@@ -225,7 +241,7 @@ void Platform::Update(float timeStep)
 
     float out{ (node_->GetWorldPosition() - rhombicCenter).ProjectOntoAxis(rhombicCenter) };
 
-    Vector3 newG{ -23.0f * out * rhombicCenter.Normalized() };
+    Vector3 newG{ -23.0f * out * Sign(out) * out * rhombicCenter.Normalized() };
     rigidBody_->SetGravityOverride(newG);
 
 //    node_->SetWorldPosition(node_->GetWorldPosition().Normalized() * WORLD_RADIUS);
@@ -234,6 +250,19 @@ void Platform::Update(float timeStep)
         Realign(timeStep);
 }
 
+void Platform::AddNodeInstance(String model, Node* node)
+{
+    StringHash modelHash{ model.ToHash() };
+
+    if (!modelGroups_.Contains(modelHash)) {
+        modelGroups_[modelHash] = node_->CreateComponent<StaticModelGroup>();
+        modelGroups_[modelHash]->SetModel(RESOURCE->GetModel(model));
+        modelGroups_[modelHash]->SetMaterial(RESOURCE->GetMaterial("VCol"));
+        modelGroups_[modelHash]->SetCastShadows(true);
+    }
+
+    modelGroups_[modelHash]->AddInstanceNode(node);
+}
 void Platform::Move(double timeStep)
 {
     /*Vector3 relativeMoveTarget = moveTarget_ - rootNode_->GetPosition();

@@ -54,8 +54,9 @@ public:
 
     SharedPtr<Model> CreateRhombicTriacontahedron(float radius = 1.0f, float thickness = 0.0f);
 
-    const Vector<Vector3>& GetRhombicCenters() const { return rhombicCenters; }
+    const Vector<Vector3>& GetRhombicCenters() const { return rhombicCenters_; }
     Vector3 GetNearestRhombicCenter(Vector3 position);
+    Vector3 ToSurface(const Vector3& position);
 private:
     static constexpr float M_PHI    = 1.61803398874989484820458683436564f;
     static constexpr float M_PHI_P2 = 2.61803398874989484820458683436564f;
@@ -79,8 +80,7 @@ private:
     static Vector3 MirrorXZ(const Vector3& vec) { return Vector3(-vec.x_, vec.y_,-vec.z_); }
     static Vector3 MirrorYZ(const Vector3& vec) { return Vector3( vec.x_,-vec.y_,-vec.z_); }
 
-    Vector<Vector3> rhombicCenters;
-
+    Vector<Vector3> rhombicCenters_;
 
     float radius_;
   /*

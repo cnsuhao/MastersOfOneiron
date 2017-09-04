@@ -40,10 +40,10 @@ void Tile::OnNodeSet(Node *node)
     node_->AddTag("Platform");
     node_->AddTag("Tile");
 
-    StaticModel* centerModel{ node_->CreateComponent<StaticModel>() };
-    centerModel->SetModel(RESOURCE->GetModel("Terrain/Center_1"));
-    centerModel->SetMaterial(RESOURCE->GetMaterial("VCol"));
-    centerModel->SetCastShadows(true);
+//    StaticModel* centerModel{ node_->CreateComponent<StaticModel>() };
+//    centerModel->SetModel(RESOURCE->GetModel("Terrain/Center_1"));
+//    centerModel->SetMaterial(RESOURCE->GetMaterial("VCol"));
+//    centerModel->SetCastShadows(true);
 
     //Set up compound nodes.
     for (int i{0}; i < TE_LENGTH; ++i) {
@@ -51,8 +51,8 @@ void Tile::OnNodeSet(Node *node)
         elements_[i]->SetPosition(ElementPosition(static_cast<TileElement>(i)));
 //        if (i < 3) elements_[i]->Rotate(Quaternion(0.0f, 180.0f, 0.0f));
 
-        StaticModel* model{ elements_[i]->CreateComponent<StaticModel>() };
-        model->SetCastShadows(true);
+//        StaticModel* model{ elements_[i]->CreateComponent<StaticModel>() };
+//        model->SetCastShadows(true);
     }
 
 //    SubscribeToEvent(E_PHYSICSPOSTSTEP, URHO3D_HANDLER(Tile, HandleFixedUpdate));
@@ -75,9 +75,11 @@ void Tile::Set(const IntVector2 coords, Platform *platform)
 
     SceneObject::Set(platform_->CoordsToPosition(coords));
 
+    platform_->AddNodeInstance("Terrain/Center_1", node_);
+
     //Add collision shape to platform
     collider_ = platform_->GetNode()->CreateComponent<CollisionShape>();
-    collider_->SetBox(Vector3(1.1f, 1.1f, 0.5f),
+    collider_->SetBox(Vector3(1.0f, 0.5f, 1.0f),
                             node_->GetPosition());
 //    collider_->SetEnabled(true);
 
@@ -175,15 +177,15 @@ void Tile::SetBuilding(BuildingType type)
 {
     buildingType_ = type;
     if (buildingType_ > B_EMPTY) platform_->DisableSlot(coords_);
-    StaticModel* model{ node_->GetComponent<StaticModel>() };
+//    StaticModel* model{ node_->GetComponent<StaticModel>() };
     switch (buildingType_)
     {
     case B_ENGINE: {
-        model->SetModel(MC->CACHE->GetResource<Model>("Resources/Models/Engine_center.mdl"));
-        model->SetMaterial(0, MC->CACHE->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
-        model->SetMaterial(1, MC->CACHE->GetResource<Material>("Resources/Materials/Structure.xml"));
-        model->SetMaterial(2, MC->CACHE->GetResource<Material>("Resources/Materials/Glow.xml"));
-        model->SetMaterial(3, MC->CACHE->GetResource<Material>("Resources/Materials/Glass.xml"));
+//        model->SetModel(MC->CACHE->GetResource<Model>("Resources/Models/Engine_center.mdl"));
+//        model->SetMaterial(0, MC->CACHE->GetResource<Material>("Resources/Materials/BlockCenter.xml"));
+//        model->SetMaterial(1, MC->CACHE->GetResource<Material>("Resources/Materials/Structure.xml"));
+//        model->SetMaterial(2, MC->CACHE->GetResource<Material>("Resources/Materials/Glow.xml"));
+//        model->SetMaterial(3, MC->CACHE->GetResource<Material>("Resources/Materials/Glass.xml"));
     } break;
     default: break;
     }
@@ -199,16 +201,18 @@ void Tile::FixFringe()
     for (int e{0}; e < TE_LENGTH; ++e) {
 
         Node* element{ elements_[e] };
-        StaticModel* model{ element->GetComponent<StaticModel>() };
+//        StaticModel* model{ element->GetComponent<StaticModel>() };
 
         CornerType cornerType{ platform_->PickCornerType(coords_, static_cast<TileElement>(e)) };
 
         switch (cornerType) {
         case CT_NONE:
-            model->SetModel(nullptr);
+//            model->SetModel(nullptr);
             break;
         case CT_IN: {
-            model->SetModel(RESOURCE->GetModel("Terrain/BendIn_" + String(Random(1, 5))));
+            platform_->AddNodeInstance("Terrain/BendIn_" + String(Random(1, 5)), element);
+
+//            model->SetModel(RESOURCE->GetModel("Terrain/BendIn_" + String(Random(1, 5))));
 
             switch (e) {
             case TE_NORTHEAST:
@@ -226,7 +230,9 @@ void Tile::FixFringe()
             }
         } break;
         case CT_OUT: {
-                model->SetModel(RESOURCE->GetModel("Terrain/BendOut_" + String(Random(1, 5))));
+            platform_->AddNodeInstance("Terrain/BendOut_" + String(Random(1, 5)), element);
+
+//                model->SetModel(RESOURCE->GetModel("Terrain/BendOut_" + String(Random(1, 5))));
 
                 switch (e) {
                 case TE_NORTHEAST:
@@ -244,7 +250,8 @@ void Tile::FixFringe()
                 }
         } break;
         case CT_STRAIGHT: {
-                model->SetModel(RESOURCE->GetModel("Terrain/Straight_" + String(Random(1, 5))));
+            platform_->AddNodeInstance("Terrain/Straight_" + String(Random(1, 5)), element);
+//                model->SetModel(RESOURCE->GetModel("Terrain/Straight_" + String(Random(1, 5))));
 
                 switch (e) {
                 case TE_NORTHEAST:
@@ -262,7 +269,9 @@ void Tile::FixFringe()
                 }
         } break;
         case CT_BRIDGE: {
-            model->SetModel(RESOURCE->GetModel("Terrain/Bridge_1"));
+            platform_->AddNodeInstance("Terrain/Bridge_1", element);
+
+//            model->SetModel(RESOURCE->GetModel("Terrain/Bridge_1"));
 
             switch (e) {
             case TE_NORTHEAST: case TE_SOUTHWEST:
@@ -275,14 +284,16 @@ void Tile::FixFringe()
         } break;
         case CT_FILL: {
             if (e == TE_NORTHEAST)
-                model->SetModel(RESOURCE->GetModel("Terrain/Fill_1"));
-            else
-                model->SetModel(nullptr);
+                platform_->AddNodeInstance("Terrain/Fill_1", element);
+
+//                model->SetModel(RESOURCE->GetModel("Terrain/Fill_1"));
+//            else
+//                model->SetModel(nullptr);
 
         } break;
         default: break;
         }
-        if (model->GetModel())
-            model->SetMaterial(RESOURCE->GetMaterial("VCol"));
+//        if (model->GetModel())
+//            model->SetMaterial(RESOURCE->GetMaterial("VCol"));
     }
 }

@@ -89,6 +89,8 @@ public:
     void Update(float timeStep) override;
     Vector3 GetNearestRhombicCenter();
 
+    void AddNodeInstance(String model, Node* node);
+
 private:
     HashMap<IntVector2, Tile*> tileMap_;
     HashMap<IntVector2, Slot*> slotMap_;
@@ -107,6 +109,9 @@ private:
     void RemoveBuilding(IntVector2 coords) {SetBuilding(coords, B_EMPTY);}
     void UpdateCenterOfMass();
     void Move(double timeStep);
+
+    HashMap<StringHash, StaticModelGroup*> modelGroups_;
+    StaticModelGroup* slotGroup_;
 };
 
 #endif // PLATFORM_H
